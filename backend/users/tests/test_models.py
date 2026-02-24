@@ -20,3 +20,35 @@ def test_create_user_with_apple_id():
 def test_user_has_settings_defaults():
     user = User.objects.create_user(email="test@example.com", apple_id="apple_123")
     assert user.settings == {"default_servings": 2, "known_new_ratio": 0.7, "plan_days": 7}
+
+
+@pytest.mark.django_db
+def test_user_str():
+    user = User.objects.create_user(email="hello@example.com", apple_id="a1")
+    assert str(user) == "hello@example.com"
+
+
+@pytest.mark.django_db
+def test_create_superuser():
+    user = User.objects.create_superuser(email="admin@example.com", password="secret123")
+    assert user.is_staff is True
+    assert user.is_superuser is True
+    assert user.check_password("secret123")
+
+
+@pytest.mark.django_db
+def test_create_superuser_no_password():
+    user = User.objects.create_superuser(email="admin2@example.com")
+    assert user.has_usable_password() is False
+
+
+@pytest.mark.django_db
+def test_create_superuser_rejects_is_staff_false():
+    with pytest.raises(ValueError, match="is_staff=True"):
+        User.objects.create_superuser(email="bad@example.com", is_staff=False)
+
+
+@pytest.mark.django_db
+def test_create_superuser_rejects_is_superuser_false():
+    with pytest.raises(ValueError, match="is_superuser=True"):
+        User.objects.create_superuser(email="bad@example.com", is_superuser=False)

@@ -5,6 +5,10 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, Permis
 from django.db import models
 
 
+def _default_user_settings() -> dict:
+    return {"default_servings": 2, "known_new_ratio": 0.7, "plan_days": 7}
+
+
 class UserManager(BaseUserManager["User"]):
     def create_user(self, email: str, apple_id: str, **extra_fields: Any) -> "User":
         email = self.normalize_email(email)
@@ -13,12 +17,20 @@ class UserManager(BaseUserManager["User"]):
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, email: str, **extra_fields: Any) -> "User":
+    def create_superuser(
+        self, email: str, password: str | None = None, **extra_fields: Any
+    ) -> "User":
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
         extra_fields.setdefault("apple_id", "")
+
+        if extra_fields.get("is_staff") is not True:
+            raise ValueError("Superuser must have is_staff=True.")
+        if extra_fields.get("is_superuser") is not True:
+            raise ValueError("Superuser must have is_superuser=True.")
+
         user = self.model(email=self.normalize_email(email), **extra_fields)
-        user.set_password(extra_fields.get("password", ""))
+        user.set_password(password)  # None → unusable password (safe default)
         user.save(using=self._db)
         return user
 
@@ -33,7 +45,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         default="en",
     )
     # active_household will be added in Task 7 when Household model is created
-    settings = models.JSONField(default=dict)
+    settings = models.JSONField(default=_default_user_settings)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -41,7 +53,5 @@ class User(AbstractBaseUser, PermissionsMixin):
     objects = UserManager()
     USERNAME_FIELD = "email"
 
-    def save(self, *args, **kwargs):
-        if not self.settings:
-            self.settings = {"default_servings": 2, "known_new_ratio": 0.7, "plan_days": 7}
-        super().save(*args, **kwargs)
+    def __str__(self) -> str:
+        return self.email
