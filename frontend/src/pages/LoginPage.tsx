@@ -1,5 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../hooks/useAuth";
+import AppLogo from "../components/AppLogo";
 
 export default function LoginPage() {
   const { t } = useTranslation();
@@ -7,8 +8,8 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-white px-4">
-      <h1 className="mb-2 text-4xl font-bold text-orange-500">
-        {t("common.appName")}
+      <h1 className="mb-2">
+        <AppLogo />
       </h1>
       <p className="mb-12 text-gray-500">{t("nav.plan")}</p>
 
