@@ -109,6 +109,7 @@ class Invite(models.Model):
         blank=True,
         related_name="used_invites",
     )
+    created_at = models.DateTimeField(auto_now_add=True, null=True)
 
     def __str__(self) -> str:
         return f"Invite {self.code} for {self.household}"
