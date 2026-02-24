@@ -3,8 +3,13 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 
-from recipes.models import Ingredient, Recipe, Unit
-from recipes.serializers import IngredientSerializer, RecipeSerializer, UnitSerializer
+from recipes.models import CookingStep, Ingredient, Recipe, Unit
+from recipes.serializers import (
+    CookingStepSerializer,
+    IngredientSerializer,
+    RecipeSerializer,
+    UnitSerializer,
+)
 from users.permissions import IsHouseholdMember
 
 
@@ -37,6 +42,36 @@ class RecipeMoveView(APIView):
 
         serializer = RecipeSerializer(recipe, context={"request": request})
         return Response(serializer.data)
+
+
+class RecipeStepsView(generics.ListAPIView):
+    serializer_class = CookingStepSerializer
+    permission_classes = [IsHouseholdMember]
+
+    def get_queryset(self):
+        try:
+            recipe = Recipe.objects.get(
+                pk=self.kwargs["pk"],
+                household=self.request.user.active_household,
+            )
+        except Recipe.DoesNotExist:
+            return CookingStep.objects.none()
+
+        qs = recipe.steps.all()
+        method = self.request.query_params.get("method")
+        if method:
+            qs = qs.filter(method=method)
+        return qs
+
+    def list(self, request, *args, **kwargs):
+        try:
+            Recipe.objects.get(
+                pk=self.kwargs["pk"],
+                household=request.user.active_household,
+            )
+        except Recipe.DoesNotExist:
+            return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+        return super().list(request, *args, **kwargs)
 
 
 class IngredientListCreateView(generics.ListCreateAPIView):
