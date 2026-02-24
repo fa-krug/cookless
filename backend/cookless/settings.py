@@ -23,10 +23,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 env = environ.Env(
     # Security
     DEBUG=(bool, True),
-    SECRET_KEY=(
-        str,
-        "django-insecure-cookless-dev-key-change-in-production-x9k2m4p7q1",
-    ),
+    SECRET_KEY=(str, None),
     # Network
     ALLOWED_HOSTS=(str, "localhost,127.0.0.1"),
     # Database
@@ -45,17 +42,28 @@ if env_file.exists():
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = env("SECRET_KEY")
+import secrets
+
+SECRET_KEY = env("SECRET_KEY") or secrets.token_hex(50)
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env("DEBUG")
 
 ALLOWED_HOSTS = [host.strip() for host in env("ALLOWED_HOSTS").split(",")]
 
-# CSRF Trusted Origins for production
-CSRF_TRUSTED_ORIGINS = [
-    f"https://{host.strip()}" for host in env("ALLOWED_HOSTS").split(",") if host.strip() != "*"
-]
+# CSRF Trusted Origins
+if DEBUG:
+    CSRF_TRUSTED_ORIGINS = [
+        f"http://{host.strip()}"
+        for host in env("ALLOWED_HOSTS").split(",")
+        if host.strip() not in ("*", "")
+    ]
+else:
+    CSRF_TRUSTED_ORIGINS = [
+        f"https://{host.strip()}"
+        for host in env("ALLOWED_HOSTS").split(",")
+        if host.strip() not in ("*", "")
+    ]
 
 # Support for proxies
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
@@ -85,6 +93,7 @@ INSTALLED_APPS = [
     "django.contrib.sites",
     # Third-party
     "rest_framework",
+    "rest_framework.authtoken",
     "corsheaders",
     "allauth",
     "allauth.account",
@@ -184,8 +193,14 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
+# Frontend build directory (React via Vite)
+FRONTEND_DIST = BASE_DIR.parent / "frontend_dist"
+if FRONTEND_DIST.is_dir():
+    STATICFILES_DIRS = [FRONTEND_DIST]
+    WHITENOISE_ROOT = FRONTEND_DIST
+
 # WhiteNoise configuration
-WHITENOISE_USE_FINDERS = True
+WHITENOISE_USE_FINDERS = DEBUG
 WHITENOISE_AUTOREFRESH = DEBUG
 
 # Default primary key field type
