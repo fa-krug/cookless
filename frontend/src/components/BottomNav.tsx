@@ -1,5 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { NavLink } from "react-router-dom";
+import AppLogo from "./AppLogo";
 
 const navItems = [
   {
@@ -89,23 +90,51 @@ export default function BottomNav() {
   const { t } = useTranslation();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 border-t border-gray-200 bg-white pb-[env(safe-area-inset-bottom)]">
-      <div className="flex items-center justify-around">
-        {navItems.map((item) => (
-          <NavLink
-            key={item.to}
-            to={item.to}
-            className={({ isActive }) =>
-              `flex flex-1 flex-col items-center gap-0.5 py-2 text-xs ${
-                isActive ? "text-orange-500" : "text-gray-500"
-              }`
-            }
-          >
-            {item.icon}
-            <span>{t(item.labelKey)}</span>
-          </NavLink>
-        ))}
-      </div>
-    </nav>
+    <>
+      {/* Mobile: bottom bar */}
+      <nav className="fixed bottom-0 left-0 right-0 border-t border-gray-200 bg-white pb-[env(safe-area-inset-bottom)] md:hidden">
+        <div className="flex items-center justify-around">
+          {navItems.map((item) => (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              className={({ isActive }) =>
+                `flex flex-1 flex-col items-center gap-0.5 py-2 text-xs ${
+                  isActive ? "text-orange-500" : "text-gray-500"
+                }`
+              }
+            >
+              {item.icon}
+              <span>{t(item.labelKey)}</span>
+            </NavLink>
+          ))}
+        </div>
+      </nav>
+
+      {/* Desktop: sidebar */}
+      <nav className="fixed left-0 top-0 hidden h-full w-56 flex-col border-r border-gray-200 bg-white md:flex">
+        <div className="px-5 py-6">
+          <AppLogo className="text-2xl" />
+        </div>
+        <div className="flex flex-1 flex-col gap-1 px-3">
+          {navItems.map((item) => (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              className={({ isActive }) =>
+                `flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium ${
+                  isActive
+                    ? "bg-orange-50 text-orange-600"
+                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                }`
+              }
+            >
+              {item.icon}
+              <span>{t(item.labelKey)}</span>
+            </NavLink>
+          ))}
+        </div>
+      </nav>
+    </>
   );
 }
