@@ -96,6 +96,7 @@ INSTALLED_APPS = [
     "django.contrib.sites",
     # First-party
     "users",
+    "recipes",
     # Third-party
     "rest_framework",
     "rest_framework.authtoken",
