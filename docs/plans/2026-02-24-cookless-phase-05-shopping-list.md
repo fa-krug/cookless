@@ -4,9 +4,9 @@
 
 **Goal:** Build a meal planning PWA that minimizes cooking effort through batch cooking and ingredient overlap optimization.
 
-**Architecture:** Django + DRF backend serving a React PWA via WhiteNoise in a single container. Cookie auth for frontend, token auth for programmatic API. Multi-user with households and Sign in with Apple.
+**Architecture:** Django + Django Ninja backend serving a React PWA via WhiteNoise in a single container. Cookie auth for frontend, Bearer token auth for programmatic API. Multi-user with households and Sign in with Apple.
 
-**Tech Stack:** Python 3.13, Django 5.x, DRF, React 19, TypeScript, Vite, Tailwind CSS, TanStack Query, react-i18next, Workbox
+**Tech Stack:** Python 3.13, Django 5.x, Django Ninja, Pydantic, React 19, TypeScript, Vite, Tailwind CSS, TanStack Query, react-i18next, Workbox
 
 ---
 
@@ -92,22 +92,22 @@ git commit -m "feat: add shopping list model and generation service"
 ### Task 20: Shopping List API endpoints
 
 **Files:**
-- Create: `backend/shopping/serializers.py`
-- Create: `backend/shopping/views.py`
-- Create: `backend/shopping/urls.py`
+- Create: `backend/shopping/schemas.py`
+- Create: `backend/shopping/api.py`
 - Create: `backend/shopping/tests/test_api.py`
-- Modify: `backend/cookless/urls.py`
+- Modify: `backend/cookless/api.py` (register shopping router)
 
 **Step 1: Write failing tests**
 
 Test: POST generate from meal plan, GET with items grouped by category, PATCH toggle checked, PATCH bulk toggle.
 
-**Step 2: Implement serializers, views, URLs**
+**Step 2: Implement Pydantic schemas, API endpoints, register router**
 
-- `ShoppingListSerializer` with nested `ShoppingListItemSerializer`
+- `ShoppingListOut` schema with nested `ShoppingListItemOut`
 - Items ordered by category then ingredient name
 - Toggle checked via PATCH
 - Bulk toggle via PATCH with list of item IDs
+- Register `shopping_router` in `backend/cookless/api.py`
 
 **Step 3: Run tests and commit**
 

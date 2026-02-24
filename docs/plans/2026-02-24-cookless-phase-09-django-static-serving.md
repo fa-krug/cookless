@@ -4,9 +4,9 @@
 
 **Goal:** Build a meal planning PWA that minimizes cooking effort through batch cooking and ingredient overlap optimization.
 
-**Architecture:** Django + DRF backend serving a React PWA via WhiteNoise in a single container. Cookie auth for frontend, token auth for programmatic API. Multi-user with households and Sign in with Apple.
+**Architecture:** Django + Django Ninja backend serving a React PWA via WhiteNoise in a single container. Cookie auth for frontend, Bearer token auth for programmatic API. Multi-user with households and Sign in with Apple.
 
-**Tech Stack:** Python 3.13, Django 5.x, DRF, React 19, TypeScript, Vite, Tailwind CSS, TanStack Query, react-i18next, Workbox
+**Tech Stack:** Python 3.13, Django 5.x, Django Ninja, Pydantic, React 19, TypeScript, Vite, Tailwind CSS, TanStack Query, react-i18next, Workbox
 
 ---
 
@@ -27,13 +27,12 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 
 # urls.py - catch-all for React Router (SPA)
 from django.views.generic import TemplateView
+from cookless.api import api
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("api/v1/", include("users.urls")),
-    path("api/v1/", include("recipes.urls")),
-    path("api/v1/", include("planner.urls")),
-    path("api/v1/", include("shopping.urls")),
+    path("health/", health_check, name="health-check"),
+    path("api/v1/", api.urls),
 ]
 
 # Catch-all for SPA routing - must be last
