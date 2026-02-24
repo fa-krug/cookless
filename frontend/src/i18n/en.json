@@ -13,7 +13,8 @@
     "error": "Something went wrong",
     "retry": "Retry",
     "noResults": "No results found",
-    "search": "Search"
+    "search": "Search",
+    "remove": "Remove"
   },
   "nav": {
     "recipes": "Recipes",
@@ -41,14 +42,20 @@
     "cookTime": "Cook time",
     "minutes": "min",
     "source": "Source",
-    "notes": "Notes"
+    "notes": "Notes",
+    "editRecipe": "Edit Recipe",
+    "titlePlaceholder": "Recipe title",
+    "moveToKnown": "Move to Known",
+    "moveToTry": "Move to To Try"
   },
   "ingredients": {
     "title": "Ingredients",
     "add": "Add ingredient",
     "name": "Ingredient",
+    "quantity": "Quantity",
     "amount": "Amount",
     "unit": "Unit",
+    "search": "Search ingredients...",
     "noIngredients": "No ingredients added"
   },
   "steps": {
@@ -56,6 +63,10 @@
     "add": "Add step",
     "manual": "Manual",
     "machine": "Machine",
+    "manualSteps": "Manual Steps",
+    "machineSteps": "Machine Steps",
+    "instruction": "Instruction",
+    "stepNumber": "Step {{number}}",
     "description": "Description",
     "duration": "Duration",
     "noSteps": "No steps added"

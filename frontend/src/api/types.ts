@@ -89,6 +89,29 @@ export interface Recipe {
   updated_at: string;
 }
 
+export interface RecipeIngredientPayload {
+  ingredient: number;
+  quantity: string;
+  unit: number;
+  order: number;
+}
+
+export interface CookingStepPayload {
+  step_number: number;
+  instruction: string;
+}
+
+export interface RecipeUpdatePayload {
+  title: string;
+  list_type: ListType;
+  default_servings: number;
+  prep_time_minutes: number | null;
+  cook_time_minutes: number | null;
+  ingredients: RecipeIngredientPayload[];
+  manual_steps: CookingStepPayload[];
+  machine_steps: CookingStepPayload[];
+}
+
 // ── Meal Plans ───────────────────────────────────────────────────
 
 export interface MealPlanEntry {

@@ -13,7 +13,8 @@
     "error": "Etwas ist schiefgelaufen",
     "retry": "Erneut versuchen",
     "noResults": "Keine Ergebnisse gefunden",
-    "search": "Suchen"
+    "search": "Suchen",
+    "remove": "Entfernen"
   },
   "nav": {
     "recipes": "Rezepte",
@@ -41,14 +42,20 @@
     "cookTime": "Kochzeit",
     "minutes": "Min.",
     "source": "Quelle",
-    "notes": "Notizen"
+    "notes": "Notizen",
+    "editRecipe": "Rezept bearbeiten",
+    "titlePlaceholder": "Rezepttitel",
+    "moveToKnown": "Zu Bekannt verschieben",
+    "moveToTry": "Zu Ausprobieren verschieben"
   },
   "ingredients": {
     "title": "Zutaten",
     "add": "Zutat hinzufügen",
     "name": "Zutat",
+    "quantity": "Menge",
     "amount": "Menge",
     "unit": "Einheit",
+    "search": "Zutaten suchen...",
     "noIngredients": "Keine Zutaten hinzugefügt"
   },
   "steps": {
@@ -56,6 +63,10 @@
     "add": "Schritt hinzufügen",
     "manual": "Manuell",
     "machine": "Maschine",
+    "manualSteps": "Manuelle Schritte",
+    "machineSteps": "Maschinenschritte",
+    "instruction": "Anleitung",
+    "stepNumber": "Schritt {{number}}",
     "description": "Beschreibung",
     "duration": "Dauer",
     "noSteps": "Keine Schritte hinzugefügt"

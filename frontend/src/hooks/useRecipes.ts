@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "../api/client";
-import type { ListType, Recipe } from "../api/types";
+import type { ListType, Recipe, RecipeUpdatePayload } from "../api/types";
 
 export function useRecipes(listType?: ListType) {
   return useQuery<Recipe[]>({
@@ -26,6 +26,39 @@ export function useCreateRecipe() {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["recipes"] });
+    },
+  });
+}
+
+export function useRecipe(id: string) {
+  return useQuery<Recipe>({
+    queryKey: ["recipes", id],
+    queryFn: () => api.get<Recipe>(`/api/v1/recipes/${id}/`),
+    enabled: !!id,
+  });
+}
+
+export function useUpdateRecipe() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: RecipeUpdatePayload }) =>
+      api.put<Recipe>(`/api/v1/recipes/${id}/`, data),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["recipes"] });
+      queryClient.invalidateQueries({ queryKey: ["recipes", variables.id] });
+    },
+  });
+}
+
+export function useMoveRecipe() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => api.post<Recipe>(`/api/v1/recipes/${id}/move/`),
+    onSuccess: (_data, id) => {
+      queryClient.invalidateQueries({ queryKey: ["recipes"] });
+      queryClient.invalidateQueries({ queryKey: ["recipes", id] });
     },
   });
 }
