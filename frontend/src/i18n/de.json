@@ -165,6 +165,11 @@
       "member": "Mitglied"
     }
   },
+  "install": {
+    "message": "Installiere Cookless für ein besseres Erlebnis",
+    "install": "Installieren",
+    "dismiss": "Nicht jetzt"
+  },
   "settings": {
     "title": "Einstellungen",
     "language": "Sprache",
