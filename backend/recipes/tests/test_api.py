@@ -125,3 +125,19 @@ def test_create_and_read_recipe_with_nested_data(auth_client):
     assert data["manual_steps"][0]["instruction"] == "Mix ingredients"
     assert len(data["machine_steps"]) == 1
     assert data["machine_steps"][0]["instruction"] == "Blend for 30 seconds"
+
+
+@pytest.mark.django_db
+def test_create_ingredient(auth_client):
+    client, household = auth_client
+    response = client.post(
+        "/api/v1/ingredients/",
+        json.dumps({"name_en": "Chickpeas", "name_de": "Kichererbsen", "category": "PANTRY"}),
+        content_type="application/json",
+    )
+    assert response.status_code == 201
+    data = response.json()
+    assert data["name_en"] == "Chickpeas"
+    assert data["name_de"] == "Kichererbsen"
+    assert data["category"] == "PANTRY"
+    assert "id" in data
