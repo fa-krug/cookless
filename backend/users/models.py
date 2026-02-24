@@ -1,8 +1,10 @@
+import secrets
 import uuid
 from typing import Any
 
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.db import models
+from django.utils import timezone
 
 
 def _default_user_settings() -> dict:
@@ -92,3 +94,30 @@ class HouseholdMember(models.Model):
 
     def __str__(self) -> str:
         return f"{self.user} in {self.household} ({self.role})"
+
+
+class Invite(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    household = models.ForeignKey(Household, on_delete=models.CASCADE, related_name="invites")
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name="created_invites")
+    code = models.CharField(max_length=32, unique=True, default="")
+    expires_at = models.DateTimeField()
+    used_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="used_invites",
+    )
+
+    def __str__(self) -> str:
+        return f"Invite {self.code} for {self.household}"
+
+    def save(self, *args: Any, **kwargs: Any) -> None:
+        if not self.code:
+            self.code = secrets.token_urlsafe(16)
+        super().save(*args, **kwargs)
+
+    @property
+    def is_expired(self) -> bool:
+        return timezone.now() > self.expires_at

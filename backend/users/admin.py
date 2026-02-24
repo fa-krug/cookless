@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 
-from users.models import Household, HouseholdMember, User
+from users.models import Household, HouseholdMember, Invite, User
 
 
 @admin.register(User)
@@ -40,3 +40,11 @@ class HouseholdAdmin(admin.ModelAdmin):
 class HouseholdMemberAdmin(admin.ModelAdmin):
     list_display = ("household", "user", "role", "joined_at")
     list_filter = ("role",)
+
+
+@admin.register(Invite)
+class InviteAdmin(admin.ModelAdmin):
+    list_display = ("code", "household", "created_by", "expires_at", "used_by")
+    list_filter = ("household",)
+    search_fields = ("code",)
+    readonly_fields = ("code",)
