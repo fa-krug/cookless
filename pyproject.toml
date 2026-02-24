@@ -47,7 +47,7 @@ line-ending = "auto"
 
 [tool.mypy]
 python_version = "3.13"
-check_untyped_defs = false
+check_untyped_defs = true
 ignore_missing_imports = true
 warn_unused_ignores = true
 warn_redundant_casts = true

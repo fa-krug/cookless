@@ -203,6 +203,11 @@ if FRONTEND_DIST.is_dir():
     WHITENOISE_ROOT = FRONTEND_DIST
 
 # WhiteNoise configuration
+STORAGES = {
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
 WHITENOISE_USE_FINDERS = DEBUG
 WHITENOISE_AUTOREFRESH = DEBUG
 
