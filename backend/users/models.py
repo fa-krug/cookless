@@ -120,3 +120,16 @@ class Invite(models.Model):
     @property
     def is_expired(self) -> bool:
         return timezone.now() > self.expires_at
+
+
+class PasskeyCredential(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="passkey_credentials")
+    credential_id = models.BinaryField(unique=True)
+    public_key = models.BinaryField()
+    sign_count = models.IntegerField(default=0)
+    device_name = models.CharField(max_length=255, default="")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self) -> str:
+        return f"{self.user.email} — {self.device_name}"
