@@ -25,8 +25,30 @@
   "auth": {
     "login": "Anmelden",
     "logout": "Abmelden",
-    "signInWithApple": "Mit Apple anmelden",
+    "signIn": "Mit Passkey anmelden",
+    "emailPlaceholder": "E-Mail-Adresse",
+    "loginFailed": "Anmeldung fehlgeschlagen. Bitte erneut versuchen.",
     "logoutConfirm": "Möchtest du dich wirklich abmelden?"
+  },
+  "invite": {
+    "invalid": "Dieser Einladungslink ist ungültig oder abgelaufen.",
+    "joinTitle": "Haushalt beitreten",
+    "joinPrompt": "Du wurdest eingeladen, {{household}} beizutreten.",
+    "join": "Beitreten",
+    "decline": "Ablehnen",
+    "joinFailed": "Beitritt zum Haushalt fehlgeschlagen.",
+    "registerTitle": "Konto erstellen",
+    "registerPrompt": "Erstelle ein Konto, um {{household}} beizutreten.",
+    "createAccount": "Konto erstellen & Passkey einrichten",
+    "registerFailed": "Registrierung fehlgeschlagen. Bitte erneut versuchen."
+  },
+  "passkeys": {
+    "title": "Passkeys",
+    "addPasskey": "Passkey hinzufügen",
+    "deletePasskey": "Entfernen",
+    "confirmDelete": "Diesen Passkey entfernen?",
+    "cannotDeleteLast": "Du musst mindestens einen Passkey haben.",
+    "added": "Hinzugefügt {{date}}"
   },
   "recipes": {
     "title": "Rezepte",

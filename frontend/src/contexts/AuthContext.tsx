@@ -1,10 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
-import { api } from "../api/client";
-import type { User } from "../api/types";
-import { AuthContext } from "./authContextValue";
-
-const APPLE_AUTH_URL = "https://appleid.apple.com/auth/authorize";
+import { api } from "../api/client.ts";
+import type { User } from "../api/types.ts";
+import { loginWithPasskey, registerPasskey } from "../api/webauthn.ts";
+import { AuthContext } from "./authContextValue.ts";
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -26,15 +25,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     fetchUser().finally(() => setIsLoading(false));
   }, [fetchUser]);
 
-  const login = useCallback(() => {
-    const params = new URLSearchParams({
-      client_id: import.meta.env.VITE_APPLE_CLIENT_ID ?? "",
-      redirect_uri: `${window.location.origin}/api/v1/auth/apple/callback`,
-      response_type: "code id_token",
-      scope: "email",
-      response_mode: "form_post",
-    });
-    window.location.href = `${APPLE_AUTH_URL}?${params.toString()}`;
+  const login = useCallback(async (email: string) => {
+    const loggedInUser = await loginWithPasskey(email);
+    setUser(loggedInUser);
+  }, []);
+
+  const register = useCallback(async (email: string, inviteCode: string) => {
+    const newUser = await registerPasskey(email, inviteCode, navigator.userAgent);
+    setUser(newUser);
   }, []);
 
   const logout = useCallback(async () => {
@@ -46,8 +44,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const value = useMemo(
-    () => ({ user, isLoading, login, logout, refreshUser: fetchUser }),
-    [user, isLoading, login, logout, fetchUser],
+    () => ({ user, isLoading, login, register, logout, refreshUser: fetchUser }),
+    [user, isLoading, login, register, logout, fetchUser],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -1,19 +1,21 @@
 import { Navigate, Route, Routes } from "react-router-dom";
-import Layout from "./components/Layout";
-import CookingViewPage from "./pages/CookingViewPage";
-import HouseholdPage from "./pages/HouseholdPage";
-import LoginPage from "./pages/LoginPage";
-import MealPlanPage from "./pages/MealPlanPage";
-import RecipeDetailPage from "./pages/RecipeDetailPage";
-import RecipeListPage from "./pages/RecipeListPage";
-import SettingsPage from "./pages/SettingsPage";
-import ShoppingListDetailPage from "./pages/ShoppingListDetailPage";
-import ShoppingListPage from "./pages/ShoppingListPage";
+import Layout from "./components/Layout.tsx";
+import CookingViewPage from "./pages/CookingViewPage.tsx";
+import HouseholdPage from "./pages/HouseholdPage.tsx";
+import InvitePage from "./pages/InvitePage.tsx";
+import LoginPage from "./pages/LoginPage.tsx";
+import MealPlanPage from "./pages/MealPlanPage.tsx";
+import RecipeDetailPage from "./pages/RecipeDetailPage.tsx";
+import RecipeListPage from "./pages/RecipeListPage.tsx";
+import SettingsPage from "./pages/SettingsPage.tsx";
+import ShoppingListDetailPage from "./pages/ShoppingListDetailPage.tsx";
+import ShoppingListPage from "./pages/ShoppingListPage.tsx";
 
 function App() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/invite/:code" element={<InvitePage />} />
 
       <Route element={<Layout />}>
         <Route path="/recipes" element={<RecipeListPage />} />

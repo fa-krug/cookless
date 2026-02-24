@@ -151,6 +151,14 @@ export interface ShoppingList {
   created_at: string;
 }
 
+// ── Passkeys ────────────────────────────────────────────────────
+
+export interface Passkey {
+  id: string;
+  device_name: string;
+  created_at: string;
+}
+
 // ── Generic ──────────────────────────────────────────────────────
 
 export interface MessageOut {

@@ -1,10 +1,11 @@
 import { createContext } from "react";
-import type { User } from "../api/types";
+import type { User } from "../api/types.ts";
 
 export interface AuthContextValue {
   user: User | null;
   isLoading: boolean;
-  login: () => void;
+  login: (email: string) => Promise<void>;
+  register: (email: string, inviteCode: string) => Promise<void>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
 }
