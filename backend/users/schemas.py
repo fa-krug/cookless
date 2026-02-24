@@ -75,3 +75,11 @@ class RegisterCompleteIn(Schema):
 class InviteValidationOut(Schema):
     household_name: str
     expires_at: datetime
+
+
+class LoginBeginIn(Schema):
+    email: str
+
+
+class LoginCompleteIn(Schema):
+    credential: str

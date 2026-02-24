@@ -1,6 +1,11 @@
 from django.conf import settings
 
-from webauthn import generate_registration_options, verify_registration_response
+from webauthn import (
+    generate_authentication_options,
+    generate_registration_options,
+    verify_authentication_response,
+    verify_registration_response,
+)
 from webauthn.helpers.structs import (
     AuthenticatorSelectionCriteria,
     PublicKeyCredentialDescriptor,
@@ -32,4 +37,31 @@ def verify_registration(credential_json: str, challenge: bytes):
         expected_challenge=challenge,
         expected_rp_id=settings.WEBAUTHN_RP_ID,
         expected_origin=settings.WEBAUTHN_ORIGIN,
+    )
+
+
+def get_authentication_options(credential_ids: list[bytes]):
+    options = generate_authentication_options(
+        rp_id=settings.WEBAUTHN_RP_ID,
+        allow_credentials=[PublicKeyCredentialDescriptor(id=cred_id) for cred_id in credential_ids],
+        user_verification=UserVerificationRequirement.REQUIRED,
+    )
+    return options
+
+
+def verify_authentication(
+    credential_json: str,
+    challenge: bytes,
+    credential_public_key: bytes,
+    credential_current_sign_count: int,
+    credential_id: bytes,
+):
+    return verify_authentication_response(
+        credential=credential_json,
+        expected_challenge=challenge,
+        expected_rp_id=settings.WEBAUTHN_RP_ID,
+        expected_origin=settings.WEBAUTHN_ORIGIN,
+        credential_public_key=credential_public_key,
+        credential_current_sign_count=credential_current_sign_count,
+        credential_id=credential_id,
     )

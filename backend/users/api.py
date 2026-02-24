@@ -19,13 +19,20 @@ from users.schemas import (
     HouseholdOut,
     HouseholdUpdateIn,
     InviteOut,
+    LoginBeginIn,
+    LoginCompleteIn,
     MessageOut,
     RegisterBeginIn,
     RegisterCompleteIn,
     UserOut,
     UserUpdateIn,
 )
-from users.webauthn import get_registration_options, verify_registration
+from users.webauthn import (
+    get_authentication_options,
+    get_registration_options,
+    verify_authentication,
+    verify_registration,
+)
 
 User = get_user_model()
 
@@ -280,6 +287,83 @@ def register_complete(request, payload: RegisterCompleteIn):
         "webauthn_register_user_id",
     ]:
         request.session.pop(key, None)
+
+    return user
+
+
+@router.post("/auth/login/begin/", auth=None, tags=["auth"])
+def login_begin(request, payload: LoginBeginIn):
+    user = User.objects.filter(email=payload.email).first()
+    if not user:
+        raise HttpError(400, "No account found with this email.")
+
+    credentials = PasskeyCredential.objects.filter(user=user)
+    if not credentials.exists():
+        raise HttpError(400, "No passkeys registered for this account.")
+
+    credential_ids = [bytes(c.credential_id) for c in credentials]
+    options = get_authentication_options(credential_ids)
+
+    options_json = options_to_json(options)
+
+    request.session["webauthn_login_challenge"] = bytes_to_base64url(options.challenge)
+    request.session["webauthn_login_email"] = payload.email
+
+    return json_module.loads(options_json)
+
+
+@router.post("/auth/login/complete/", auth=None, response=UserOut, tags=["auth"])
+def login_complete(request, payload: LoginCompleteIn):
+    challenge_b64 = request.session.get("webauthn_login_challenge")
+    email = request.session.get("webauthn_login_email")
+
+    if not challenge_b64 or not email:
+        raise HttpError(400, "No login in progress. Call login begin first.")
+
+    challenge = base64url_to_bytes(challenge_b64)
+
+    # Parse credential JSON to extract credential ID
+    try:
+        credential_data = json_module.loads(payload.credential)
+        raw_id_b64 = credential_data.get("rawId") or credential_data.get("id")
+        if not raw_id_b64:
+            raise HttpError(400, "Missing credential ID in response.")
+        credential_id = base64url_to_bytes(raw_id_b64)
+    except (json_module.JSONDecodeError, Exception) as e:
+        raise HttpError(400, f"Invalid credential data: {e}") from None
+
+    # Look up stored credential
+    stored_credential = PasskeyCredential.objects.filter(credential_id=credential_id).first()
+    if not stored_credential:
+        raise HttpError(400, "Credential not recognized.")
+
+    # Verify email matches
+    if stored_credential.user.email != email:
+        raise HttpError(400, "Credential does not belong to this user.")
+
+    # Verify authentication
+    try:
+        verification = verify_authentication(
+            credential_json=payload.credential,
+            challenge=challenge,
+            credential_public_key=bytes(stored_credential.public_key),
+            credential_current_sign_count=stored_credential.sign_count,
+            credential_id=bytes(stored_credential.credential_id),
+        )
+    except Exception as e:
+        raise HttpError(400, f"WebAuthn verification failed: {e}") from None
+
+    # Update sign count
+    stored_credential.sign_count = verification.new_sign_count
+    stored_credential.save()
+
+    # Log user in
+    user = stored_credential.user
+    login(request, user, backend="django.contrib.auth.backends.ModelBackend")
+
+    # Clear session login data
+    request.session.pop("webauthn_login_challenge", None)
+    request.session.pop("webauthn_login_email", None)
 
     return user
 
