@@ -44,7 +44,13 @@ class User(AbstractBaseUser, PermissionsMixin):
         choices=[("en", "English"), ("de", "Deutsch")],
         default="en",
     )
-    # active_household will be added in Task 7 when Household model is created
+    active_household = models.ForeignKey(
+        "users.Household",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="active_users",
+    )
     settings = models.JSONField(default=_default_user_settings)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
@@ -55,3 +61,26 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self) -> str:
         return self.email
+
+
+class Household(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=255)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self) -> str:
+        return self.name
+
+
+class HouseholdMember(models.Model):
+    ROLE_CHOICES = [("OWNER", "Owner"), ("MEMBER", "Member")]
+    household = models.ForeignKey(Household, on_delete=models.CASCADE, related_name="members")
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="household_memberships")
+    role = models.CharField(max_length=10, choices=ROLE_CHOICES)
+    joined_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("household", "user")
+
+    def __str__(self) -> str:
+        return f"{self.user} in {self.household} ({self.role})"
