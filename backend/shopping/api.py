@@ -25,7 +25,9 @@ def generate_list(request, payload: GenerateShoppingListIn):
         MealPlan, pk=payload.meal_plan, household=request.user.active_household
     )
     shopping_list = generate_shopping_list(meal_plan)
-    return shopping_list
+    return ShoppingList.objects.prefetch_related("items__ingredient", "items__unit").get(
+        pk=shopping_list.pk
+    )
 
 
 @router.get("/shopping-lists/", response=list[ShoppingListOut], tags=["shopping-lists"])
@@ -61,7 +63,7 @@ def toggle_item(request, item_id: UUID):
         shopping_list__meal_plan__household=request.user.active_household,
     )
     item.is_checked = not item.is_checked
-    item.save()
+    item.save(update_fields=["is_checked"])
     return item
 
 
