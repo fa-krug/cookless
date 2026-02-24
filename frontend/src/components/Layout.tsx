@@ -21,12 +21,14 @@ export default function Layout() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-white">
-      <InstallBanner />
-      <main className="flex-1 overflow-y-auto pb-16">
-        <Outlet />
-      </main>
+    <div className="flex min-h-screen bg-white md:flex-row">
       <BottomNav />
+      <div className="flex min-h-screen flex-1 flex-col md:ml-56">
+        <InstallBanner />
+        <main className="mx-auto w-full max-w-3xl flex-1 overflow-y-auto pb-16 md:pb-0">
+          <Outlet />
+        </main>
+      </div>
     </div>
   );
 }
