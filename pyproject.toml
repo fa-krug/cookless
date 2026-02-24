@@ -59,6 +59,8 @@ django_settings_module = "cookless.settings"
 
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "cookless.settings"
+pythonpath = ["backend"]
+testpaths = ["backend"]
 python_files = ["tests.py", "test_*.py", "*_tests.py"]
 addopts = "--reuse-db"
 filterwarnings = [
