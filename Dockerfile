@@ -26,10 +26,10 @@ COPY backend/ .
 COPY --from=frontend-builder /build/dist /app/frontend_dist
 COPY docker-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
-RUN chown -R appuser:appgroup /app
+RUN mkdir -p /app/staticfiles && chown -R appuser:appgroup /app
 USER appuser
 EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-  CMD curl -f http://localhost:8000/ || exit 1
+  CMD curl -f http://localhost:8000/health/ || exit 1
 ENTRYPOINT ["/sbin/tini", "--", "docker-entrypoint.sh"]
 CMD ["gunicorn", "cookless.wsgi:application", "--bind", "0.0.0.0:8000"]
