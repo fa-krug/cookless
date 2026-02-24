@@ -94,10 +94,14 @@
   },
   "shopping": {
     "title": "Shopping List",
+    "emptyState": "No shopping lists yet. Generate one from your meal plan!",
+    "uncheckAll": "Uncheck All",
+    "linkedToPlan": "Linked to meal plan",
     "noItems": "Your shopping list is empty",
     "markBought": "Mark as bought",
     "markNeeded": "Mark as needed",
     "allDone": "All done!",
+    "itemCount": "{{checked}}/{{total}} items",
     "categories": {
       "produce": "Produce",
       "dairy": "Dairy",
@@ -106,7 +110,13 @@
       "frozen": "Frozen",
       "pantry": "Pantry",
       "beverages": "Beverages",
-      "other": "Other"
+      "other": "Other",
+      "PRODUCE": "Produce",
+      "DAIRY": "Dairy",
+      "MEAT": "Meat & Fish",
+      "PANTRY": "Pantry",
+      "FROZEN": "Frozen",
+      "OTHER": "Other"
     }
   },
   "cooking": {

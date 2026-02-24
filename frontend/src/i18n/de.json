@@ -94,10 +94,14 @@
   },
   "shopping": {
     "title": "Einkaufsliste",
+    "emptyState": "Noch keine Einkaufslisten. Erstelle eine aus deinem Essensplan!",
+    "uncheckAll": "Alle abwählen",
+    "linkedToPlan": "Verknüpft mit Essensplan",
     "noItems": "Deine Einkaufsliste ist leer",
     "markBought": "Als gekauft markieren",
     "markNeeded": "Als benötigt markieren",
     "allDone": "Alles erledigt!",
+    "itemCount": "{{checked}}/{{total}} Artikel",
     "categories": {
       "produce": "Obst & Gemüse",
       "dairy": "Milchprodukte",
@@ -106,7 +110,13 @@
       "frozen": "Tiefkühl",
       "pantry": "Vorratskammer",
       "beverages": "Getränke",
-      "other": "Sonstiges"
+      "other": "Sonstiges",
+      "PRODUCE": "Obst & Gemüse",
+      "DAIRY": "Milchprodukte",
+      "MEAT": "Fleisch & Fisch",
+      "PANTRY": "Vorratskammer",
+      "FROZEN": "Tiefkühl",
+      "OTHER": "Sonstiges"
     }
   },
   "cooking": {
