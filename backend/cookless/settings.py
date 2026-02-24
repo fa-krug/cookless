@@ -94,6 +94,8 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django.contrib.sites",
+    # First-party
+    "users",
     # Third-party
     "rest_framework",
     "rest_framework.authtoken",
@@ -102,6 +104,8 @@ INSTALLED_APPS = [
     "allauth.account",
     "allauth.socialaccount",
 ]
+
+AUTH_USER_MODEL = "users.User"
 
 SITE_ID = 1
 
