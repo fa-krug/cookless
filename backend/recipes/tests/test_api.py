@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model
 import pytest
 from rest_framework.test import APIClient
 
-from recipes.models import Recipe
+from recipes.models import Ingredient, Recipe, Unit
 from users.models import Household, HouseholdMember
 
 User = get_user_model()
@@ -74,3 +74,45 @@ def test_move_recipe(auth_client):
     assert response.status_code == 200
     recipe.refresh_from_db()
     assert recipe.list_type == "TO_TRY"
+
+
+@pytest.mark.django_db
+def test_create_and_read_recipe_with_nested_data(auth_client):
+    client, household = auth_client
+    ingredient = Ingredient.objects.create(name_en="Flour", name_de="Mehl", category="PANTRY")
+    unit = Unit.objects.create(name_en="gram", name_de="Gramm", abbreviation="g")
+
+    # Create recipe with ingredients and steps
+    create_response = client.post(
+        "/api/v1/recipes/",
+        {
+            "title": "Pancakes",
+            "list_type": "KNOWN",
+            "default_servings": 4,
+            "ingredients": [
+                {"ingredient": ingredient.pk, "quantity": "200.00", "unit": unit.pk, "order": 1},
+            ],
+            "manual_steps": [
+                {"step_number": 1, "instruction": "Mix ingredients"},
+            ],
+            "machine_steps": [
+                {"step_number": 1, "instruction": "Blend for 30 seconds"},
+            ],
+        },
+        format="json",
+    )
+    assert create_response.status_code == 201
+    recipe_id = create_response.data["id"]
+
+    # Read it back and verify nested data is present
+    get_response = client.get(f"/api/v1/recipes/{recipe_id}/")
+    assert get_response.status_code == 200
+    data = get_response.data
+
+    assert data["title"] == "Pancakes"
+    assert len(data["ingredients"]) == 1
+    assert data["ingredients"][0]["ingredient"] == ingredient.pk
+    assert len(data["manual_steps"]) == 1
+    assert data["manual_steps"][0]["instruction"] == "Mix ingredients"
+    assert len(data["machine_steps"]) == 1
+    assert data["machine_steps"][0]["instruction"] == "Blend for 30 seconds"
