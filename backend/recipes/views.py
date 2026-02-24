@@ -19,7 +19,9 @@ class RecipeViewSet(ModelViewSet):
     permission_classes = [IsHouseholdMember]
 
     def get_queryset(self):
-        qs = Recipe.objects.filter(household=self.request.user.active_household)
+        qs = Recipe.objects.filter(household=self.request.user.active_household).prefetch_related(
+            "ingredients", "steps"
+        )
         list_type = self.request.query_params.get("list_type")
         if list_type:
             qs = qs.filter(list_type=list_type)
