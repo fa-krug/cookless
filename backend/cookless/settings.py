@@ -98,7 +98,6 @@ INSTALLED_APPS = [
     "users",
     "recipes",
     # Third-party
-    "rest_framework",
     "rest_framework.authtoken",
     "corsheaders",
     "allauth",
@@ -221,20 +220,6 @@ WHITENOISE_AUTOREFRESH = DEBUG
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-
-
-# Django REST Framework
-# https://www.django-rest-framework.org/api-guide/settings/
-
-REST_FRAMEWORK = {
-    "DEFAULT_AUTHENTICATION_CLASSES": [
-        "rest_framework.authentication.SessionAuthentication",
-        "rest_framework.authentication.TokenAuthentication",
-    ],
-    "DEFAULT_PERMISSION_CLASSES": [
-        "rest_framework.permissions.IsAuthenticated",
-    ],
-}
 
 
 # CORS Headers
