@@ -97,6 +97,7 @@ INSTALLED_APPS = [
     # First-party
     "users",
     "recipes",
+    "planner",
     # Third-party
     "rest_framework.authtoken",
     "corsheaders",
