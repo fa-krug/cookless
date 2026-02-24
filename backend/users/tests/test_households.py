@@ -9,7 +9,7 @@ User = get_user_model()
 
 @pytest.mark.django_db
 def test_create_household():
-    user = User.objects.create_user(email="test@example.com", apple_id="a1")
+    user = User.objects.create_user(email="test@example.com")
     household = Household.objects.create(name="Test Family")
     HouseholdMember.objects.create(household=household, user=user, role="OWNER")
     assert household.members.count() == 1
@@ -20,7 +20,7 @@ def test_create_household():
 
 @pytest.mark.django_db
 def test_user_can_belong_to_multiple_households():
-    user = User.objects.create_user(email="test@example.com", apple_id="a1")
+    user = User.objects.create_user(email="test@example.com")
     h1 = Household.objects.create(name="Home")
     h2 = Household.objects.create(name="Office")
     HouseholdMember.objects.create(household=h1, user=user, role="OWNER")

@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { api } from "../api/client";
-import type { User } from "../api/types";
+import type { Passkey, User } from "../api/types";
+import { addPasskey } from "../api/webauthn";
 import { useAuth } from "../hooks/useAuth";
 
 export default function SettingsPage() {
@@ -14,6 +15,26 @@ export default function SettingsPage() {
   const [planDays, setPlanDays] = useState(user?.settings.plan_days ?? 7);
   const [isSaving, setIsSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+
+  // Passkey state
+  const [passkeys, setPasskeys] = useState<Passkey[]>([]);
+  const [passkeysLoading, setPasskeysLoading] = useState(true);
+  const [addingPasskey, setAddingPasskey] = useState(false);
+
+  const fetchPasskeys = useCallback(async () => {
+    try {
+      const data = await api.get<Passkey[]>("/api/v1/users/me/passkeys/");
+      setPasskeys(data);
+    } catch {
+      // silently fail
+    } finally {
+      setPasskeysLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchPasskeys();
+  }, [fetchPasskeys]);
 
   function handleLanguageChange(lang: string) {
     setLanguage(lang);
@@ -43,6 +64,28 @@ export default function SettingsPage() {
   function handleLogout() {
     if (!window.confirm(t("settings.logoutConfirm"))) return;
     logout();
+  }
+
+  async function handleAddPasskey() {
+    setAddingPasskey(true);
+    try {
+      await addPasskey(navigator.userAgent);
+      await fetchPasskeys();
+    } catch {
+      // User may have cancelled the ceremony
+    } finally {
+      setAddingPasskey(false);
+    }
+  }
+
+  async function handleDeletePasskey(id: string) {
+    if (!window.confirm(t("passkeys.confirmDelete"))) return;
+    try {
+      await api.delete(`/api/v1/users/me/passkeys/${id}/`);
+      await fetchPasskeys();
+    } catch {
+      // silently fail
+    }
   }
 
   return (
@@ -140,6 +183,51 @@ export default function SettingsPage() {
       >
         {isSaving ? t("common.loading") : saved ? t("settings.saved") : t("settings.save")}
       </button>
+
+      {/* Passkeys */}
+      <div className="mb-4 rounded-lg bg-white p-4 shadow-sm">
+        <h2 className="mb-3 text-lg font-semibold text-gray-900">{t("passkeys.title")}</h2>
+
+        {passkeysLoading ? (
+          <p className="text-sm text-gray-500">{t("common.loading")}</p>
+        ) : (
+          <div className="space-y-3">
+            {passkeys.map((passkey) => (
+              <div
+                key={passkey.id}
+                className="flex items-center justify-between rounded-md border border-gray-200 px-3 py-2"
+              >
+                <div>
+                  <p className="text-sm font-medium text-gray-900">
+                    {passkey.device_name || "Passkey"}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    {t("passkeys.added", {
+                      date: new Date(passkey.created_at).toLocaleDateString(),
+                    })}
+                  </p>
+                </div>
+                <button
+                  onClick={() => handleDeletePasskey(passkey.id)}
+                  disabled={passkeys.length <= 1}
+                  title={passkeys.length <= 1 ? t("passkeys.cannotDeleteLast") : ""}
+                  className="rounded-md px-3 py-1 text-xs font-medium text-red-500 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-30"
+                >
+                  {t("passkeys.deletePasskey")}
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <button
+          onClick={handleAddPasskey}
+          disabled={addingPasskey}
+          className="mt-3 w-full rounded-md border border-orange-500 px-4 py-2 text-sm font-medium text-orange-500 hover:bg-orange-50 disabled:opacity-50"
+        >
+          {addingPasskey ? t("common.loading") : t("passkeys.addPasskey")}
+        </button>
+      </div>
 
       {/* Account / Logout */}
       <div className="rounded-lg bg-white p-4 shadow-sm">

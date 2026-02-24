@@ -93,24 +93,16 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "django.contrib.sites",
     # First-party
     "users",
     "recipes",
     "planner",
     "shopping",
     # Third-party
-    "rest_framework.authtoken",
     "corsheaders",
-    "allauth",
-    "allauth.account",
-    "allauth.socialaccount",
-    "allauth.socialaccount.providers.apple",
 ]
 
 AUTH_USER_MODEL = "users.User"
-
-SITE_ID = 1
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -122,7 +114,6 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "allauth.account.middleware.AccountMiddleware",
 ]
 
 ROOT_URLCONF = "cookless.urls"
@@ -163,25 +154,6 @@ else:
             "NAME": BASE_DIR / "db.sqlite3",
         }
     }
-
-
-# Password validation
-# https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
-
-AUTH_PASSWORD_VALIDATORS = [
-    {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
-    },
-]
 
 
 # Internationalization
@@ -234,24 +206,10 @@ CORS_ALLOWED_ORIGINS = [
 CORS_ALLOW_CREDENTIALS = True
 
 
-# django-allauth
-# https://docs.allauth.org/en/latest/
-
-SOCIALACCOUNT_PROVIDERS = {
-    "apple": {
-        "APP": {
-            "client_id": env("APPLE_CLIENT_ID", default=""),
-            "secret": env("APPLE_SECRET_KEY", default=""),
-            "key": env("APPLE_KEY_ID", default=""),
-        },
-        "CERTIFICATE_KEY": env("APPLE_CERTIFICATE_KEY", default=""),
-    }
-}
-
-AUTHENTICATION_BACKENDS = [
-    "django.contrib.auth.backends.ModelBackend",
-    "allauth.account.auth_backends.AuthenticationBackend",
-]
+# WebAuthn / Passkey configuration
+WEBAUTHN_RP_ID = env("WEBAUTHN_RP_ID", default="localhost")
+WEBAUTHN_RP_NAME = env("WEBAUTHN_RP_NAME", default="Cook Less")
+WEBAUTHN_ORIGIN = env("WEBAUTHN_ORIGIN", default="http://localhost:5173")
 
 
 # Logging Configuration

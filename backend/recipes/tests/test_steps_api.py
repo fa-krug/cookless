@@ -11,7 +11,7 @@ User = get_user_model()
 
 @pytest.fixture
 def auth_client_fixture():
-    user = User.objects.create_user(email="test@example.com", apple_id="a1")
+    user = User.objects.create_user(email="test@example.com")
     household = Household.objects.create(name="Home")
     HouseholdMember.objects.create(household=household, user=user, role="OWNER")
     user.active_household = household

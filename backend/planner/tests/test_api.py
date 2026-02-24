@@ -59,7 +59,7 @@ def _create_recipes(household, known=5, to_try=3):
 
 @pytest.fixture
 def auth_client():
-    user = User.objects.create_user(email="test@example.com", apple_id="a1")
+    user = User.objects.create_user(email="test@example.com")
     household = Household.objects.create(name="Home")
     HouseholdMember.objects.create(household=household, user=user, role="OWNER")
     user.active_household = household
@@ -327,7 +327,7 @@ def test_other_household_plans_not_visible(auth_client):
     _create_recipes(household)
 
     # Create another household with a plan
-    other_user = User.objects.create_user(email="other@example.com", apple_id="a2")
+    other_user = User.objects.create_user(email="other@example.com")
     other_household = Household.objects.create(name="Other")
     HouseholdMember.objects.create(household=other_household, user=other_user, role="OWNER")
     other_recipes = _create_recipes(other_household)

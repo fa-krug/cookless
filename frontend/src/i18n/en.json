@@ -25,8 +25,30 @@
   "auth": {
     "login": "Log in",
     "logout": "Log out",
-    "signInWithApple": "Sign in with Apple",
+    "signIn": "Sign in with Passkey",
+    "emailPlaceholder": "Email address",
+    "loginFailed": "Login failed. Please try again.",
     "logoutConfirm": "Are you sure you want to log out?"
+  },
+  "invite": {
+    "invalid": "This invite link is invalid or has expired.",
+    "joinTitle": "Join Household",
+    "joinPrompt": "You've been invited to join {{household}}.",
+    "join": "Join",
+    "decline": "Decline",
+    "joinFailed": "Failed to join household.",
+    "registerTitle": "Create Account",
+    "registerPrompt": "Create an account to join {{household}}.",
+    "createAccount": "Create Account & Set Up Passkey",
+    "registerFailed": "Registration failed. Please try again."
+  },
+  "passkeys": {
+    "title": "Passkeys",
+    "addPasskey": "Add Passkey",
+    "deletePasskey": "Remove",
+    "confirmDelete": "Remove this passkey?",
+    "cannotDeleteLast": "You must have at least one passkey.",
+    "added": "Added {{date}}"
   },
   "recipes": {
     "title": "Recipes",

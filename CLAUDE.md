@@ -36,7 +36,7 @@ docker-compose -f docker-compose.production.yml up  # production (Postgres)
 ### Backend (Django 5.1 + Django Ninja)
 
 Three Django apps:
-- **`users`** — User model (UUID pk, email + apple_id auth), Household, HouseholdMember (OWNER/MEMBER roles), Invite (7-day expiry, auto-generated code)
+- **`users`** — User model (UUID pk, email + passkey auth (WebAuthn)), PasskeyCredential, Household, HouseholdMember (OWNER/MEMBER roles), Invite (7-day expiry, auto-generated code)
 - **`recipes`** — Recipe (scoped to household, KNOWN/TO_TRY list types), RecipeIngredient, CookingStep (MANUAL/MACHINE), Ingredient (bilingual en/de), Unit (with conversion support)
 - **`cookless`** — Project config, API instance, auth classes
 
@@ -46,7 +46,7 @@ Three Django apps:
 - `backend/{app}/schemas.py` — Pydantic schemas (`*In` for request, `*Out` for response)
 - All endpoints under `/api/v1/`, OpenAPI docs at `/api/v1/docs`
 
-**Auth:** Dual auth — `SessionAuth` (browser) + `TokenAuth` (Bearer token via `Authorization: Bearer xxx`). Token model reused from `rest_framework.authtoken`. `TokenAuth.authenticate()` explicitly sets `request.user` since Ninja only sets `request.auth`.
+**Auth:** Session auth (`SessionAuth`). Users authenticate via WebAuthn passkeys (registration and login flows use `py_webauthn`). Sessions are managed with Django's built-in session framework.
 
 **Permissions:** Helper functions in `backend/users/permissions.py` — `require_household_member(request)` and `require_household_owner(request, household)` raise `HttpError(401/403)`. Called at the top of view functions.
 
@@ -80,4 +80,4 @@ def test_example(auth_client):
 
 ### Environment Variables (via django-environ)
 
-`DEBUG`, `SECRET_KEY`, `ALLOWED_HOSTS`, `DATABASE_URL` (empty = SQLite), `CORS_ALLOWED_ORIGINS`, Apple auth keys (`APPLE_CLIENT_ID`, `APPLE_SECRET_KEY`, `APPLE_KEY_ID`, `APPLE_CERTIFICATE_KEY`)
+`DEBUG`, `SECRET_KEY`, `ALLOWED_HOSTS`, `DATABASE_URL` (empty = SQLite), `CORS_ALLOWED_ORIGINS`, WebAuthn settings (`WEBAUTHN_RP_ID`, `WEBAUTHN_RP_NAME`, `WEBAUTHN_ORIGIN`)

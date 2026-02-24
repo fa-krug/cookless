@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import Layout from "./components/Layout";
 import CookingViewPage from "./pages/CookingViewPage";
 import HouseholdPage from "./pages/HouseholdPage";
+import InvitePage from "./pages/InvitePage";
 import LoginPage from "./pages/LoginPage";
 import MealPlanPage from "./pages/MealPlanPage";
 import RecipeDetailPage from "./pages/RecipeDetailPage";
@@ -14,6 +15,7 @@ function App() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/invite/:code" element={<InvitePage />} />
 
       <Route element={<Layout />}>
         <Route path="/recipes" element={<RecipeListPage />} />

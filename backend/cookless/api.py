@@ -9,6 +9,13 @@ api = NinjaAPI(
     urls_namespace="api-v1",
 )
 
+
+
+@api.get("/health/", auth=None)
+def health(request):
+    return {"status": "ok"}
+
+
 from planner.api import router as planner_router  # noqa: E402
 from recipes.api import router as recipes_router  # noqa: E402
 from shopping.api import router as shopping_router  # noqa: E402
