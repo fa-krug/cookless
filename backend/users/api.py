@@ -1,15 +1,18 @@
 import json
+import json as json_module
+import uuid
 from datetime import timedelta
 from uuid import UUID
 
-from django.contrib.auth import logout
+from django.contrib.auth import get_user_model, login, logout
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 
 from ninja import Router
 from ninja.errors import HttpError
+from webauthn.helpers import base64url_to_bytes, bytes_to_base64url, options_to_json
 
-from users.models import Household, HouseholdMember, Invite
+from users.models import Household, HouseholdMember, Invite, PasskeyCredential
 from users.permissions import require_household_owner
 from users.schemas import (
     HouseholdCreateIn,
@@ -17,9 +20,14 @@ from users.schemas import (
     HouseholdUpdateIn,
     InviteOut,
     MessageOut,
+    RegisterBeginIn,
+    RegisterCompleteIn,
     UserOut,
     UserUpdateIn,
 )
+from users.webauthn import get_registration_options, verify_registration
+
+User = get_user_model()
 
 router = Router()
 
@@ -164,6 +172,116 @@ def delete_member(request, household_id: UUID, member_pk: int):
 
 
 # ── Auth ─────────────────────────────────────────────────────────────
+
+
+@router.post("/auth/register/", auth=None, tags=["auth"])
+def register_begin(request, payload: RegisterBeginIn):
+    # Validate invite
+    invite = Invite.objects.filter(code=payload.invite_code).first()
+    if not invite:
+        raise HttpError(400, "Invalid invite code.")
+    if invite.is_expired:
+        raise HttpError(400, "This invite has expired.")
+    if invite.used_by is not None:
+        raise HttpError(400, "This invite has already been used.")
+
+    # Check email not taken
+    if User.objects.filter(email=payload.email).exists():
+        raise HttpError(409, "A user with this email already exists.")
+
+    # Generate a temporary user_id for the registration ceremony
+    temp_user_id = str(uuid.uuid4())
+
+    # Generate WebAuthn registration options
+    options = get_registration_options(
+        user_id=temp_user_id,
+        user_email=payload.email,
+        existing_credentials=[],
+    )
+
+    # Serialize options to JSON
+    options_json = options_to_json(options)
+
+    # Store challenge + context in session
+    request.session["webauthn_register_challenge"] = bytes_to_base64url(options.challenge)
+    request.session["webauthn_register_email"] = payload.email
+    request.session["webauthn_register_invite_code"] = payload.invite_code
+    request.session["webauthn_register_user_id"] = temp_user_id
+
+    return json_module.loads(options_json)
+
+
+@router.post("/auth/passkey/register/complete/", auth=None, response=UserOut, tags=["auth"])
+def register_complete(request, payload: RegisterCompleteIn):
+    # Retrieve session data
+    challenge_b64 = request.session.get("webauthn_register_challenge")
+    email = request.session.get("webauthn_register_email")
+    invite_code = request.session.get("webauthn_register_invite_code")
+
+    if not challenge_b64 or not email or not invite_code:
+        raise HttpError(400, "No registration in progress. Call register begin first.")
+
+    # Decode challenge
+    challenge = base64url_to_bytes(challenge_b64)
+
+    # Verify the WebAuthn credential
+    try:
+        verification = verify_registration(
+            credential_json=payload.credential,
+            challenge=challenge,
+        )
+    except Exception as e:
+        raise HttpError(400, f"WebAuthn verification failed: {e}") from None
+
+    # Re-validate invite
+    invite = Invite.objects.filter(code=invite_code).first()
+    if not invite or invite.is_expired or invite.used_by is not None:
+        raise HttpError(400, "Invite is no longer valid.")
+
+    # Check email still not taken
+    if User.objects.filter(email=email).exists():
+        raise HttpError(409, "A user with this email already exists.")
+
+    # Create user
+    user = User.objects.create_user(email=email)
+
+    # Store PasskeyCredential
+    PasskeyCredential.objects.create(
+        user=user,
+        credential_id=verification.credential_id,
+        public_key=verification.credential_public_key,
+        sign_count=verification.sign_count,
+        device_name=payload.device_name,
+    )
+
+    # Join household as MEMBER
+    HouseholdMember.objects.create(
+        household=invite.household,
+        user=user,
+        role=HouseholdMember.Role.MEMBER,
+    )
+
+    # Set active household
+    user.active_household = invite.household
+    user.save()
+
+    # Consume invite
+    invite.used_by = user
+    invite.save()
+
+    # Log user in
+    login(request, user, backend="django.contrib.auth.backends.ModelBackend")
+
+    # Clear session registration data
+    for key in [
+        "webauthn_register_challenge",
+        "webauthn_register_email",
+        "webauthn_register_invite_code",
+        "webauthn_register_user_id",
+    ]:
+        request.session.pop(key, None)
+
+    return user
 
 
 @router.post("/auth/logout/", response=MessageOut, tags=["auth"])

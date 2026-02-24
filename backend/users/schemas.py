@@ -60,3 +60,18 @@ class InviteOut(Schema):
 
 class MessageOut(Schema):
     detail: str
+
+
+class RegisterBeginIn(Schema):
+    email: str
+    invite_code: str
+
+
+class RegisterCompleteIn(Schema):
+    credential: str
+    device_name: str = ""
+
+
+class InviteValidationOut(Schema):
+    household_name: str
+    expires_at: datetime
