@@ -8,3 +8,7 @@ api = NinjaAPI(
     auth=auth,
     urls_namespace="api-v1",
 )
+
+from users.api import router as users_router  # noqa: E402
+
+api.add_router("", users_router)
