@@ -91,6 +91,20 @@ class TestUserMe:
         user.refresh_from_db()
         assert user.active_household == household
 
+    def test_patch_me_active_household_non_member_rejected(self, api_client, user, other_user):
+        """Users cannot set active_household to a household they are not a member of."""
+        h = Household.objects.create(name="Not Mine")
+        HouseholdMember.objects.create(
+            household=h, user=other_user, role=HouseholdMember.Role.OWNER
+        )
+        api_client.force_authenticate(user=user)
+        resp = api_client.patch(
+            "/api/v1/users/me/",
+            {"active_household": str(h.pk)},
+            format="json",
+        )
+        assert resp.status_code == status.HTTP_400_BAD_REQUEST
+
 
 # ── Household CRUD ──────────────────────────────────────────────────
 
@@ -110,6 +124,14 @@ class TestHouseholdListCreate:
         # active_household should be set
         user.refresh_from_db()
         assert user.active_household == h
+
+    def test_create_household_does_not_overwrite_active(self, api_client, user, household):
+        """Creating a second household should not overwrite existing active_household."""
+        api_client.force_authenticate(user=user)
+        resp = api_client.post("/api/v1/households/", {"name": "Second Home"}, format="json")
+        assert resp.status_code == status.HTTP_201_CREATED
+        user.refresh_from_db()
+        assert user.active_household == household  # unchanged
 
     def test_list_households(self, api_client, user, household):
         api_client.force_authenticate(user=user)
@@ -159,14 +181,15 @@ class TestHouseholdUpdate:
         )
         assert resp.status_code == status.HTTP_403_FORBIDDEN
 
-    def test_update_household_name_non_member_forbidden(self, api_client, other_user, household):
+    def test_update_household_name_non_member_not_found(self, api_client, other_user, household):
+        """Non-members get 404 (scoped queryset prevents info disclosure)."""
         api_client.force_authenticate(user=other_user)
         resp = api_client.patch(
             f"/api/v1/households/{household.pk}/",
             {"name": "Nope"},
             format="json",
         )
-        assert resp.status_code == status.HTTP_403_FORBIDDEN
+        assert resp.status_code == status.HTTP_404_NOT_FOUND
 
 
 # ── Switch active household ─────────────────────────────────────────
@@ -216,10 +239,11 @@ class TestInviteCreate:
         resp = api_client.post(f"/api/v1/households/{household.pk}/invites/")
         assert resp.status_code == status.HTTP_403_FORBIDDEN
 
-    def test_create_invite_non_member_forbidden(self, api_client, other_user, household):
+    def test_create_invite_non_member_not_found(self, api_client, other_user, household):
+        """Non-members get 404 (scoped queryset prevents info disclosure)."""
         api_client.force_authenticate(user=other_user)
         resp = api_client.post(f"/api/v1/households/{household.pk}/invites/")
-        assert resp.status_code == status.HTTP_403_FORBIDDEN
+        assert resp.status_code == status.HTTP_404_NOT_FOUND
 
 
 # ── Accept Invite ────────────────────────────────────────────────────
@@ -330,22 +354,26 @@ class TestHouseholdMemberDelete:
         assert resp.status_code == status.HTTP_400_BAD_REQUEST
 
     def test_member_cannot_remove_others(self, api_client, user, household, other_user):
-        membership = HouseholdMember.objects.create(
+        HouseholdMember.objects.create(
             household=household, user=other_user, role=HouseholdMember.Role.MEMBER
         )
         # Create a third user who is also a member
         third = User.objects.create_user(email="carol@example.com", apple_id="apple_c")
-        HouseholdMember.objects.create(
+        third_membership = HouseholdMember.objects.create(
             household=household, user=third, role=HouseholdMember.Role.MEMBER
         )
+        # other_user (MEMBER) tries to remove third (another MEMBER) — should be forbidden
         api_client.force_authenticate(user=other_user)
-        resp = api_client.delete(f"/api/v1/households/{household.pk}/members/{membership.pk}/")
+        resp = api_client.delete(
+            f"/api/v1/households/{household.pk}/members/{third_membership.pk}/"
+        )
         assert resp.status_code == status.HTTP_403_FORBIDDEN
 
     def test_non_member_cannot_remove(self, api_client, household, other_user):
+        """Non-members get 404 (scoped queryset prevents info disclosure)."""
         owner_membership = HouseholdMember.objects.get(household=household)
         api_client.force_authenticate(user=other_user)
         resp = api_client.delete(
             f"/api/v1/households/{household.pk}/members/{owner_membership.pk}/"
         )
-        assert resp.status_code == status.HTTP_403_FORBIDDEN
+        assert resp.status_code == status.HTTP_404_NOT_FOUND

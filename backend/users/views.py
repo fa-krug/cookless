@@ -44,7 +44,11 @@ class HouseholdListCreateView(generics.ListCreateAPIView):
     serializer_class = HouseholdSerializer
 
     def get_queryset(self):
-        return Household.objects.filter(members__user=self.request.user)
+        return (
+            Household.objects.filter(members__user=self.request.user)
+            .prefetch_related("members__user")
+            .distinct()
+        )
 
     def perform_create(self, serializer):
         household = serializer.save()
@@ -54,13 +58,16 @@ class HouseholdListCreateView(generics.ListCreateAPIView):
             role=HouseholdMember.Role.OWNER,
         )
         user = self.request.user
-        user.active_household = household
-        user.save()
+        if not user.active_household:
+            user.active_household = household
+            user.save()
 
 
 class HouseholdUpdateView(generics.UpdateAPIView):
     serializer_class = HouseholdSerializer
-    queryset = Household.objects.all()
+
+    def get_queryset(self):
+        return Household.objects.filter(members__user=self.request.user)
 
     def check_object_permissions(self, request, obj):
         super().check_object_permissions(request, obj)
@@ -87,8 +94,11 @@ class HouseholdSwitchView(APIView):
 class InviteCreateView(generics.CreateAPIView):
     serializer_class = InviteSerializer
 
+    def get_queryset(self):
+        return Household.objects.filter(members__user=self.request.user)
+
     def create(self, request, pk):
-        household = get_object_or_404(Household, pk=pk)
+        household = get_object_or_404(self.get_queryset(), pk=pk)
         if not _is_owner(request.user, household):
             return Response(
                 {"detail": "Only household owners can create invites."},
@@ -142,14 +152,17 @@ class InviteAcceptView(APIView):
 
 
 class HouseholdMemberDeleteView(generics.DestroyAPIView):
-    queryset = HouseholdMember.objects.all()
+    def get_queryset(self):
+        return HouseholdMember.objects.filter(household__members__user=self.request.user)
 
     def get_object(self):
-        return get_object_or_404(
-            HouseholdMember,
+        obj = get_object_or_404(
+            self.get_queryset(),
             pk=self.kwargs["member_pk"],
             household_id=self.kwargs["pk"],
         )
+        self.check_object_permissions(self.request, obj)
+        return obj
 
     def check_object_permissions(self, request, obj):
         super().check_object_permissions(request, obj)
@@ -158,7 +171,6 @@ class HouseholdMemberDeleteView(generics.DestroyAPIView):
 
     def destroy(self, request, *args, **kwargs):
         member = self.get_object()
-        self.check_object_permissions(request, member)
         if member.user == request.user:
             return Response(
                 {"detail": "Cannot remove yourself from the household."},

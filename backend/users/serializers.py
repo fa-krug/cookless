@@ -42,6 +42,16 @@ class UserSerializer(serializers.Serializer):
     settings = serializers.JSONField(required=False)
     active_household = serializers.UUIDField(required=False, allow_null=True)
 
+    def validate_active_household(self, value):
+        if value is not None:
+            from users.models import HouseholdMember
+
+            if not Household.objects.filter(pk=value).exists():
+                raise serializers.ValidationError("Household not found.")
+            if not HouseholdMember.objects.filter(household_id=value, user=self.instance).exists():
+                raise serializers.ValidationError("You are not a member of this household.")
+        return value
+
     def to_representation(self, instance):
         data = {
             "id": str(instance.id),
