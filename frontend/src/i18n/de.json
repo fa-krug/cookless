@@ -80,7 +80,17 @@
     "unlock": "Entsperren",
     "locked": "Gesperrt",
     "noPlan": "Noch kein Essensplan. Erstelle einen, um loszulegen!",
-    "weekOf": "Woche vom {{date}}"
+    "weekOf": "Woche vom {{date}}",
+    "days": "Tage",
+    "servings": "Portionen",
+    "knownRatio": "Anteil bekannter Rezepte",
+    "createShoppingList": "Einkaufsliste erstellen",
+    "lunch": "Mittag",
+    "dinner": "Abend",
+    "leftover": "Reste",
+    "swapRecipe": "Rezept tauschen",
+    "selectRecipe": "Rezept auswählen",
+    "emptyState": "Noch kein Essensplan"
   },
   "shopping": {
     "title": "Einkaufsliste",
