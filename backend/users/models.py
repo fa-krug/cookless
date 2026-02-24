@@ -73,14 +73,22 @@ class Household(models.Model):
 
 
 class HouseholdMember(models.Model):
-    ROLE_CHOICES = [("OWNER", "Owner"), ("MEMBER", "Member")]
+    class Role(models.TextChoices):
+        OWNER = "OWNER", "Owner"
+        MEMBER = "MEMBER", "Member"
+
     household = models.ForeignKey(Household, on_delete=models.CASCADE, related_name="members")
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="household_memberships")
-    role = models.CharField(max_length=10, choices=ROLE_CHOICES)
+    role = models.CharField(max_length=10, choices=Role.choices, default=Role.MEMBER)
     joined_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ("household", "user")
+        constraints = [
+            models.UniqueConstraint(
+                fields=["household", "user"],
+                name="unique_household_user",
+            )
+        ]
 
     def __str__(self) -> str:
         return f"{self.user} in {self.household} ({self.role})"
