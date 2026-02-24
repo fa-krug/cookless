@@ -1,7 +1,7 @@
 # Design: Migrate from Django REST Framework to Django Ninja
 
 **Date:** 2026-02-24
-**Status:** Approved
+**Status:** Completed
 **Motivation:** Better developer experience, auto-generated TypeScript types for the frontend via Orval
 
 ## Decision Summary

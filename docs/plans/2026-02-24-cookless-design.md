@@ -36,7 +36,7 @@ cookless/
 ```
 
 - Django serves the built React app via WhiteNoise (single container)
-- DRF provides the REST API at `/api/v1/`
+- Django Ninja provides the REST API at `/api/v1/` (with auto-generated OpenAPI schema)
 - React communicates exclusively via the API
 - i18n via react-i18next (frontend); backend API responses are language-neutral (structured data)
 
@@ -182,12 +182,12 @@ cookless/
 ## Authentication & Permissions
 
 - **Frontend (React PWA):** Session-based cookie auth (httponly, samesite=lax, CSRF protected)
-- **Programmatic API:** Token auth (header: `Authorization: Token xxx`)
+- **Programmatic API:** Token auth (header: `Authorization: Bearer xxx`)
 - Sign in with Apple provides identity → Django creates session (frontend) or returns token (API)
 
 ### Permission rules
 
-- DRF permission class `IsHouseholdMember` on all data endpoints
+- `require_household_member()` helper called in all data endpoints
 - Every queryset filtered by `request.user.active_household`
 - OWNER can invite/remove members; MEMBER can read/write all shared data
 - Unauthenticated → 401; wrong household → 403
