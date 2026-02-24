@@ -31,3 +31,6 @@ Thumbs.db
 # Node (for React frontend)
 node_modules/
 frontend_dist/
+
+# Worktrees
+.worktrees/
