@@ -1,0 +1,131 @@
+{
+  "common": {
+    "appName": "Cookless",
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "delete": "Löschen",
+    "edit": "Bearbeiten",
+    "add": "Hinzufügen",
+    "close": "Schließen",
+    "confirm": "Bestätigen",
+    "back": "Zurück",
+    "loading": "Laden...",
+    "error": "Etwas ist schiefgelaufen",
+    "retry": "Erneut versuchen",
+    "noResults": "Keine Ergebnisse gefunden",
+    "search": "Suchen"
+  },
+  "nav": {
+    "recipes": "Rezepte",
+    "plan": "Planung",
+    "shopping": "Einkaufen",
+    "settings": "Einstellungen"
+  },
+  "auth": {
+    "login": "Anmelden",
+    "logout": "Abmelden",
+    "signInWithApple": "Mit Apple anmelden",
+    "logoutConfirm": "Möchtest du dich wirklich abmelden?"
+  },
+  "recipes": {
+    "title": "Rezepte",
+    "known": "Bekannt",
+    "toTry": "Ausprobieren",
+    "addRecipe": "Rezept hinzufügen",
+    "quickAdd": "Schnell hinzufügen",
+    "recipeName": "Rezeptname",
+    "noRecipes": "Noch keine Rezepte",
+    "deleteConfirm": "Möchtest du dieses Rezept wirklich löschen?",
+    "servings": "Portionen",
+    "prepTime": "Vorbereitungszeit",
+    "cookTime": "Kochzeit",
+    "minutes": "Min.",
+    "source": "Quelle",
+    "notes": "Notizen"
+  },
+  "ingredients": {
+    "title": "Zutaten",
+    "add": "Zutat hinzufügen",
+    "name": "Zutat",
+    "amount": "Menge",
+    "unit": "Einheit",
+    "noIngredients": "Keine Zutaten hinzugefügt"
+  },
+  "steps": {
+    "title": "Schritte",
+    "add": "Schritt hinzufügen",
+    "manual": "Manuell",
+    "machine": "Maschine",
+    "description": "Beschreibung",
+    "duration": "Dauer",
+    "noSteps": "Keine Schritte hinzugefügt"
+  },
+  "plan": {
+    "title": "Essensplan",
+    "generate": "Plan erstellen",
+    "regenerate": "Neu erstellen",
+    "swap": "Tauschen",
+    "lock": "Sperren",
+    "unlock": "Entsperren",
+    "locked": "Gesperrt",
+    "noPlan": "Noch kein Essensplan. Erstelle einen, um loszulegen!",
+    "weekOf": "Woche vom {{date}}"
+  },
+  "shopping": {
+    "title": "Einkaufsliste",
+    "noItems": "Deine Einkaufsliste ist leer",
+    "markBought": "Als gekauft markieren",
+    "markNeeded": "Als benötigt markieren",
+    "allDone": "Alles erledigt!",
+    "categories": {
+      "produce": "Obst & Gemüse",
+      "dairy": "Milchprodukte",
+      "meat": "Fleisch & Fisch",
+      "bakery": "Backwaren",
+      "frozen": "Tiefkühl",
+      "pantry": "Vorratskammer",
+      "beverages": "Getränke",
+      "other": "Sonstiges"
+    }
+  },
+  "cooking": {
+    "title": "Kochen",
+    "start": "Kochen starten",
+    "nextStep": "Nächster Schritt",
+    "prevStep": "Vorheriger Schritt",
+    "stepOf": "Schritt {{current}} von {{total}}",
+    "done": "Fertig!",
+    "manualStep": "Manueller Schritt",
+    "machineStep": "Maschinenschritt",
+    "timerRunning": "Timer läuft..."
+  },
+  "household": {
+    "title": "Haushalt",
+    "members": "Mitglieder",
+    "invites": "Einladungen",
+    "inviteMember": "Mitglied einladen",
+    "inviteCode": "Einladungscode",
+    "copyCode": "Code kopieren",
+    "codeCopied": "Code kopiert!",
+    "removeMember": "Mitglied entfernen",
+    "removeMemberConfirm": "Möchtest du dieses Mitglied wirklich entfernen?",
+    "leaveHousehold": "Haushalt verlassen",
+    "leaveConfirm": "Möchtest du diesen Haushalt wirklich verlassen?",
+    "role": {
+      "owner": "Eigentümer",
+      "member": "Mitglied"
+    },
+    "inviteExpiry": "Läuft in {{days}} Tagen ab"
+  },
+  "settings": {
+    "title": "Einstellungen",
+    "language": "Sprache",
+    "languages": {
+      "en": "English",
+      "de": "Deutsch"
+    },
+    "defaults": "Standardwerte",
+    "defaultServings": "Standardportionen",
+    "account": "Konto"
+  }
+}

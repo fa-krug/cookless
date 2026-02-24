@@ -1,0 +1,131 @@
+{
+  "common": {
+    "appName": "Cookless",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "add": "Add",
+    "close": "Close",
+    "confirm": "Confirm",
+    "back": "Back",
+    "loading": "Loading...",
+    "error": "Something went wrong",
+    "retry": "Retry",
+    "noResults": "No results found",
+    "search": "Search"
+  },
+  "nav": {
+    "recipes": "Recipes",
+    "plan": "Plan",
+    "shopping": "Shopping",
+    "settings": "Settings"
+  },
+  "auth": {
+    "login": "Log in",
+    "logout": "Log out",
+    "signInWithApple": "Sign in with Apple",
+    "logoutConfirm": "Are you sure you want to log out?"
+  },
+  "recipes": {
+    "title": "Recipes",
+    "known": "Known",
+    "toTry": "To Try",
+    "addRecipe": "Add Recipe",
+    "quickAdd": "Quick add",
+    "recipeName": "Recipe name",
+    "noRecipes": "No recipes yet",
+    "deleteConfirm": "Are you sure you want to delete this recipe?",
+    "servings": "Servings",
+    "prepTime": "Prep time",
+    "cookTime": "Cook time",
+    "minutes": "min",
+    "source": "Source",
+    "notes": "Notes"
+  },
+  "ingredients": {
+    "title": "Ingredients",
+    "add": "Add ingredient",
+    "name": "Ingredient",
+    "amount": "Amount",
+    "unit": "Unit",
+    "noIngredients": "No ingredients added"
+  },
+  "steps": {
+    "title": "Steps",
+    "add": "Add step",
+    "manual": "Manual",
+    "machine": "Machine",
+    "description": "Description",
+    "duration": "Duration",
+    "noSteps": "No steps added"
+  },
+  "plan": {
+    "title": "Meal Plan",
+    "generate": "Generate Plan",
+    "regenerate": "Regenerate",
+    "swap": "Swap",
+    "lock": "Lock",
+    "unlock": "Unlock",
+    "locked": "Locked",
+    "noPlan": "No meal plan yet. Generate one to get started!",
+    "weekOf": "Week of {{date}}"
+  },
+  "shopping": {
+    "title": "Shopping List",
+    "noItems": "Your shopping list is empty",
+    "markBought": "Mark as bought",
+    "markNeeded": "Mark as needed",
+    "allDone": "All done!",
+    "categories": {
+      "produce": "Produce",
+      "dairy": "Dairy",
+      "meat": "Meat & Fish",
+      "bakery": "Bakery",
+      "frozen": "Frozen",
+      "pantry": "Pantry",
+      "beverages": "Beverages",
+      "other": "Other"
+    }
+  },
+  "cooking": {
+    "title": "Cooking",
+    "start": "Start Cooking",
+    "nextStep": "Next Step",
+    "prevStep": "Previous Step",
+    "stepOf": "Step {{current}} of {{total}}",
+    "done": "Done!",
+    "manualStep": "Manual Step",
+    "machineStep": "Machine Step",
+    "timerRunning": "Timer running..."
+  },
+  "household": {
+    "title": "Household",
+    "members": "Members",
+    "invites": "Invites",
+    "inviteMember": "Invite Member",
+    "inviteCode": "Invite Code",
+    "copyCode": "Copy Code",
+    "codeCopied": "Code copied!",
+    "removeMember": "Remove Member",
+    "removeMemberConfirm": "Are you sure you want to remove this member?",
+    "leaveHousehold": "Leave Household",
+    "leaveConfirm": "Are you sure you want to leave this household?",
+    "role": {
+      "owner": "Owner",
+      "member": "Member"
+    },
+    "inviteExpiry": "Expires in {{days}} days"
+  },
+  "settings": {
+    "title": "Settings",
+    "language": "Language",
+    "languages": {
+      "en": "English",
+      "de": "Deutsch"
+    },
+    "defaults": "Defaults",
+    "defaultServings": "Default servings",
+    "account": "Account"
+  }
+}
