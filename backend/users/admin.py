@@ -6,22 +6,20 @@ from users.models import Household, HouseholdMember, Invite, User
 
 @admin.register(User)
 class UserAdmin(BaseUserAdmin):
-    list_display = ("email", "apple_id", "preferred_language", "is_active", "is_staff")
+    list_display = ("email", "preferred_language", "is_active", "is_staff")
     list_filter = ("is_active", "is_staff", "preferred_language")
-    search_fields = ("email", "apple_id")
+    search_fields = ("email",)
     ordering = ("email",)
 
     fieldsets = (
         (None, {"fields": ("email", "password")}),
-        ("Profile", {"fields": ("apple_id", "preferred_language", "active_household", "settings")}),
+        ("Profile", {"fields": ("preferred_language", "active_household", "settings")}),
         (
             "Permissions",
             {"fields": ("is_active", "is_staff", "is_superuser", "groups", "user_permissions")},
         ),
     )
-    add_fieldsets = (
-        (None, {"classes": ("wide",), "fields": ("email", "apple_id", "password1", "password2")}),
-    )
+    add_fieldsets = ((None, {"classes": ("wide",), "fields": ("email", "password1", "password2")}),)
 
 
 class HouseholdMemberInline(admin.TabularInline):

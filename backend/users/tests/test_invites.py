@@ -12,7 +12,7 @@ User = get_user_model()
 
 @pytest.mark.django_db
 def test_create_invite():
-    user = User.objects.create_user(email="owner@example.com", apple_id="a1")
+    user = User.objects.create_user(email="owner@example.com")
     household = Household.objects.create(name="Home")
     invite = Invite.objects.create(
         household=household,
@@ -25,7 +25,7 @@ def test_create_invite():
 
 @pytest.mark.django_db
 def test_invite_is_expired():
-    user = User.objects.create_user(email="owner@example.com", apple_id="a1")
+    user = User.objects.create_user(email="owner@example.com")
     household = Household.objects.create(name="Home")
     invite = Invite.objects.create(
         household=household,

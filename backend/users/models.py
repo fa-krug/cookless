@@ -12,9 +12,9 @@ def _default_user_settings() -> dict:
 
 
 class UserManager(BaseUserManager["User"]):
-    def create_user(self, email: str, apple_id: str, **extra_fields: Any) -> "User":
+    def create_user(self, email: str, **extra_fields: Any) -> "User":
         email = self.normalize_email(email)
-        user = self.model(email=email, apple_id=apple_id, **extra_fields)
+        user = self.model(email=email, **extra_fields)
         user.set_unusable_password()
         user.save(using=self._db)
         return user
@@ -24,7 +24,6 @@ class UserManager(BaseUserManager["User"]):
     ) -> "User":
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
-        extra_fields.setdefault("apple_id", "")
 
         if extra_fields.get("is_staff") is not True:
             raise ValueError("Superuser must have is_staff=True.")
@@ -40,7 +39,6 @@ class UserManager(BaseUserManager["User"]):
 class User(AbstractBaseUser, PermissionsMixin):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     email = models.EmailField(unique=True)
-    apple_id = models.CharField(max_length=255, blank=True, default="")
     preferred_language = models.CharField(
         max_length=2,
         choices=[("en", "English"), ("de", "Deutsch")],

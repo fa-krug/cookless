@@ -12,7 +12,7 @@ User = get_user_model()
 
 @pytest.mark.django_db
 def test_permission_denied_no_household():
-    user = User.objects.create_user(email="test@example.com", apple_id="a1")
+    user = User.objects.create_user(email="test@example.com")
     factory = RequestFactory()
     request = factory.get("/")
     request.user = user
@@ -23,7 +23,7 @@ def test_permission_denied_no_household():
 
 @pytest.mark.django_db
 def test_permission_granted_with_household():
-    user = User.objects.create_user(email="test@example.com", apple_id="a1")
+    user = User.objects.create_user(email="test@example.com")
     household = Household.objects.create(name="Home")
     HouseholdMember.objects.create(household=household, user=user, role="OWNER")
     user.active_household = household

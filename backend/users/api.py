@@ -166,11 +166,6 @@ def delete_member(request, household_id: UUID, member_pk: int):
 # ── Auth ─────────────────────────────────────────────────────────────
 
 
-@router.post("/auth/apple/", auth=None, response=MessageOut, tags=["auth"])
-def apple_login(request):
-    raise HttpError(501, "Apple Sign-In not yet configured. Set APPLE_CLIENT_ID env var.")
-
-
 @router.post("/auth/logout/", response=MessageOut, tags=["auth"])
 def logout_view(request):
     logout(request)

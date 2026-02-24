@@ -14,12 +14,12 @@ User = get_user_model()
 
 @pytest.fixture
 def user(db):
-    return User.objects.create_user(email="alice@example.com", apple_id="apple_a")
+    return User.objects.create_user(email="alice@example.com")
 
 
 @pytest.fixture
 def other_user(db):
-    return User.objects.create_user(email="bob@example.com", apple_id="apple_b")
+    return User.objects.create_user(email="bob@example.com")
 
 
 @pytest.fixture
@@ -298,7 +298,7 @@ class TestInviteAccept:
         assert resp.status_code == 400
 
     def test_accept_used_invite(self, api_client, user, household, other_user):
-        third = User.objects.create_user(email="carol@example.com", apple_id="apple_c")
+        third = User.objects.create_user(email="carol@example.com")
         invite = Invite.objects.create(
             household=household,
             created_by=user,
@@ -348,7 +348,7 @@ class TestHouseholdMemberDelete:
         HouseholdMember.objects.create(
             household=household, user=other_user, role=HouseholdMember.Role.MEMBER
         )
-        third = User.objects.create_user(email="carol@example.com", apple_id="apple_c")
+        third = User.objects.create_user(email="carol@example.com")
         third_membership = HouseholdMember.objects.create(
             household=household, user=third, role=HouseholdMember.Role.MEMBER
         )

@@ -50,7 +50,7 @@ def _setup_plan_with_ingredients(household):
 
 @pytest.fixture
 def auth_client():
-    user = User.objects.create_user(email="test@example.com", apple_id="a1")
+    user = User.objects.create_user(email="test@example.com")
     household = Household.objects.create(name="Home")
     HouseholdMember.objects.create(household=household, user=user, role="OWNER")
     user.active_household = household
