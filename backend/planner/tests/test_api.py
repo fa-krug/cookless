@@ -267,9 +267,12 @@ def test_regenerate_plan(auth_client):
     response = client.post(f"/api/v1/meal-plans/{plan_id}/regenerate/")
     assert response.status_code == 200
     data = response.json()
-    # Regenerate creates a new plan
+    # Regenerate returns the SAME plan
+    assert data["id"] == plan_id
     assert data["start_date"] == "2026-03-01"
     assert len(data["entries"]) > 0
+    # No extra plans were created
+    assert MealPlan.objects.filter(household=household).count() == 1
 
 
 @pytest.mark.django_db
@@ -292,17 +295,30 @@ def test_regenerate_keeps_locked_entries(auth_client):
         content_type="application/json",
     )
 
-    # Verify the locked entry still exists on the original plan after regenerate
-    plan = MealPlan.objects.get(pk=plan_id)
-    locked_before = plan.entries.filter(is_locked=True).count()
-    assert locked_before == 1
+    response = client.post(f"/api/v1/meal-plans/{plan_id}/regenerate/")
+    assert response.status_code == 200
+    data = response.json()
 
-    client.post(f"/api/v1/meal-plans/{plan_id}/regenerate/")
+    # Same plan returned
+    assert data["id"] == plan_id
 
-    # Original plan should still have the locked entry
-    plan.refresh_from_db()
-    assert plan.entries.filter(is_locked=True).count() == 1
-    assert plan.entries.filter(is_locked=False).count() == 0
+    # Locked entry is preserved in the response
+    entry_ids = [e["id"] for e in data["entries"]]
+    assert entry_id in entry_ids
+
+    locked_entries = [e for e in data["entries"] if e["is_locked"]]
+    assert len(locked_entries) == 1
+    assert locked_entries[0]["id"] == entry_id
+
+    # Empty slots were filled with new unlocked entries
+    unlocked_entries = [e for e in data["entries"] if not e["is_locked"]]
+    assert len(unlocked_entries) > 0
+
+    # Total entries should cover all meal slots (7 days * 2 meals)
+    assert len(data["entries"]) == 14
+
+    # No extra plans were created
+    assert MealPlan.objects.filter(household=household).count() == 1
 
 
 @pytest.mark.django_db

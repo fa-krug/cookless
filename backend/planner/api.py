@@ -6,7 +6,7 @@ from ninja import Router
 
 from planner.models import MealPlan, MealPlanEntry
 from planner.schemas import GeneratePlanIn, MealPlanEntryOut, MealPlanOut, UpdateEntryIn
-from planner.services import generate_meal_plan
+from planner.services import generate_meal_plan, regenerate_meal_plan
 from recipes.models import Recipe
 from users.permissions import require_household_member
 
@@ -68,13 +68,4 @@ def update_entry(request, entry_id: UUID, payload: UpdateEntryIn):
 def regenerate_plan(request, plan_id: UUID):
     require_household_member(request)
     plan = get_object_or_404(MealPlan, pk=plan_id, household=request.user.active_household)
-    # Delete unlocked entries, keep locked ones
-    plan.entries.filter(is_locked=False).delete()
-    # Regenerate — the service will create a new plan (MVP approach)
-    new_plan = generate_meal_plan(
-        household=request.user.active_household,
-        start_date=plan.start_date,
-        days=(plan.end_date - plan.start_date).days + 1,
-        servings=2,
-    )
-    return new_plan
+    return regenerate_meal_plan(plan)
