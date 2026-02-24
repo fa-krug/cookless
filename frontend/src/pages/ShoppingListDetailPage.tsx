@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import type { IngredientCategory } from "../api/types";
+import type { IngredientCategory, ShoppingListItem } from "../api/types";
 import ShoppingCategory from "../components/ShoppingCategory";
 import { useBulkToggle, useShoppingList, useToggleItem } from "../hooks/useShoppingList";
 
@@ -13,7 +13,7 @@ export default function ShoppingListDetailPage() {
   const bulkToggle = useBulkToggle();
 
   const groupedItems = useMemo(() => {
-    if (!shoppingList) return new Map<IngredientCategory, typeof shoppingList.items>();
+    if (!shoppingList) return new Map<IngredientCategory, ShoppingListItem[]>();
     const groups = new Map<IngredientCategory, typeof shoppingList.items>();
     for (const item of shoppingList.items) {
       const existing = groups.get(item.ingredient_category) ?? [];

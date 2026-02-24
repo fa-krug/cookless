@@ -56,7 +56,7 @@ export default function PlanGrid({ plan }: PlanGridProps) {
   function handleToggleLock(entry: MealPlanEntry) {
     updateEntry.mutate({
       entryId: entry.id,
-      data: { is_locked: !entry.is_locked },
+      data: { recipe: entry.recipe, is_locked: !entry.is_locked },
     });
   }
 

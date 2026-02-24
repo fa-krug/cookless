@@ -32,6 +32,7 @@ export default function RecipeListPage() {
   }
 
   function handleDelete(id: string) {
+    if (!window.confirm(t("recipes.deleteConfirm"))) return;
     deleteRecipe.mutate(id);
   }
 
