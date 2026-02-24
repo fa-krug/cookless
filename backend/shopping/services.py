@@ -19,7 +19,11 @@ def generate_shopping_list(meal_plan: MealPlan) -> ShoppingList:
     # Aggregate: (ingredient_id, base_unit_id) -> total quantity in base units
     aggregated: dict[tuple[int, int], Decimal] = defaultdict(Decimal)
 
-    entries = meal_plan.entries.filter(is_leftover=False).select_related("recipe")
+    entries = (
+        meal_plan.entries.filter(is_leftover=False)
+        .select_related("recipe")
+        .prefetch_related("recipe__ingredients__ingredient", "recipe__ingredients__unit")
+    )
 
     for entry in entries:
         scale = Decimal(str(entry.servings)) / Decimal(str(entry.recipe.default_servings))
