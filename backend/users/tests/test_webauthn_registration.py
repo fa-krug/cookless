@@ -41,6 +41,26 @@ def valid_invite(household, owner):
     )
 
 
+# ── GET /api/v1/invites/{code}/ ──────────────────────────────────────
+
+
+@pytest.mark.django_db
+def test_get_invite_returns_household_info(valid_invite):
+    client = Client()
+    resp = client.get(f"/api/v1/invites/{valid_invite.code}/")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["household_name"] == "Test Kitchen"
+    assert "expires_at" in data
+
+
+@pytest.mark.django_db
+def test_get_invite_invalid_code():
+    client = Client()
+    resp = client.get("/api/v1/invites/badcode/")
+    assert resp.status_code == 404
+
+
 # ── POST /api/v1/auth/register/ (begin) ─────────────────────────────
 
 

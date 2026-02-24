@@ -77,6 +77,12 @@ class InviteValidationOut(Schema):
     expires_at: datetime
 
 
+class PasskeyOut(Schema):
+    id: UUID
+    device_name: str
+    created_at: datetime
+
+
 class LoginBeginIn(Schema):
     email: str
 

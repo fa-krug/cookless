@@ -19,9 +19,11 @@ from users.schemas import (
     HouseholdOut,
     HouseholdUpdateIn,
     InviteOut,
+    InviteValidationOut,
     LoginBeginIn,
     LoginCompleteIn,
     MessageOut,
+    PasskeyOut,
     RegisterBeginIn,
     RegisterCompleteIn,
     UserOut,
@@ -136,6 +138,16 @@ def create_invite(request, household_id: UUID):
     return invite
 
 
+@router.get("/invites/{code}/", auth=None, response=InviteValidationOut, tags=["invites"])
+def get_invite(request, code: str):
+    invite = get_object_or_404(Invite, code=code)
+    if invite.is_expired:
+        raise HttpError(400, "This invite has expired.")
+    if invite.used_by is not None:
+        raise HttpError(400, "This invite has already been used.")
+    return {"household_name": invite.household.name, "expires_at": invite.expires_at}
+
+
 @router.post("/invites/{code}/accept/", response=MessageOut, tags=["invites"])
 def accept_invite(request, code: str):
     invite = get_object_or_404(Invite, code=code)
@@ -176,6 +188,58 @@ def delete_member(request, household_id: UUID, member_pk: int):
         raise HttpError(400, "Cannot remove yourself from the household.")
     member.delete()
     return None
+
+
+# ── Passkey Management ───────────────────────────────────────────────
+
+
+@router.get("/users/me/passkeys/", response=list[PasskeyOut], tags=["passkeys"])
+def list_passkeys(request):
+    return PasskeyCredential.objects.filter(user=request.user).order_by("-created_at")
+
+
+@router.delete("/users/me/passkeys/{passkey_id}/", response={204: None}, tags=["passkeys"])
+def delete_passkey(request, passkey_id: UUID):
+    credential = get_object_or_404(PasskeyCredential, id=passkey_id, user=request.user)
+    if PasskeyCredential.objects.filter(user=request.user).count() <= 1:
+        raise HttpError(400, "Cannot delete your only passkey.")
+    credential.delete()
+    return None
+
+
+@router.post("/users/me/passkeys/add/begin/", tags=["passkeys"])
+def add_passkey_begin(request):
+    existing = [bytes(c.credential_id) for c in PasskeyCredential.objects.filter(user=request.user)]
+    options = get_registration_options(
+        user_id=str(request.user.id),
+        user_email=request.user.email,
+        existing_credentials=existing,
+    )
+    request.session["webauthn_add_challenge"] = bytes_to_base64url(options.challenge)
+    return json_module.loads(options_to_json(options))
+
+
+@router.post("/users/me/passkeys/add/complete/", response=PasskeyOut, tags=["passkeys"])
+def add_passkey_complete(request, payload: RegisterCompleteIn):
+    challenge_b64 = request.session.get("webauthn_add_challenge")
+    if not challenge_b64:
+        raise HttpError(400, "No pending passkey addition.")
+
+    challenge = base64url_to_bytes(challenge_b64)
+    try:
+        verification = verify_registration(payload.credential, challenge)
+    except Exception as e:
+        raise HttpError(400, f"Verification failed: {e}") from None
+
+    credential = PasskeyCredential.objects.create(
+        user=request.user,
+        credential_id=verification.credential_id,
+        public_key=verification.credential_public_key,
+        sign_count=verification.sign_count,
+        device_name=payload.device_name,
+    )
+    request.session.pop("webauthn_add_challenge", None)
+    return credential
 
 
 # ── Auth ─────────────────────────────────────────────────────────────
