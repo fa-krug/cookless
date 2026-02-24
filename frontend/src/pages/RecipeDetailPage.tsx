@@ -1,10 +1,11 @@
+import { useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
 import type { Ingredient, Recipe, RecipeUpdatePayload } from "../api/types";
 import IngredientForm, { type IngredientRow } from "../components/IngredientForm";
 import StepEditor, { type StepRow } from "../components/StepEditor";
-import { useIngredients } from "../hooks/useIngredients";
+import { createIngredient, useIngredients } from "../hooks/useIngredients";
 import { useDeleteRecipe, useMoveRecipe, useRecipe, useUpdateRecipe } from "../hooks/useRecipes";
 import { useUnits } from "../hooks/useUnits";
 
@@ -83,6 +84,7 @@ function RecipeForm({ recipe, recipeId, allIngredients, allUnits }: RecipeFormPr
   const updateRecipe = useUpdateRecipe();
   const moveRecipe = useMoveRecipe();
   const deleteRecipe = useDeleteRecipe();
+  const queryClient = useQueryClient();
 
   const initialIngredients = useMemo(
     () => buildIngredientRows(recipe, allIngredients, nameKey),
@@ -97,8 +99,17 @@ function RecipeForm({ recipe, recipeId, allIngredients, allUnits }: RecipeFormPr
   const [manualSteps, setManualSteps] = useState<StepRow[]>(buildStepRows(recipe.manual_steps));
   const [machineSteps, setMachineSteps] = useState<StepRow[]>(buildStepRows(recipe.machine_steps));
 
-  function handleSave(e: React.FormEvent) {
+  async function handleSave(e: React.FormEvent) {
     e.preventDefault();
+
+    // Auto-create unknown ingredients (ingredient === 0 with a typed name)
+    const resolvedIngredients = await Promise.all(
+      ingredients.map(async (row) => {
+        if (row.ingredient > 0 || !row.ingredientName.trim()) return row;
+        const created = await createIngredient(row.ingredientName.trim());
+        return { ...row, ingredient: created.id };
+      }),
+    );
 
     const payload: RecipeUpdatePayload = {
       title,
@@ -106,7 +117,7 @@ function RecipeForm({ recipe, recipeId, allIngredients, allUnits }: RecipeFormPr
       default_servings: defaultServings,
       prep_time_minutes: prepTime ? Number(prepTime) : null,
       cook_time_minutes: cookTime ? Number(cookTime) : null,
-      ingredients: ingredients
+      ingredients: resolvedIngredients
         .filter((row) => row.ingredient > 0)
         .map((row, i) => ({
           ingredient: row.ingredient,
@@ -122,7 +133,12 @@ function RecipeForm({ recipe, recipeId, allIngredients, allUnits }: RecipeFormPr
         .map((s, i) => ({ step_number: i + 1, instruction: s.instruction })),
     };
 
-    updateRecipe.mutate({ id: recipeId, data: payload }, { onSuccess: () => navigate("/recipes") });
+    updateRecipe.mutate({ id: recipeId, data: payload }, {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["ingredients"] });
+        navigate("/recipes");
+      },
+    });
   }
 
   function handleMove() {

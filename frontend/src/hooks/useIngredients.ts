@@ -8,3 +8,11 @@ export function useIngredients() {
     queryFn: () => api.get<Ingredient[]>("/api/v1/ingredients/"),
   });
 }
+
+export async function createIngredient(name: string): Promise<Ingredient> {
+  return api.post<Ingredient>("/api/v1/ingredients/", {
+    name_en: name,
+    name_de: name,
+    category: "OTHER",
+  });
+}
