@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
+from django.test import Client
 
 import pytest
-from rest_framework.test import APIClient
 
 from recipes.models import CookingStep, Recipe
 from users.models import Household, HouseholdMember
@@ -16,8 +16,8 @@ def auth_client_fixture():
     HouseholdMember.objects.create(household=household, user=user, role="OWNER")
     user.active_household = household
     user.save()
-    client = APIClient()
-    client.force_authenticate(user=user)
+    client = Client()
+    client.force_login(user)
     return client, household
 
 
@@ -35,7 +35,7 @@ def test_get_manual_steps(auth_client_fixture):
 
     response = client.get(f"/api/v1/recipes/{recipe.id}/steps/?method=MANUAL")
     assert response.status_code == 200
-    assert len(response.data) == 2
+    assert len(response.json()) == 2
 
 
 @pytest.mark.django_db
@@ -51,8 +51,9 @@ def test_get_machine_steps(auth_client_fixture):
 
     response = client.get(f"/api/v1/recipes/{recipe.id}/steps/?method=MACHINE")
     assert response.status_code == 200
-    assert len(response.data) == 1
-    assert response.data[0]["instruction"] == "Add to MC"
+    data = response.json()
+    assert len(data) == 1
+    assert data[0]["instruction"] == "Add to MC"
 
 
 @pytest.mark.django_db
@@ -69,7 +70,7 @@ def test_get_all_steps_no_filter(auth_client_fixture):
 
     response = client.get(f"/api/v1/recipes/{recipe.id}/steps/")
     assert response.status_code == 200
-    assert len(response.data) == 3
+    assert len(response.json()) == 3
 
 
 @pytest.mark.django_db

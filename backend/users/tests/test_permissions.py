@@ -2,9 +2,10 @@ from django.contrib.auth import get_user_model
 from django.test import RequestFactory
 
 import pytest
+from ninja.errors import HttpError
 
 from users.models import Household, HouseholdMember
-from users.permissions import IsHouseholdMember
+from users.permissions import require_household_member
 
 User = get_user_model()
 
@@ -15,8 +16,9 @@ def test_permission_denied_no_household():
     factory = RequestFactory()
     request = factory.get("/")
     request.user = user
-    perm = IsHouseholdMember()
-    assert not perm.has_permission(request, None)
+    with pytest.raises(HttpError) as exc_info:
+        require_household_member(request)
+    assert exc_info.value.status_code == 403
 
 
 @pytest.mark.django_db
@@ -29,5 +31,5 @@ def test_permission_granted_with_household():
     factory = RequestFactory()
     request = factory.get("/")
     request.user = user
-    perm = IsHouseholdMember()
-    assert perm.has_permission(request, None)
+    # Should not raise
+    require_household_member(request)

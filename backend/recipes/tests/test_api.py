@@ -1,7 +1,9 @@
+import json
+
 from django.contrib.auth import get_user_model
+from django.test import Client
 
 import pytest
-from rest_framework.test import APIClient
 
 from recipes.models import Ingredient, Recipe, Unit
 from users.models import Household, HouseholdMember
@@ -16,8 +18,8 @@ def auth_client():
     HouseholdMember.objects.create(household=household, user=user, role="OWNER")
     user.active_household = household
     user.save()
-    client = APIClient()
-    client.force_authenticate(user=user)
+    client = Client()
+    client.force_login(user)
     return client, household
 
 
@@ -26,15 +28,17 @@ def test_create_recipe(auth_client):
     client, household = auth_client
     response = client.post(
         "/api/v1/recipes/",
-        {
-            "title": "Pancakes",
-            "list_type": "KNOWN",
-            "default_servings": 2,
-            "ingredients": [],
-            "manual_steps": [],
-            "machine_steps": [],
-        },
-        format="json",
+        json.dumps(
+            {
+                "title": "Pancakes",
+                "list_type": "KNOWN",
+                "default_servings": 2,
+                "ingredients": [],
+                "manual_steps": [],
+                "machine_steps": [],
+            }
+        ),
+        content_type="application/json",
     )
     assert response.status_code == 201
     assert Recipe.objects.filter(household=household).count() == 1
@@ -49,7 +53,7 @@ def test_list_recipes_filtered(auth_client):
     Recipe.objects.create(household=household, title="Try1", list_type="TO_TRY", default_servings=2)
     response = client.get("/api/v1/recipes/?list_type=KNOWN")
     assert response.status_code == 200
-    assert len(response.data) == 1
+    assert len(response.json()) == 1
 
 
 @pytest.mark.django_db
@@ -61,7 +65,7 @@ def test_other_household_recipes_not_visible(auth_client):
     )
     response = client.get("/api/v1/recipes/")
     assert response.status_code == 200
-    assert len(response.data) == 0
+    assert len(response.json()) == 0
 
 
 @pytest.mark.django_db
@@ -82,32 +86,37 @@ def test_create_and_read_recipe_with_nested_data(auth_client):
     ingredient = Ingredient.objects.create(name_en="Flour", name_de="Mehl", category="PANTRY")
     unit = Unit.objects.create(name_en="gram", name_de="Gramm", abbreviation="g")
 
-    # Create recipe with ingredients and steps
     create_response = client.post(
         "/api/v1/recipes/",
-        {
-            "title": "Pancakes",
-            "list_type": "KNOWN",
-            "default_servings": 4,
-            "ingredients": [
-                {"ingredient": ingredient.pk, "quantity": "200.00", "unit": unit.pk, "order": 1},
-            ],
-            "manual_steps": [
-                {"step_number": 1, "instruction": "Mix ingredients"},
-            ],
-            "machine_steps": [
-                {"step_number": 1, "instruction": "Blend for 30 seconds"},
-            ],
-        },
-        format="json",
+        json.dumps(
+            {
+                "title": "Pancakes",
+                "list_type": "KNOWN",
+                "default_servings": 4,
+                "ingredients": [
+                    {
+                        "ingredient": ingredient.pk,
+                        "quantity": "200.00",
+                        "unit": unit.pk,
+                        "order": 1,
+                    },
+                ],
+                "manual_steps": [
+                    {"step_number": 1, "instruction": "Mix ingredients"},
+                ],
+                "machine_steps": [
+                    {"step_number": 1, "instruction": "Blend for 30 seconds"},
+                ],
+            }
+        ),
+        content_type="application/json",
     )
     assert create_response.status_code == 201
-    recipe_id = create_response.data["id"]
+    recipe_id = create_response.json()["id"]
 
-    # Read it back and verify nested data is present
     get_response = client.get(f"/api/v1/recipes/{recipe_id}/")
     assert get_response.status_code == 200
-    data = get_response.data
+    data = get_response.json()
 
     assert data["title"] == "Pancakes"
     assert len(data["ingredients"]) == 1
