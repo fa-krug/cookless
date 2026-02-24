@@ -54,7 +54,6 @@ def verify_authentication(
     challenge: bytes,
     credential_public_key: bytes,
     credential_current_sign_count: int,
-    credential_id: bytes,
 ):
     return verify_authentication_response(
         credential=credential_json,
@@ -63,5 +62,4 @@ def verify_authentication(
         expected_origin=settings.WEBAUTHN_ORIGIN,
         credential_public_key=credential_public_key,
         credential_current_sign_count=credential_current_sign_count,
-        credential_id=credential_id,
     )

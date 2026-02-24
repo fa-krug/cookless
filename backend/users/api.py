@@ -1,5 +1,4 @@
 import json
-import json as json_module
 import uuid
 from datetime import timedelta
 from uuid import UUID
@@ -216,7 +215,7 @@ def add_passkey_begin(request):
         existing_credentials=existing,
     )
     request.session["webauthn_add_challenge"] = bytes_to_base64url(options.challenge)
-    return json_module.loads(options_to_json(options))
+    return json.loads(options_to_json(options))
 
 
 @router.post("/users/me/passkeys/add/complete/", response=PasskeyOut, tags=["passkeys"])
@@ -279,7 +278,7 @@ def register_begin(request, payload: RegisterBeginIn):
     request.session["webauthn_register_invite_code"] = payload.invite_code
     request.session["webauthn_register_user_id"] = temp_user_id
 
-    return json_module.loads(options_json)
+    return json.loads(options_json)
 
 
 @router.post("/auth/passkey/register/complete/", auth=None, response=UserOut, tags=["auth"])
@@ -325,11 +324,15 @@ def register_complete(request, payload: RegisterCompleteIn):
         device_name=payload.device_name,
     )
 
-    # Join household as MEMBER
+    # If the invite creator is inactive (bootstrap), promote to OWNER
+    role = HouseholdMember.Role.MEMBER
+    if not invite.created_by.is_active:
+        role = HouseholdMember.Role.OWNER
+
     HouseholdMember.objects.create(
         household=invite.household,
         user=user,
-        role=HouseholdMember.Role.MEMBER,
+        role=role,
     )
 
     # Set active household
@@ -373,7 +376,7 @@ def login_begin(request, payload: LoginBeginIn):
     request.session["webauthn_login_challenge"] = bytes_to_base64url(options.challenge)
     request.session["webauthn_login_email"] = payload.email
 
-    return json_module.loads(options_json)
+    return json.loads(options_json)
 
 
 @router.post("/auth/login/complete/", auth=None, response=UserOut, tags=["auth"])
@@ -388,12 +391,12 @@ def login_complete(request, payload: LoginCompleteIn):
 
     # Parse credential JSON to extract credential ID
     try:
-        credential_data = json_module.loads(payload.credential)
+        credential_data = json.loads(payload.credential)
         raw_id_b64 = credential_data.get("rawId") or credential_data.get("id")
         if not raw_id_b64:
             raise HttpError(400, "Missing credential ID in response.")
         credential_id = base64url_to_bytes(raw_id_b64)
-    except (json_module.JSONDecodeError, Exception) as e:
+    except (json.JSONDecodeError, Exception) as e:
         raise HttpError(400, f"Invalid credential data: {e}") from None
 
     # Look up stored credential
@@ -412,7 +415,6 @@ def login_complete(request, payload: LoginCompleteIn):
             challenge=challenge,
             credential_public_key=bytes(stored_credential.public_key),
             credential_current_sign_count=stored_credential.sign_count,
-            credential_id=bytes(stored_credential.credential_id),
         )
     except Exception as e:
         raise HttpError(400, f"WebAuthn verification failed: {e}") from None
