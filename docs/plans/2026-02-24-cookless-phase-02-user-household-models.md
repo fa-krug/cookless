@@ -494,3 +494,39 @@ cd backend && pytest users/tests/test_auth.py -v
 git add backend/
 git commit -m "feat: add Apple Sign-In authentication"
 ```
+
+---
+
+## Notes from Phase 1 Implementation
+
+The following items were identified during Phase 1 code reviews and should be addressed during Phase 2:
+
+### Must address before writing Phase 2 code
+
+- **`check_untyped_defs = false` in `pyproject.toml`** -- Flip to `true` before writing real application code. It's easier to maintain type safety from the start than to retrofit it later. Currently mypy skips type-checking the body of any function that lacks annotations.
+
+- **SPA catch-all route** -- `backend/cookless/urls.py` has no catch-all for the React SPA. Any deep link (e.g., `/recipes/42`) will 404 when served through Django in production. Add a catch-all that serves `index.html` for all non-API, non-admin, non-static paths once frontend routing is added.
+
+- **`WHITENOISE_ROOT` and `STATICFILES_DIRS` overlap** -- Both point to `frontend_dist`. For an SPA served at root, `WHITENOISE_ROOT` alone is likely sufficient. Revisit when setting up the SPA catch-all route.
+
+### Should address during Phase 2
+
+- **PWA icon placeholders** -- `frontend/vite.config.ts` references `pwa-192x192.png` and `pwa-512x512.png` that don't exist in `frontend/public/`. Add actual placeholder PNGs (even solid-color squares) to prevent console errors.
+
+- **`STORAGES` setting for WhiteNoise** -- Django 4.2+ supports the `STORAGES` setting. Add `STORAGES = {"staticfiles": {"BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"}}` to enable Brotli/gzip compression and cache-busting hashes.
+
+- **`vitest/globals` TypeScript types** -- `frontend/tsconfig.app.json` only includes `["vite/client"]` in `types`. Add `"vitest/globals"` or create a separate `tsconfig.test.json` so `describe`, `it`, `expect` are available in test files without import.
+
+### Good to know
+
+- **`allauth` apps already in `INSTALLED_APPS`** -- `allauth`, `allauth.account`, `allauth.socialaccount` are already registered from Phase 1. Task 11 only needs to add `allauth.socialaccount.providers.apple` and the `SOCIALACCOUNT_PROVIDERS` config.
+
+- **`rest_framework.authtoken` already in `INSTALLED_APPS`** -- Token auth is ready to use.
+
+- **Health endpoint exists at `/health/`** -- Returns `{"status": "ok"}`. Docker healthcheck is configured to use it.
+
+- **Pytest configured with `pythonpath = ["backend"]` and `testpaths = ["backend"]`** -- Tests in `backend/users/tests/` will be discovered automatically. Run with `pytest` from the project root.
+
+- **Pre-commit hooks active** -- ruff lint, ruff format, and mypy will run on every commit. The mypy hook uses `cd backend && python3 -m mypy --config-file=../pyproject.toml .`
+
+- **`docker-compose.yml` dev setup** -- Mounts `./backend:/app` and uses `runserver`. Frontend served separately via `cd frontend && npm run dev` at port 5173. The Vite proxy forwards `/api` to `http://localhost:8000`.
