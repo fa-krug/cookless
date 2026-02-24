@@ -128,7 +128,12 @@
     "done": "Fertig!",
     "manualStep": "Manueller Schritt",
     "machineStep": "Maschinenschritt",
-    "timerRunning": "Timer läuft..."
+    "timerRunning": "Timer läuft...",
+    "manualMethod": "Manuell",
+    "machineMethod": "Maschine",
+    "wakeLockActive": "Bildschirm bleibt an",
+    "wakeLockInactive": "Bildschirmsperre aktiv",
+    "noSteps": "Keine Schritte für diese Methode"
   },
   "household": {
     "title": "Haushalt",

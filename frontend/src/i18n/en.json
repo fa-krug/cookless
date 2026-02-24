@@ -128,7 +128,12 @@
     "done": "Done!",
     "manualStep": "Manual Step",
     "machineStep": "Machine Step",
-    "timerRunning": "Timer running..."
+    "timerRunning": "Timer running...",
+    "manualMethod": "Manual",
+    "machineMethod": "Machine",
+    "wakeLockActive": "Screen stays on",
+    "wakeLockInactive": "Screen lock active",
+    "noSteps": "No steps for this method"
   },
   "household": {
     "title": "Household",
