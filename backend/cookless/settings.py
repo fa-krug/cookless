@@ -43,7 +43,11 @@ if env_file.exists():
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = env("SECRET_KEY") or secrets.token_hex(50)
+SECRET_KEY = env("SECRET_KEY")
+if not SECRET_KEY:
+    if not env("DEBUG"):
+        raise RuntimeError("SECRET_KEY must be set in production (DEBUG=False)")
+    SECRET_KEY = secrets.token_hex(50)
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env("DEBUG")
@@ -193,7 +197,7 @@ MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
 # Frontend build directory (React via Vite)
-FRONTEND_DIST = BASE_DIR.parent / "frontend_dist"
+FRONTEND_DIST = BASE_DIR / "frontend_dist"
 if FRONTEND_DIST.is_dir():
     STATICFILES_DIRS = [FRONTEND_DIST]
     WHITENOISE_ROOT = FRONTEND_DIST
