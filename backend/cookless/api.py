@@ -9,6 +9,8 @@ api = NinjaAPI(
     urls_namespace="api-v1",
 )
 
+from recipes.api import router as recipes_router  # noqa: E402
 from users.api import router as users_router  # noqa: E402
 
 api.add_router("", users_router)
+api.add_router("", recipes_router)
