@@ -137,12 +137,25 @@
   },
   "household": {
     "title": "Household",
+    "currentHousehold": "Current Household",
+    "switchHousehold": "Switch Household",
+    "createHousehold": "Create Household",
+    "householdName": "Household name",
     "members": "Members",
     "invites": "Invites",
     "inviteMember": "Invite Member",
+    "owner": "Owner",
+    "member": "Member",
+    "generateInvite": "Generate Invite",
     "inviteCode": "Invite Code",
+    "inviteExpiry": "Expires {{date}}",
+    "copyLink": "Copy Code",
+    "copied": "Copied!",
     "copyCode": "Copy Code",
     "codeCopied": "Code copied!",
+    "joinHousehold": "Join Household",
+    "inviteCodePlaceholder": "Paste invite code",
+    "noHousehold": "You are not a member of any household yet.",
     "removeMember": "Remove Member",
     "removeMemberConfirm": "Are you sure you want to remove this member?",
     "leaveHousehold": "Leave Household",
@@ -150,8 +163,7 @@
     "role": {
       "owner": "Owner",
       "member": "Member"
-    },
-    "inviteExpiry": "Expires in {{days}} days"
+    }
   },
   "settings": {
     "title": "Settings",

@@ -137,12 +137,25 @@
   },
   "household": {
     "title": "Haushalt",
+    "currentHousehold": "Aktueller Haushalt",
+    "switchHousehold": "Haushalt wechseln",
+    "createHousehold": "Haushalt erstellen",
+    "householdName": "Haushaltsname",
     "members": "Mitglieder",
     "invites": "Einladungen",
     "inviteMember": "Mitglied einladen",
+    "owner": "Eigentümer",
+    "member": "Mitglied",
+    "generateInvite": "Einladung erstellen",
     "inviteCode": "Einladungscode",
+    "inviteExpiry": "Gültig bis {{date}}",
+    "copyLink": "Code kopieren",
+    "copied": "Kopiert!",
     "copyCode": "Code kopieren",
     "codeCopied": "Code kopiert!",
+    "joinHousehold": "Haushalt beitreten",
+    "inviteCodePlaceholder": "Einladungscode einfügen",
+    "noHousehold": "Du bist noch kein Mitglied eines Haushalts.",
     "removeMember": "Mitglied entfernen",
     "removeMemberConfirm": "Möchtest du dieses Mitglied wirklich entfernen?",
     "leaveHousehold": "Haushalt verlassen",
@@ -150,8 +163,7 @@
     "role": {
       "owner": "Eigentümer",
       "member": "Mitglied"
-    },
-    "inviteExpiry": "Läuft in {{days}} Tagen ab"
+    }
   },
   "settings": {
     "title": "Einstellungen",
