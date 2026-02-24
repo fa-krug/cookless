@@ -7,7 +7,7 @@ from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from users.models import Household, HouseholdMember, Invite
+from users.models import Household, HouseholdMember, Invite, User
 from users.serializers import (
     HouseholdSerializer,
     InviteSerializer,
@@ -17,13 +17,13 @@ from users.serializers import (
 # ── Helpers ──────────────────────────────────────────────────────────
 
 
-def _is_owner(user, household):
+def _is_owner(user: User, household: Household) -> bool:
     return HouseholdMember.objects.filter(
         household=household, user=user, role=HouseholdMember.Role.OWNER
     ).exists()
 
 
-def _is_member(user, household):
+def _is_member(user: User, household: Household) -> bool:
     return HouseholdMember.objects.filter(household=household, user=user).exists()
 
 

@@ -22,6 +22,7 @@ class Migration(migrations.Migration):
                 ('created_by', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='created_invites', to=settings.AUTH_USER_MODEL)),
                 ('household', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='invites', to='users.household')),
                 ('used_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='used_invites', to=settings.AUTH_USER_MODEL)),
+                ('created_at', models.DateTimeField(auto_now_add=True)),
             ],
         ),
     ]
