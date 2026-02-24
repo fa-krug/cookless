@@ -15,6 +15,7 @@ class TokenAuth(HttpBearer):
 
         try:
             token_obj = Token.objects.select_related("user").get(key=token)
+            request.user = token_obj.user
             return token_obj.user
         except Token.DoesNotExist:
             return None
