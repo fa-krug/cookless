@@ -127,10 +127,13 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = "cookless.urls"
 
+# Frontend build directory (React via Vite)
+FRONTEND_DIST = BASE_DIR / "frontend_dist"
+
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [FRONTEND_DIST] if FRONTEND_DIST.is_dir() else [],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -203,8 +206,6 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
-# Frontend build directory (React via Vite)
-FRONTEND_DIST = BASE_DIR / "frontend_dist"
 if FRONTEND_DIST.is_dir():
     STATICFILES_DIRS = [FRONTEND_DIST]
     WHITENOISE_ROOT = FRONTEND_DIST
