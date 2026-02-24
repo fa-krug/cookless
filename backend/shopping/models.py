@@ -23,7 +23,7 @@ class ShoppingListItem(models.Model):
     is_checked = models.BooleanField(default=False)
 
     class Meta:
-        ordering = ["ingredient__name_en"]
+        ordering = ["ingredient__category", "ingredient__name_en"]
 
     def __str__(self) -> str:
         return f"{self.ingredient} - {self.quantity} {self.unit}"
