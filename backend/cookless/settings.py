@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 Environment variables are loaded from .env file using django-environ.
 """
 
+import secrets
 from pathlib import Path
 
 import environ
@@ -42,8 +43,6 @@ if env_file.exists():
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-import secrets
-
 SECRET_KEY = env("SECRET_KEY") or secrets.token_hex(50)
 
 # SECURITY WARNING: don't run with debug turned on in production!
@@ -227,9 +226,7 @@ REST_FRAMEWORK = {
 # https://github.com/adamchainz/django-cors-headers
 
 CORS_ALLOWED_ORIGINS = [
-    origin.strip()
-    for origin in env("CORS_ALLOWED_ORIGINS").split(",")
-    if origin.strip()
+    origin.strip() for origin in env("CORS_ALLOWED_ORIGINS").split(",") if origin.strip()
 ]
 CORS_ALLOW_CREDENTIALS = True
 
