@@ -202,3 +202,47 @@ def test_shopping_list_replaces_existing_for_same_plan():
 
     assert ShoppingList.objects.filter(meal_plan=plan).count() == 1
     assert first_list.id != second_list.id
+
+
+@pytest.mark.django_db
+def test_shopping_list_empty_plan_creates_empty_list():
+    """An empty meal plan produces a shopping list with no items."""
+    household = Household.objects.create(name="Home")
+    plan = MealPlan.objects.create(
+        household=household, start_date=date(2026, 3, 1), end_date=date(2026, 3, 7)
+    )
+
+    shopping_list = generate_shopping_list(plan)
+    assert shopping_list.items.count() == 0
+
+
+@pytest.mark.django_db
+def test_shopping_list_multiple_ingredients_per_recipe():
+    """A recipe with multiple ingredients creates separate shopping list items."""
+    household = Household.objects.create(name="Home")
+    flour = Ingredient.objects.create(name_de="Mehl", name_en="flour", category="PANTRY")
+    sugar = Ingredient.objects.create(name_de="Zucker", name_en="sugar", category="PANTRY")
+    gram = Unit.objects.create(name_de="Gramm", name_en="gram", abbreviation="g")
+
+    r1 = Recipe.objects.create(
+        household=household, title="Cake", list_type="KNOWN", default_servings=2
+    )
+    RecipeIngredient.objects.create(recipe=r1, ingredient=flour, quantity=300, unit=gram, order=1)
+    RecipeIngredient.objects.create(recipe=r1, ingredient=sugar, quantity=150, unit=gram, order=2)
+
+    plan = MealPlan.objects.create(
+        household=household, start_date=date(2026, 3, 1), end_date=date(2026, 3, 7)
+    )
+    MealPlanEntry.objects.create(
+        meal_plan=plan,
+        date=date(2026, 3, 1),
+        meal_type="DINNER",
+        recipe=r1,
+        servings=2,
+        is_leftover=False,
+    )
+
+    shopping_list = generate_shopping_list(plan)
+    assert shopping_list.items.count() == 2
+    assert shopping_list.items.get(ingredient=flour).quantity == Decimal("300.00")
+    assert shopping_list.items.get(ingredient=sugar).quantity == Decimal("150.00")
