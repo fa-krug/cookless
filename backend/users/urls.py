@@ -1,5 +1,6 @@
 from django.urls import path
 
+from users.auth import AppleLoginView, LogoutView
 from users.views import (
     HouseholdListCreateView,
     HouseholdMemberDeleteView,
@@ -22,4 +23,6 @@ urlpatterns = [
         name="household-member-delete",
     ),
     path("invites/<str:code>/accept/", InviteAcceptView.as_view(), name="invite-accept"),
+    path("auth/apple/", AppleLoginView.as_view(), name="apple-login"),
+    path("auth/logout/", LogoutView.as_view(), name="logout"),
 ]

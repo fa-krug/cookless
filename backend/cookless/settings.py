@@ -103,6 +103,7 @@ INSTALLED_APPS = [
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
+    "allauth.socialaccount.providers.apple",
 ]
 
 AUTH_USER_MODEL = "users.User"
@@ -246,6 +247,17 @@ CORS_ALLOW_CREDENTIALS = True
 
 # django-allauth
 # https://docs.allauth.org/en/latest/
+
+SOCIALACCOUNT_PROVIDERS = {
+    "apple": {
+        "APP": {
+            "client_id": env("APPLE_CLIENT_ID", default=""),
+            "secret": env("APPLE_SECRET_KEY", default=""),
+            "key": env("APPLE_KEY_ID", default=""),
+        },
+        "CERTIFICATE_KEY": env("APPLE_CERTIFICATE_KEY", default=""),
+    }
+}
 
 AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
