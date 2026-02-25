@@ -4,6 +4,8 @@ from datetime import timedelta
 from uuid import UUID
 
 from django.contrib.auth import get_user_model, login, logout
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 
@@ -22,6 +24,7 @@ from users.schemas import (
     LoginBeginIn,
     LoginCompleteIn,
     LoginPasswordIn,
+    RegisterPasswordIn,
     MessageOut,
     PasskeyOut,
     RegisterBeginIn,
@@ -250,6 +253,36 @@ def login_password(request, payload: LoginPasswordIn):
     user = User.objects.filter(email=payload.email).first()
     if not user or not user.check_password(payload.password):
         raise HttpError(401, "Invalid email or password.")
+    login(request, user, backend="django.contrib.auth.backends.ModelBackend")
+    return user
+
+
+@router.post("/auth/register/password/", auth=None, response=UserOut, tags=["auth"])
+def register_password(request, payload: RegisterPasswordIn):
+    invite = Invite.objects.filter(code=payload.invite_code).first()
+    if not invite:
+        raise HttpError(400, "Invalid invite code.")
+    if invite.is_expired:
+        raise HttpError(400, "This invite has expired.")
+    if invite.used_by is not None:
+        raise HttpError(400, "This invite has already been used.")
+    if User.objects.filter(email=payload.email).exists():
+        raise HttpError(409, "A user with this email already exists.")
+    try:
+        validate_password(payload.password)
+    except ValidationError as e:
+        raise HttpError(400, " ".join(e.messages)) from None
+    user = User.objects.create_user(email=payload.email)
+    user.set_password(payload.password)
+    user.save()
+    role = HouseholdMember.Role.MEMBER
+    if not invite.created_by.is_active:
+        role = HouseholdMember.Role.OWNER
+    HouseholdMember.objects.create(household=invite.household, user=user, role=role)
+    user.active_household = invite.household
+    user.save()
+    invite.used_by = user
+    invite.save()
     login(request, user, backend="django.contrib.auth.backends.ModelBackend")
     return user
 

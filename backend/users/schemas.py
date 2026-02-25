@@ -98,6 +98,12 @@ class LoginPasswordIn(Schema):
     password: str
 
 
+class RegisterPasswordIn(Schema):
+    email: str
+    password: str
+    invite_code: str
+
+
 class LoginBeginIn(Schema):
     email: str
 

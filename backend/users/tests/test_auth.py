@@ -105,3 +105,117 @@ def test_password_login_no_password_set():
         content_type="application/json",
     )
     assert response.status_code == 401
+
+
+# ── Password Registration ───────────────────────────────────────────
+
+from datetime import timedelta
+
+from django.utils import timezone
+
+from users.models import Household, HouseholdMember, Invite
+
+_invite_counter = 0
+
+
+def _create_invite():
+    global _invite_counter
+    _invite_counter += 1
+    owner = User.objects.create_user(email=f"owner-{_invite_counter}@example.com")
+    household = Household.objects.create(name="Test Household")
+    HouseholdMember.objects.create(
+        household=household, user=owner, role=HouseholdMember.Role.OWNER
+    )
+    invite = Invite.objects.create(
+        household=household,
+        created_by=owner,
+        expires_at=timezone.now() + timedelta(days=7),
+    )
+    return invite
+
+
+@pytest.mark.django_db
+def test_password_register_success():
+    client = Client()
+    invite = _create_invite()
+    response = client.post(
+        "/api/v1/auth/register/password/",
+        json.dumps({
+            "email": "newuser@example.com",
+            "password": "securepassword1",
+            "invite_code": invite.code,
+        }),
+        content_type="application/json",
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["email"] == "newuser@example.com"
+    assert data["has_password"] is True
+    assert data["has_passkey"] is False
+    me_response = client.get("/api/v1/users/me/")
+    assert me_response.status_code == 200
+
+
+@pytest.mark.django_db
+def test_password_register_invalid_invite():
+    client = Client()
+    response = client.post(
+        "/api/v1/auth/register/password/",
+        json.dumps({
+            "email": "newuser2@example.com",
+            "password": "securepassword1",
+            "invite_code": "invalid-code",
+        }),
+        content_type="application/json",
+    )
+    assert response.status_code == 400
+
+
+@pytest.mark.django_db
+def test_password_register_email_taken():
+    client = Client()
+    invite = _create_invite()
+    User.objects.create_user(email="taken@example.com")
+    response = client.post(
+        "/api/v1/auth/register/password/",
+        json.dumps({
+            "email": "taken@example.com",
+            "password": "securepassword1",
+            "invite_code": invite.code,
+        }),
+        content_type="application/json",
+    )
+    assert response.status_code == 409
+
+
+@pytest.mark.django_db
+def test_password_register_weak_password():
+    client = Client()
+    invite = _create_invite()
+    response = client.post(
+        "/api/v1/auth/register/password/",
+        json.dumps({
+            "email": "weakpw@example.com",
+            "password": "123",
+            "invite_code": invite.code,
+        }),
+        content_type="application/json",
+    )
+    assert response.status_code == 400
+
+
+@pytest.mark.django_db
+def test_password_register_consumes_invite():
+    client = Client()
+    invite = _create_invite()
+    client.post(
+        "/api/v1/auth/register/password/",
+        json.dumps({
+            "email": "consumer@example.com",
+            "password": "securepassword1",
+            "invite_code": invite.code,
+        }),
+        content_type="application/json",
+    )
+    invite.refresh_from_db()
+    assert invite.used_by is not None
