@@ -152,6 +152,8 @@ WSGI_APPLICATION = "cookless.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
+DATA_DIR = Path(env("DATA_DIR", default=str(BASE_DIR)))
+
 database_url = env("DATABASE_URL")
 if database_url:
     DATABASES = {
@@ -161,7 +163,7 @@ else:
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
-            "NAME": BASE_DIR / "db.sqlite3",
+            "NAME": DATA_DIR / "db.sqlite3",
         }
     }
 
@@ -197,7 +199,7 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 
 # Media files (User uploads)
 MEDIA_URL = "/media/"
-MEDIA_ROOT = BASE_DIR / "media"
+MEDIA_ROOT = DATA_DIR / "media"
 
 if FRONTEND_DIST.is_dir():
     STATICFILES_DIRS = [FRONTEND_DIST]
