@@ -97,7 +97,7 @@ export default function SettingsPage() {
       await fetchPasskeys();
       await refreshUser();
     } catch {
-      // silently fail
+      addToast(t("errors.passkeyDelete"), "error");
     }
   }
 

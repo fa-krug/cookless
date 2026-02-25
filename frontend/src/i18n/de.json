@@ -237,7 +237,9 @@
     "householdCreate": "Haushalt konnte nicht erstellt werden.",
     "householdJoin": "Beitritt zum Haushalt fehlgeschlagen.",
     "householdSwitch": "Haushalt konnte nicht gewechselt werden.",
-    "memberRemove": "Mitglied konnte nicht entfernt werden."
+    "memberRemove": "Mitglied konnte nicht entfernt werden.",
+    "inviteCreate": "Einladung konnte nicht erstellt werden.",
+    "passkeyDelete": "Passkey konnte nicht entfernt werden."
   },
   "success": {
     "recipeSaved": "Rezept gespeichert!",

@@ -237,7 +237,9 @@
     "householdCreate": "Could not create household.",
     "householdJoin": "Could not join household.",
     "householdSwitch": "Could not switch household.",
-    "memberRemove": "Could not remove member."
+    "memberRemove": "Could not remove member.",
+    "inviteCreate": "Could not create invite.",
+    "passkeyDelete": "Could not remove passkey."
   },
   "success": {
     "recipeSaved": "Recipe saved!",

@@ -82,7 +82,7 @@ function InviteSection({ householdId }: { householdId: string }) {
         setInvite(data);
         setCopied(false);
       },
-      onError: () => addToast(t("common.error"), "error"),
+      onError: () => addToast(t("errors.inviteCreate"), "error"),
     });
   }
 
