@@ -21,6 +21,10 @@ export default function Layout() {
     return <Navigate to="/login" replace />;
   }
 
+  if (user.onboarding_step !== "COMPLETED") {
+    return <Navigate to="/setup" replace />;
+  }
+
   return (
     <div className="flex min-h-screen bg-white md:flex-row">
       <BottomNav />

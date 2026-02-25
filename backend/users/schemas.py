@@ -40,6 +40,7 @@ class UserOut(Schema):
     preferred_language: str
     settings: dict
     active_household: HouseholdSummaryOut | None
+    onboarding_step: str
     has_password: bool
     has_passkey: bool
 

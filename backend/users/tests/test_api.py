@@ -98,6 +98,13 @@ class TestUserMe:
         user.refresh_from_db()
         assert user.active_household == household
 
+    def test_get_me_includes_onboarding_step(self, api_client, user):
+        api_client.force_login(user)
+        resp = api_client.get("/api/v1/users/me/")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["onboarding_step"] == "CHANGE_PASSWORD"
+
     def test_patch_me_active_household_non_member_rejected(self, api_client, user, other_user):
         """Users cannot set active_household to a household they are not a member of."""
         h = Household.objects.create(name="Not Mine")
@@ -502,3 +509,96 @@ class TestTransferOwnership:
             f"/api/v1/households/{household.pk}/members/{owner_membership.pk}/transfer-ownership/"
         )
         assert resp.status_code == 404
+
+
+@pytest.mark.django_db
+class TestSkipPasskey:
+    def test_skip_passkey_advances_step(self, api_client, user):
+        user.onboarding_step = "ADD_PASSKEY"
+        user.save()
+        api_client.force_login(user)
+        resp = api_client.post("/api/v1/users/me/skip-passkey/")
+        assert resp.status_code == 200
+        user.refresh_from_db()
+        assert user.onboarding_step == "CREATE_HOUSEHOLD"
+
+    def test_skip_passkey_wrong_step(self, api_client, user):
+        user.onboarding_step = "CHANGE_PASSWORD"
+        user.save()
+        api_client.force_login(user)
+        resp = api_client.post("/api/v1/users/me/skip-passkey/")
+        assert resp.status_code == 400
+
+
+@pytest.mark.django_db
+class TestOnboardingAdvancement:
+    def test_set_password_advances_from_change_password(self, api_client, user):
+        user.set_password("OldPass123!")
+        user.onboarding_step = "CHANGE_PASSWORD"
+        user.save()
+        api_client.force_login(user)
+        resp = api_client.post(
+            "/api/v1/users/me/password/",
+            json.dumps({"current_password": "OldPass123!", "new_password": "NewSecure456!"}),
+            content_type="application/json",
+        )
+        assert resp.status_code == 200
+        user.refresh_from_db()
+        assert user.onboarding_step == "ADD_PASSKEY"
+
+    def test_set_password_no_advance_if_not_onboarding(self, api_client, user):
+        user.set_password("OldPass123!")
+        user.onboarding_step = "COMPLETED"
+        user.save()
+        api_client.force_login(user)
+        resp = api_client.post(
+            "/api/v1/users/me/password/",
+            json.dumps({"current_password": "OldPass123!", "new_password": "NewSecure456!"}),
+            content_type="application/json",
+        )
+        assert resp.status_code == 200
+        user.refresh_from_db()
+        assert user.onboarding_step == "COMPLETED"
+
+    def test_create_household_advances_from_create_household(self, api_client, user):
+        user.onboarding_step = "CREATE_HOUSEHOLD"
+        user.save()
+        api_client.force_login(user)
+        resp = api_client.post(
+            "/api/v1/households/",
+            json.dumps({"name": "My Home"}),
+            content_type="application/json",
+        )
+        assert resp.status_code == 201
+        user.refresh_from_db()
+        assert user.onboarding_step == "COMPLETED"
+
+
+@pytest.mark.django_db
+class TestInviteRegistrationOnboarding:
+    def test_password_register_sets_completed(self, api_client, user, household):
+        api_client.force_login(user)
+        resp = api_client.post(
+            f"/api/v1/households/{household.id}/invites/",
+            content_type="application/json",
+        )
+        assert resp.status_code == 201
+        invite_code = resp.json()["code"]
+
+        new_client = Client()
+        resp = new_client.post(
+            "/api/v1/auth/register/password/",
+            json.dumps(
+                {
+                    "email": "newuser@example.com",
+                    "password": "SecurePass123!",
+                    "invite_code": invite_code,
+                }
+            ),
+            content_type="application/json",
+        )
+        assert resp.status_code == 200
+        from users.models import User
+
+        new_user = User.objects.get(email="newuser@example.com")
+        assert new_user.onboarding_step == "COMPLETED"
