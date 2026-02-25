@@ -31,6 +31,16 @@ env = environ.Env(
     DATABASE_URL=(str, ""),
     # CORS
     CORS_ALLOWED_ORIGINS=(str, "http://localhost:3000,http://localhost:5173"),
+    # Email
+    EMAIL_HOST=(str, ""),
+    EMAIL_PORT=(int, 587),
+    EMAIL_USE_TLS=(bool, True),
+    EMAIL_USE_SSL=(bool, False),
+    EMAIL_HOST_USER=(str, ""),
+    EMAIL_HOST_PASSWORD=(str, ""),
+    DEFAULT_FROM_EMAIL=(str, "noreply@localhost"),
+    SERVER_EMAIL=(str, "server@localhost"),
+    ADMIN_EMAIL=(str, ""),
 )
 
 # Read environment file (.env) if it exists
@@ -232,12 +242,45 @@ WEBAUTHN_ORIGIN = [
 ]
 
 
+# Email Configuration
+# https://docs.djangoproject.com/en/5.1/topics/email/
+
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = env("EMAIL_HOST")
+EMAIL_PORT = env("EMAIL_PORT")
+EMAIL_USE_TLS = env("EMAIL_USE_TLS")
+EMAIL_USE_SSL = env("EMAIL_USE_SSL")
+EMAIL_HOST_USER = env("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD")
+DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL")
+SERVER_EMAIL = env("SERVER_EMAIL")
+EMAIL_TIMEOUT = 10
+
+ADMINS = []
+admin_email = env("ADMIN_EMAIL")
+if admin_email:
+    admin_entries = [entry.strip() for entry in admin_email.split(",")]
+    for entry in admin_entries:
+        if "<" in entry and ">" in entry:
+            name = entry.split("<")[0].strip()
+            email_addr = entry.split("<")[1].split(">")[0].strip()
+            ADMINS.append((name, email_addr))
+        else:
+            ADMINS.append(("Admin", entry.strip()))
+MANAGERS = ADMINS
+
+
 # Logging Configuration
 # https://docs.djangoproject.com/en/5.1/topics/logging/
 
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
+    "filters": {
+        "require_debug_false": {
+            "()": "django.utils.log.RequireDebugFalse",
+        },
+    },
     "formatters": {
         "simple": {
             "format": "[{levelname}] {asctime} {name} {message}",
@@ -250,6 +293,12 @@ LOGGING = {
             "class": "logging.StreamHandler",
             "formatter": "simple",
         },
+        "mail_admins": {
+            "level": "ERROR",
+            "class": "django.utils.log.AdminEmailHandler",
+            "filters": ["require_debug_false"],
+            "include_html": True,
+        },
     },
     "loggers": {
         "django": {
@@ -258,7 +307,7 @@ LOGGING = {
             "propagate": False,
         },
         "django.request": {
-            "handlers": ["console"],
+            "handlers": ["console", "mail_admins"],
             "level": "ERROR",
             "propagate": False,
         },

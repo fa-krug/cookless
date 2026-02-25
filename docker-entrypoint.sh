@@ -4,4 +4,21 @@ set -euo pipefail
 python manage.py collectstatic --noinput
 python manage.py migrate --noinput
 
+if [ -n "$SUPERUSER_EMAIL" ] && [ -n "$SUPERUSER_PASSWORD" ]; then
+    echo "Checking for superuser..."
+    python manage.py shell << EOF
+from django.contrib.auth import get_user_model
+User = get_user_model()
+
+if not User.objects.filter(email='$SUPERUSER_EMAIL').exists():
+    User.objects.create_superuser(
+        email='$SUPERUSER_EMAIL',
+        password='$SUPERUSER_PASSWORD',
+    )
+    print('Superuser created: $SUPERUSER_EMAIL')
+else:
+    print('Superuser already exists: $SUPERUSER_EMAIL')
+EOF
+fi
+
 exec "$@"
