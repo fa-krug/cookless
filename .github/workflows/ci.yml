@@ -204,7 +204,7 @@ jobs:
           echo "Fetching stack configuration..."
           STACK_RESPONSE=$(curl -sf -H "X-API-Key: $API_KEY" "$PORTAINER_URL/api/stacks/$STACK_ID")
           ENV_VARS=$(echo "$STACK_RESPONSE" | jq -c '.Env // []')
-          WEBHOOK=$(echo "$STACK_RESPONSE" | jq -c '.Webhook // null')
+          WEBHOOK=$(echo "$STACK_RESPONSE" | jq -c 'if .Webhook == "" or .Webhook == null then null else .Webhook end')
           echo "Fetching stack file content..."
           FILE_RESPONSE=$(curl -sf -H "X-API-Key: $API_KEY" "$PORTAINER_URL/api/stacks/$STACK_ID/file")
           STACK_FILE_CONTENT=$(echo "$FILE_RESPONSE" | jq -r '.StackFileContent')
