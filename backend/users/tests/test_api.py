@@ -365,3 +365,45 @@ class TestHouseholdMemberDelete:
             f"/api/v1/households/{household.pk}/members/{owner_membership.pk}/"
         )
         assert resp.status_code == 404
+
+
+@pytest.mark.django_db
+class TestHouseholdDelete:
+    def test_owner_deletes_household_sole_member(self, api_client, user, household):
+        api_client.force_login(user)
+        resp = api_client.delete(f"/api/v1/households/{household.pk}/")
+        assert resp.status_code == 204
+        assert not Household.objects.filter(pk=household.pk).exists()
+        user.refresh_from_db()
+        assert user.active_household is None
+
+    def test_owner_deletes_household_switches_to_next(self, api_client, user, household):
+        h2 = Household.objects.create(name="Second Home")
+        HouseholdMember.objects.create(household=h2, user=user, role=HouseholdMember.Role.MEMBER)
+        api_client.force_login(user)
+        resp = api_client.delete(f"/api/v1/households/{household.pk}/")
+        assert resp.status_code == 204
+        user.refresh_from_db()
+        assert user.active_household == h2
+
+    def test_owner_cannot_delete_with_other_members(self, api_client, user, household, other_user):
+        HouseholdMember.objects.create(
+            household=household, user=other_user, role=HouseholdMember.Role.MEMBER
+        )
+        api_client.force_login(user)
+        resp = api_client.delete(f"/api/v1/households/{household.pk}/")
+        assert resp.status_code == 409
+        assert Household.objects.filter(pk=household.pk).exists()
+
+    def test_member_cannot_delete_household(self, api_client, other_user, household):
+        HouseholdMember.objects.create(
+            household=household, user=other_user, role=HouseholdMember.Role.MEMBER
+        )
+        api_client.force_login(other_user)
+        resp = api_client.delete(f"/api/v1/households/{household.pk}/")
+        assert resp.status_code == 403
+
+    def test_non_member_cannot_delete_household(self, api_client, other_user, household):
+        api_client.force_login(other_user)
+        resp = api_client.delete(f"/api/v1/households/{household.pk}/")
+        assert resp.status_code == 404

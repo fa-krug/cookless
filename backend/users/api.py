@@ -159,6 +159,24 @@ def switch_household(request, household_id: UUID):
     return {"detail": "Switched active household."}
 
 
+@router.delete("/households/{household_id}/", response={204: None}, tags=["households"])
+def delete_household(request, household_id: UUID):
+    household = get_object_or_404(
+        Household.objects.filter(members__user=request.user), pk=household_id
+    )
+    require_household_owner(request, household)
+    member_count = household.members.count()
+    if member_count > 1:
+        raise HttpError(409, "Remove all other members before deleting.")
+    household.delete()
+    # Auto-switch active household
+    if request.user.active_household_id == household_id:
+        next_membership = request.user.household_memberships.select_related("household").first()
+        request.user.active_household = next_membership.household if next_membership else None
+        request.user.save()
+    return None
+
+
 # ── Invites ──────────────────────────────────────────────────────────
 
 
