@@ -60,11 +60,7 @@ if DEBUG:
         f"http://{host.strip()}"
         for host in env("ALLOWED_HOSTS").split(",")
         if host.strip() not in ("*", "")
-    ] + [
-        origin.strip()
-        for origin in env("CORS_ALLOWED_ORIGINS").split(",")
-        if origin.strip()
-    ]
+    ] + [origin.strip() for origin in env("CORS_ALLOWED_ORIGINS").split(",") if origin.strip()]
 else:
     CSRF_TRUSTED_ORIGINS = [
         f"https://{host.strip()}"

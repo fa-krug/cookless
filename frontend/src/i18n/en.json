@@ -75,6 +75,7 @@
     "source": "Source",
     "notes": "Notes",
     "editRecipe": "Edit Recipe",
+    "newRecipe": "New Recipe",
     "titlePlaceholder": "Recipe title",
     "moveToKnown": "Move to Known",
     "moveToTry": "Move to To Try"
@@ -235,8 +236,6 @@
     "defaultServings": "Default servings",
     "knownRatio": "Known/new recipe ratio",
     "planDays": "Plan days",
-    "save": "Save settings",
-    "saved": "Settings saved!",
     "logout": "Log out",
     "logoutConfirm": "Are you sure you want to log out?",
     "account": "Account"

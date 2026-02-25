@@ -1,3 +1,4 @@
+import { Plus, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 export interface StepRow {
@@ -37,9 +38,10 @@ export default function StepEditor({ steps, onChange, label }: StepEditorProps) 
         <button
           type="button"
           onClick={addStep}
-          className="rounded-md bg-orange-500 px-3 py-1 text-sm font-medium text-white hover:bg-orange-600"
+          className="rounded-md bg-orange-500 p-1.5 text-white hover:bg-orange-600"
+          aria-label={t("steps.add")}
         >
-          {t("steps.add")}
+          <Plus size={18} />
         </button>
       </div>
 
@@ -63,10 +65,10 @@ export default function StepEditor({ steps, onChange, label }: StepEditorProps) 
             <button
               type="button"
               onClick={() => removeStep(index)}
-              className="shrink-0 rounded-md px-2 py-1.5 text-sm text-red-600 hover:bg-red-50"
+              className="shrink-0 rounded-md p-1.5 text-red-600 hover:bg-red-50"
               aria-label={t("common.remove")}
             >
-              {t("common.remove")}
+              <X size={18} />
             </button>
           </div>
         ))}

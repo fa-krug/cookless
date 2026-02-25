@@ -75,6 +75,7 @@
     "source": "Quelle",
     "notes": "Notizen",
     "editRecipe": "Rezept bearbeiten",
+    "newRecipe": "Neues Rezept",
     "titlePlaceholder": "Rezepttitel",
     "moveToKnown": "Zu Bekannt verschieben",
     "moveToTry": "Zu Ausprobieren verschieben"
@@ -235,8 +236,6 @@
     "defaultServings": "Standardportionen",
     "knownRatio": "Verhältnis bekannt/neu",
     "planDays": "Plantage",
-    "save": "Einstellungen speichern",
-    "saved": "Einstellungen gespeichert!",
     "logout": "Abmelden",
     "logoutConfirm": "Möchtest du dich wirklich abmelden?",
     "account": "Konto"

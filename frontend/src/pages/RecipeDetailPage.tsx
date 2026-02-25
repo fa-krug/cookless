@@ -1,4 +1,5 @@
 import { useQueryClient } from "@tanstack/react-query";
+import { ArrowLeftRight, ArrowLeft, Save, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
@@ -168,9 +169,10 @@ function RecipeForm({ recipe, recipeId, allIngredients, allUnits }: RecipeFormPr
         <button
           type="button"
           onClick={() => navigate("/recipes")}
-          className="text-sm text-gray-500 hover:text-gray-700"
+          className="rounded-md p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+          aria-label={t("common.back")}
         >
-          {t("common.back")}
+          <ArrowLeft size={20} />
         </button>
       </div>
 
@@ -253,8 +255,9 @@ function RecipeForm({ recipe, recipeId, allIngredients, allUnits }: RecipeFormPr
             type="button"
             onClick={handleMove}
             disabled={moveRecipe.isPending}
-            className="w-full rounded-lg border border-orange-500 px-4 py-2 text-sm font-medium text-orange-500 hover:bg-orange-50 disabled:opacity-50"
+            className="flex w-full items-center justify-center gap-2 rounded-lg border border-orange-500 px-4 py-2 text-sm font-medium text-orange-500 hover:bg-orange-50 disabled:opacity-50"
           >
+            <ArrowLeftRight size={16} />
             {recipe.list_type === "KNOWN" ? t("recipes.moveToTry") : t("recipes.moveToKnown")}
           </button>
 
@@ -263,16 +266,18 @@ function RecipeForm({ recipe, recipeId, allIngredients, allUnits }: RecipeFormPr
             <button
               type="submit"
               disabled={updateRecipe.isPending}
-              className="flex-1 rounded-lg bg-orange-500 px-4 py-2 text-sm font-medium text-white hover:bg-orange-600 disabled:opacity-50"
+              className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-orange-500 px-4 py-2 text-sm font-medium text-white hover:bg-orange-600 disabled:opacity-50"
             >
+              <Save size={16} />
               {t("common.save")}
             </button>
             <button
               type="button"
               onClick={handleDelete}
               disabled={deleteRecipe.isPending}
-              className="rounded-lg border border-red-300 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 disabled:opacity-50"
+              className="flex items-center gap-2 rounded-lg border border-red-300 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 disabled:opacity-50"
             >
+              <Trash2 size={16} />
               {t("common.delete")}
             </button>
           </div>

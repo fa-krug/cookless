@@ -5,6 +5,7 @@ import HouseholdPage from "./pages/HouseholdPage";
 import InvitePage from "./pages/InvitePage";
 import LoginPage from "./pages/LoginPage";
 import MealPlanPage from "./pages/MealPlanPage";
+import RecipeCreatePage from "./pages/RecipeCreatePage";
 import RecipeDetailPage from "./pages/RecipeDetailPage";
 import RecipeListPage from "./pages/RecipeListPage";
 import SettingsPage from "./pages/SettingsPage";
@@ -19,6 +20,7 @@ function App() {
 
       <Route element={<Layout />}>
         <Route path="/recipes" element={<RecipeListPage />} />
+        <Route path="/recipes/new" element={<RecipeCreatePage />} />
         <Route path="/recipes/:id" element={<RecipeDetailPage />} />
         <Route path="/plan" element={<MealPlanPage />} />
         <Route path="/shopping" element={<ShoppingListPage />} />

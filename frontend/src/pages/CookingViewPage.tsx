@@ -1,3 +1,4 @@
+import { ArrowLeft } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
@@ -47,9 +48,10 @@ export default function CookingViewPage() {
         <button
           type="button"
           onClick={() => navigate(-1)}
-          className="text-sm text-gray-500 hover:text-gray-700"
+          className="rounded-md p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+          aria-label={t("common.back")}
         >
-          {t("common.back")}
+          <ArrowLeft size={20} />
         </button>
       </div>
 

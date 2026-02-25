@@ -1,3 +1,4 @@
+import { Clipboard, Link, Plus, UserMinus, UserPlus } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { Household, Invite } from "../api/types";
@@ -57,9 +58,10 @@ function MembersList({
               <button
                 onClick={() => handleRemove(member.id)}
                 disabled={removeMember.isPending}
-                className="text-sm text-red-500 hover:text-red-700 disabled:opacity-50"
+                className="rounded-md p-1.5 text-red-500 hover:bg-red-50 hover:text-red-700 disabled:opacity-50"
+                aria-label={t("common.remove")}
               >
-                {t("common.remove")}
+                <UserMinus size={16} />
               </button>
             )}
           </li>
@@ -99,8 +101,9 @@ function InviteSection({ householdId }: { householdId: string }) {
       <button
         onClick={handleGenerate}
         disabled={createInvite.isPending}
-        className="rounded-md bg-orange-500 px-4 py-2 text-sm font-medium text-white hover:bg-orange-600 disabled:opacity-50"
+        className="flex items-center gap-2 rounded-md bg-orange-500 px-4 py-2 text-sm font-medium text-white hover:bg-orange-600 disabled:opacity-50"
       >
+        <Link size={16} />
         {t("household.generateInvite")}
       </button>
 
@@ -112,8 +115,9 @@ function InviteSection({ householdId }: { householdId: string }) {
             </code>
             <button
               onClick={handleCopy}
-              className="rounded-md bg-gray-200 px-3 py-1 text-sm font-medium text-gray-700 hover:bg-gray-300"
+              className="flex items-center gap-1.5 rounded-md bg-gray-200 px-3 py-1 text-sm font-medium text-gray-700 hover:bg-gray-300"
             >
+              <Clipboard size={14} />
               {copied ? t("household.copied") : t("household.copyLink")}
             </button>
           </div>
@@ -162,8 +166,9 @@ function JoinHouseholdSection() {
         <button
           type="submit"
           disabled={!code.trim() || acceptInvite.isPending}
-          className="rounded-md bg-orange-500 px-4 py-2 text-sm font-medium text-white hover:bg-orange-600 disabled:opacity-50"
+          className="flex items-center gap-2 rounded-md bg-orange-500 px-4 py-2 text-sm font-medium text-white hover:bg-orange-600 disabled:opacity-50"
         >
+          <UserPlus size={16} />
           {t("household.joinHousehold")}
         </button>
       </form>
@@ -206,8 +211,9 @@ function CreateHouseholdSection() {
         <button
           type="submit"
           disabled={!name.trim() || createHousehold.isPending}
-          className="rounded-md bg-orange-500 px-4 py-2 text-sm font-medium text-white hover:bg-orange-600 disabled:opacity-50"
+          className="flex items-center gap-2 rounded-md bg-orange-500 px-4 py-2 text-sm font-medium text-white hover:bg-orange-600 disabled:opacity-50"
         >
+          <Plus size={16} />
           {t("common.add")}
         </button>
       </form>

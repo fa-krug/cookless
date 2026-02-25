@@ -16,14 +16,7 @@ export function useCreateRecipe() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: { title: string; list_type: ListType }) =>
-      api.post<Recipe>("/api/v1/recipes/", {
-        title: data.title,
-        list_type: data.list_type,
-        ingredients: [],
-        manual_steps: [],
-        machine_steps: [],
-      }),
+    mutationFn: (data: RecipeUpdatePayload) => api.post<Recipe>("/api/v1/recipes/", data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["recipes"] });
     },

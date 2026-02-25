@@ -1,8 +1,10 @@
+import { Plus } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 import type { ListType } from "../api/types";
 import RecipeCard from "../components/RecipeCard";
-import { useCreateRecipe, useDeleteRecipe, useRecipes } from "../hooks/useRecipes";
+import { useDeleteRecipe, useRecipes } from "../hooks/useRecipes";
 import { useToast } from "../hooks/useToast";
 
 const TABS: { key: ListType; labelKey: string }[] = [
@@ -13,27 +15,16 @@ const TABS: { key: ListType; labelKey: string }[] = [
 export default function RecipeListPage() {
   const { t } = useTranslation();
   const { addToast } = useToast();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<ListType>("KNOWN");
   const [search, setSearch] = useState("");
-  const [newTitle, setNewTitle] = useState("");
 
   const { data: recipes, isLoading } = useRecipes(activeTab);
-  const createRecipe = useCreateRecipe();
   const deleteRecipe = useDeleteRecipe();
 
   const filteredRecipes = (recipes ?? []).filter((r) =>
     r.title.toLowerCase().includes(search.toLowerCase()),
   );
-
-  function handleQuickAdd(e: React.FormEvent) {
-    e.preventDefault();
-    const title = newTitle.trim();
-    if (!title) return;
-    createRecipe.mutate({ title, list_type: activeTab }, {
-      onError: () => addToast(t("errors.recipeSave"), "error"),
-    });
-    setNewTitle("");
-  }
 
   function handleDelete(id: string) {
     if (!window.confirm(t("recipes.deleteConfirm"))) return;
@@ -63,32 +54,24 @@ export default function RecipeListPage() {
         ))}
       </div>
 
-      {/* Quick-add form */}
-      <form onSubmit={handleQuickAdd} className="mt-4 flex gap-2">
+      {/* Add recipe button + Search */}
+      <div className="mt-4 flex gap-2">
         <input
           type="text"
-          value={newTitle}
-          onChange={(e) => setNewTitle(e.target.value)}
-          placeholder={t("recipes.recipeName")}
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder={t("common.search")}
           className="min-w-0 flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
         />
         <button
-          type="submit"
-          disabled={createRecipe.isPending || !newTitle.trim()}
-          className="shrink-0 rounded-lg bg-orange-500 px-4 py-2 text-sm font-medium text-white hover:bg-orange-600 disabled:opacity-50"
+          type="button"
+          onClick={() => navigate(`/recipes/new?list=${activeTab}`)}
+          className="flex shrink-0 items-center gap-1.5 rounded-lg bg-orange-500 px-4 py-2 text-sm font-medium text-white hover:bg-orange-600"
         >
-          {t("recipes.quickAdd")}
+          <Plus size={16} />
+          {t("recipes.newRecipe")}
         </button>
-      </form>
-
-      {/* Search */}
-      <input
-        type="text"
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        placeholder={t("common.search")}
-        className="mt-3 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
-      />
+      </div>
 
       {/* Recipe list */}
       <div className="mt-4 space-y-3">

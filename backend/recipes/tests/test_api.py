@@ -132,12 +132,14 @@ def test_recipe_includes_leftover_days(auth_client):
     client, household = auth_client
     response = client.post(
         "/api/v1/recipes/",
-        json.dumps({
-            "title": "Test",
-            "list_type": "KNOWN",
-            "default_servings": 2,
-            "leftover_days": 3,
-        }),
+        json.dumps(
+            {
+                "title": "Test",
+                "list_type": "KNOWN",
+                "default_servings": 2,
+                "leftover_days": 3,
+            }
+        ),
         content_type="application/json",
     )
     assert response.status_code == 201

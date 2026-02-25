@@ -1,3 +1,4 @@
+import { Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import type { Recipe } from "../api/types";
@@ -32,10 +33,10 @@ export default function RecipeCard({ recipe, onDelete }: RecipeCardProps) {
       </Link>
       <button
         onClick={() => onDelete(recipe.id)}
-        className="ml-3 shrink-0 rounded-md px-3 py-1.5 text-sm text-red-600 hover:bg-red-50"
+        className="ml-3 shrink-0 rounded-md p-2 text-red-600 hover:bg-red-50"
         aria-label={`${t("common.delete")} ${recipe.title}`}
       >
-        {t("common.delete")}
+        <Trash2 size={18} />
       </button>
     </div>
   );

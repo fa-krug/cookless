@@ -1,3 +1,4 @@
+import { Pencil, Play } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import type { Recipe } from "../api/types";
@@ -93,16 +94,18 @@ export default function RecipePreviewModal({ recipe, servings, onClose }: Recipe
               <button
                 type="button"
                 onClick={() => navigate(`/cook/${recipe.id}`)}
-                className="flex-1 rounded-lg bg-orange-500 px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-orange-600"
+                className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-orange-500 px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-orange-600"
               >
+                <Play size={16} />
                 {t("cooking.start")}
               </button>
             )}
             <button
               type="button"
               onClick={() => navigate(`/recipes/${recipe.id}`)}
-              className="flex-1 rounded-lg border border-gray-300 px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50"
+              className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-gray-300 px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50"
             >
+              <Pencil size={16} />
               {t("common.edit")}
             </button>
           </div>

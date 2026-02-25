@@ -170,7 +170,7 @@ export default function SettingsPage() {
       <h1 className="mb-4 text-2xl font-bold text-gray-900">{t("settings.title")}</h1>
 
       {/* Language */}
-      <div className="mb-4 rounded-lg bg-white p-4 shadow-sm">
+      <div className="mb-4 rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
         <h2 className="mb-3 text-lg font-semibold text-gray-900">{t("settings.language")}</h2>
         <div className="flex gap-2">
           {(["en", "de"] as const).map((lang) => (
@@ -190,7 +190,7 @@ export default function SettingsPage() {
       </div>
 
       {/* Default settings */}
-      <div className="mb-4 rounded-lg bg-white p-4 shadow-sm">
+      <div className="mb-4 rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
         <h2 className="mb-3 text-lg font-semibold text-gray-900">{t("settings.defaults")}</h2>
 
         {/* Default servings */}
@@ -262,7 +262,7 @@ export default function SettingsPage() {
       </button>
 
       {/* Passkeys */}
-      <div className="mb-4 rounded-lg bg-white p-4 shadow-sm">
+      <div className="mb-4 rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
         <h2 className="mb-3 text-lg font-semibold text-gray-900">{t("passkeys.title")}</h2>
 
         {passkeysLoading ? (
@@ -311,7 +311,7 @@ export default function SettingsPage() {
       </div>
 
       {/* Password */}
-      <div className="mb-4 rounded-lg bg-white p-4 shadow-sm">
+      <div className="mb-4 rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
         <h2 className="mb-3 text-lg font-semibold text-gray-900">{t("password.title")}</h2>
 
         {!user?.has_password && (
@@ -380,7 +380,7 @@ export default function SettingsPage() {
       </div>
 
       {/* Account / Logout */}
-      <div className="rounded-lg bg-white p-4 shadow-sm">
+      <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
         <h2 className="mb-3 text-lg font-semibold text-gray-900">{t("settings.account")}</h2>
         {user && <p className="mb-3 text-sm text-gray-600">{user.email}</p>}
         <button
