@@ -26,7 +26,7 @@ COPY backend/ .
 COPY --from=frontend-builder /build/dist /app/frontend_dist
 COPY docker-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
-RUN mkdir -p /app/staticfiles /data/media && chown -R appuser:appgroup /app /data
+RUN mkdir -p /app/staticfiles /app/data /data/media && chown -R appuser:appgroup /app /data
 USER appuser
 EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \

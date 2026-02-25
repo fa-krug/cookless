@@ -1,6 +1,9 @@
 #!/bin/bash
 set -euo pipefail
 
+# Ensure data directory exists (for SQLite + media when DATA_DIR is set)
+mkdir -p "${DATA_DIR:-/app/data}"
+
 python manage.py collectstatic --noinput
 python manage.py migrate --noinput
 
