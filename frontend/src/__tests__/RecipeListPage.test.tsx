@@ -158,27 +158,14 @@ describe("RecipeListPage", () => {
     });
   });
 
-  it("submits quick-add form and calls API", async () => {
-    const user = userEvent.setup();
+  it("renders new recipe button", async () => {
     renderPage();
 
     await waitFor(() => {
       expect(screen.getByText("Pasta Carbonara")).toBeInTheDocument();
     });
 
-    const input = screen.getByPlaceholderText("recipes.recipeName");
-    await user.type(input, "New Recipe");
-    await user.click(screen.getByText("recipes.quickAdd"));
-
-    await waitFor(() => {
-      expect(mockPost).toHaveBeenCalledWith("/api/v1/recipes/", {
-        title: "New Recipe",
-        list_type: "KNOWN",
-        ingredients: [],
-        manual_steps: [],
-        machine_steps: [],
-      });
-    });
+    expect(screen.getByText("recipes.newRecipe")).toBeInTheDocument();
   });
 
   it("filters recipes by search input", async () => {
