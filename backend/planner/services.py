@@ -147,9 +147,10 @@ def _select_recipes(
         known_filtered = list(known_qs.exclude(id__in=exclude_ids))
         try_filtered = list(try_qs.exclude(id__in=exclude_ids))
 
-        # Fallback: if pool too small, re-query without exclusion
-        if len(known_filtered) < known_count or len(try_filtered) < try_count:
+        # Fallback: re-include excluded recipes only for the deficient pool
+        if len(known_filtered) < known_count:
             known_filtered = list(known_qs)
+        if len(try_filtered) < try_count:
             try_filtered = list(try_qs)
     else:
         known_filtered = list(known_qs)

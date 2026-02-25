@@ -3,6 +3,7 @@ from uuid import UUID
 from django.shortcuts import get_object_or_404
 
 from ninja import Router
+from ninja.errors import HttpError
 
 from users.permissions import require_household_member
 
@@ -16,15 +17,18 @@ router = Router(tags=["meal-plans"])
 @router.post("/meal-plans/setup/", response={201: MealPlanOut})
 def setup_plan(request, payload: SetupPlanIn):
     require_household_member(request)
-    plan = setup_meal_plan(
-        household=request.user.active_household,
-        iteration_weeks=payload.iteration_weeks,
-        shopping_days=payload.shopping_days,
-        servings=payload.servings,
-        known_ratio=payload.known_ratio,
-        default_leftover_days=payload.default_leftover_days,
-        start_date=payload.start_date,
-    )
+    try:
+        plan = setup_meal_plan(
+            household=request.user.active_household,
+            iteration_weeks=payload.iteration_weeks,
+            shopping_days=payload.shopping_days,
+            servings=payload.servings,
+            known_ratio=payload.known_ratio,
+            default_leftover_days=payload.default_leftover_days,
+            start_date=payload.start_date,
+        )
+    except ValueError as e:
+        raise HttpError(422, str(e)) from None
     return 201, plan
 
 

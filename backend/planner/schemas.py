@@ -1,15 +1,15 @@
 from datetime import date, datetime
 from uuid import UUID
 
-from ninja import Schema
+from ninja import Field, Schema
 
 
 class SetupPlanIn(Schema):
-    iteration_weeks: int = 1
+    iteration_weeks: int = Field(default=1, ge=1, le=3)
     shopping_days: list[int]
-    servings: int = 2
-    known_ratio: float = 0.7
-    default_leftover_days: int = 1
+    servings: int = Field(default=2, ge=1, le=12)
+    known_ratio: float = Field(default=0.7, ge=0.0, le=1.0)
+    default_leftover_days: int = Field(default=1, ge=0, le=3)
     start_date: date
 
 

@@ -39,7 +39,7 @@ def generate_shopping_lists_for_iteration(
 
         for entry in entries:
             scale = Decimal(str(entry.servings)) / Decimal(str(entry.recipe.default_servings))
-            for ri in entry.recipe.ingredients.select_related("ingredient", "unit"):
+            for ri in entry.recipe.ingredients.all():
                 scaled_quantity = Decimal(str(ri.quantity)) * scale
                 base_quantity = ri.unit.to_base(scaled_quantity)
                 base_unit = ri.unit.base_unit if ri.unit.base_unit else ri.unit
