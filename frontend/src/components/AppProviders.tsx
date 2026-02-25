@@ -10,6 +10,7 @@ export default function AppProviders({ children }: { children: ReactNode }) {
   const { addToast } = useToast();
 
   const [queryClient] = useState(() => new QueryClient({
+    defaultOptions: { queries: { staleTime: 60_000 } },
     mutationCache: new MutationCache({
       onError: (_error, _variables, _context, mutation) => {
         if (!mutation.options.onError) {
