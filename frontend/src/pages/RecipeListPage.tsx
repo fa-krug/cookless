@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import type { ListType } from "../api/types";
 import RecipeCard from "../components/RecipeCard";
+import { RecipeListSkeleton } from "../components/ui/RecipeListSkeleton";
 import { useDeleteRecipe, useRecipes } from "../hooks/useRecipes";
 import { useToast } from "../hooks/useToast";
 
@@ -75,9 +76,7 @@ export default function RecipeListPage() {
 
       {/* Recipe list */}
       <div className="mt-4 space-y-3">
-        {isLoading && (
-          <p className="text-center text-sm text-gray-500">{t("common.loading")}</p>
-        )}
+        {isLoading && <RecipeListSkeleton />}
 
         {!isLoading && filteredRecipes.length === 0 && (
           <p className="text-center text-sm text-gray-500">{t("recipes.noRecipes")}</p>
