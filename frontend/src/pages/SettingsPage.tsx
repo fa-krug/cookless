@@ -1,4 +1,4 @@
-import { KeyRound, LogOut, Plus, Save, ShieldMinus, Trash2 } from "lucide-react";
+import { KeyRound, LogOut, Plus, ShieldMinus, Trash2 } from "lucide-react";
 import { Spinner } from "../components/ui/Spinner";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -18,8 +18,6 @@ export default function SettingsPage() {
   const { confirm, dialogProps } = useConfirm();
 
   const [language, setLanguage] = useState(i18n.language);
-  const [isSaving, setIsSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
 
   // Passkey state
   const [passkeys, setPasskeys] = useState<Passkey[]>([]);
@@ -49,25 +47,16 @@ export default function SettingsPage() {
     fetchPasskeys();
   }, [fetchPasskeys]);
 
-  function handleLanguageChange(lang: string) {
+  async function handleLanguageChange(lang: string) {
     setLanguage(lang);
     i18n.changeLanguage(lang);
-  }
-
-  async function handleSave() {
-    setIsSaving(true);
-    setSaved(false);
     try {
       await api.patch<User>("/api/v1/users/me/", {
-        preferred_language: language,
+        preferred_language: lang,
       });
       await refreshUser();
-      setSaved(true);
-      setTimeout(() => setSaved(false), 2000);
     } catch {
       addToast(t("errors.settingsSave"), "error");
-    } finally {
-      setIsSaving(false);
     }
   }
 
@@ -208,16 +197,6 @@ export default function SettingsPage() {
           ))}
         </div>
       </div>
-
-      {/* Save button */}
-      <button
-        onClick={handleSave}
-        disabled={isSaving}
-        className="mb-4 flex w-full items-center justify-center gap-2 rounded-md bg-orange-500 px-4 py-3 text-sm font-medium text-white hover:bg-orange-600 disabled:opacity-50"
-      >
-        {isSaving ? <Spinner /> : <Save size={16} />}
-        {isSaving ? t("common.loading") : saved ? t("settings.saved") : t("settings.save")}
-      </button>
 
       {/* Passkeys */}
       <div className="mb-4 rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
