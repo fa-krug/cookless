@@ -112,7 +112,11 @@
     "leftover": "Reste",
     "swapRecipe": "Rezept tauschen",
     "selectRecipe": "Rezept auswählen",
-    "emptyState": "Noch kein Essensplan"
+    "emptyState": "Noch kein Essensplan",
+    "newPlan": "Neu erstellen",
+    "coldDish": "Kaltes Essen",
+    "shoppingPreview": "{{count}} Artikel",
+    "defaultLeftoverDays": "Standard-Reste (Tage)"
   },
   "shopping": {
     "title": "Einkaufsliste",

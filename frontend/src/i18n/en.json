@@ -112,7 +112,11 @@
     "leftover": "Leftover",
     "swapRecipe": "Swap recipe",
     "selectRecipe": "Select a recipe",
-    "emptyState": "No meal plan yet"
+    "emptyState": "No meal plan yet",
+    "newPlan": "Create new",
+    "coldDish": "Cold dish",
+    "shoppingPreview": "{{count}} items",
+    "defaultLeftoverDays": "Default leftover days"
   },
   "shopping": {
     "title": "Shopping List",

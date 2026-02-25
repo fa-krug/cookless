@@ -117,6 +117,7 @@ function RecipeForm({ recipe, recipeId, allIngredients, allUnits }: RecipeFormPr
       default_servings: defaultServings,
       prep_time_minutes: prepTime ? Number(prepTime) : null,
       cook_time_minutes: cookTime ? Number(cookTime) : null,
+      leftover_days: recipe.leftover_days,
       ingredients: resolvedIngredients
         .filter((row) => row.ingredient > 0)
         .map((row, i) => ({
