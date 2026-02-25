@@ -22,6 +22,7 @@ export interface User {
   active_household: HouseholdSummary | null;
   has_password: boolean;
   has_passkey: boolean;
+  onboarding_step: "CHANGE_PASSWORD" | "ADD_PASSKEY" | "CREATE_HOUSEHOLD" | "COMPLETED";
 }
 
 export interface HouseholdMember {
