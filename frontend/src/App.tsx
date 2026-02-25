@@ -10,13 +10,17 @@ import RecipeDetailPage from "./pages/RecipeDetailPage";
 import RecipeListPage from "./pages/RecipeListPage";
 import SettingsPage from "./pages/SettingsPage";
 import ShoppingListDetailPage from "./pages/ShoppingListDetailPage";
+import SetupWizardPage from "./pages/SetupWizardPage";
 import ShoppingListPage from "./pages/ShoppingListPage";
+import WelcomePage from "./pages/WelcomePage";
 
 function App() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
       <Route path="/invite/:code" element={<InvitePage />} />
+      <Route path="/setup" element={<SetupWizardPage />} />
+      <Route path="/welcome" element={<WelcomePage />} />
 
       <Route element={<Layout />}>
         <Route path="/recipes" element={<RecipeListPage />} />
