@@ -3,6 +3,7 @@ import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import type { IngredientCategory, ShoppingList } from "../api/types";
 import ShoppingCategory from "../components/ShoppingCategory";
+import { ShoppingListSkeleton } from "../components/ui/ShoppingListSkeleton";
 import { useBulkToggle, useShoppingLists, useToggleItem } from "../hooks/useShoppingList";
 import { useToast } from "../hooks/useToast";
 
@@ -96,7 +97,7 @@ export default function ShoppingListPage() {
         <h1 className="text-2xl font-bold text-gray-900">{t("shopping.title")}</h1>
       </div>
 
-      {isLoading && <p className="text-sm text-gray-500">{t("common.loading")}</p>}
+      {isLoading && <ShoppingListSkeleton />}
 
       {!isLoading && !currentList && (
         <div className="mt-12 text-center">
