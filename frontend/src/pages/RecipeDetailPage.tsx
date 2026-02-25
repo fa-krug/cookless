@@ -1,6 +1,6 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { ArrowLeftRight, ArrowLeft, Save, Trash2 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
 import type { Ingredient, Recipe, RecipeUpdatePayload } from "../api/types";
@@ -85,6 +85,7 @@ function RecipeForm({ recipe, recipeId, allIngredients, allUnits }: RecipeFormPr
   const moveRecipe = useMoveRecipe();
   const deleteRecipe = useDeleteRecipe();
   const queryClient = useQueryClient();
+  const pendingDeleteRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const initialIngredients = useMemo(
     () => buildIngredientRows(recipe, allIngredients, nameKey),
@@ -152,11 +153,48 @@ function RecipeForm({ recipe, recipeId, allIngredients, allUnits }: RecipeFormPr
   }
 
   function handleDelete() {
-    if (!window.confirm(t("recipes.deleteConfirm"))) return;
-    deleteRecipe.mutate(recipeId, {
-      onSuccess: () => navigate("/recipes"),
-      onError: () => addToast(t("errors.recipeDelete"), "error"),
+    // Optimistically remove from list cache
+    const listQueryKey = ["recipes", recipe.list_type];
+    const previousRecipes = queryClient.getQueryData<Recipe[]>(listQueryKey);
+    queryClient.setQueryData<Recipe[]>(listQueryKey, (old) =>
+      old?.filter((r) => r.id !== recipeId),
+    );
+
+    // Navigate back immediately
+    navigate("/recipes");
+
+    let undone = false;
+
+    // Show undo toast on the list page
+    addToast(t("recipes.deleted", { title: recipe.title }), "success", {
+      duration: 5000,
+      action: {
+        label: t("common.undo"),
+        onClick: () => {
+          undone = true;
+          if (pendingDeleteRef.current) {
+            clearTimeout(pendingDeleteRef.current);
+            pendingDeleteRef.current = null;
+          }
+          // Restore cache and navigate back
+          queryClient.setQueryData<Recipe[]>(listQueryKey, previousRecipes);
+          navigate(`/recipes/${recipeId}`);
+        },
+      },
     });
+
+    // Schedule actual delete
+    pendingDeleteRef.current = setTimeout(() => {
+      pendingDeleteRef.current = null;
+      if (!undone) {
+        deleteRecipe.mutate(recipeId, {
+          onError: () => {
+            queryClient.setQueryData<Recipe[]>(listQueryKey, previousRecipes);
+            addToast(t("errors.recipeDelete"), "error");
+          },
+        });
+      }
+    }, 5000);
   }
 
   return (

@@ -4,14 +4,17 @@ import { useTranslation } from "react-i18next";
 import { api } from "../api/client";
 import type { Passkey, User } from "../api/types";
 import { addPasskey } from "../api/webauthn";
+import { ConfirmDialog } from "../components/ui/ConfirmDialog";
 import { SettingsSkeleton } from "../components/ui/SettingsSkeleton";
 import { useAuth } from "../hooks/useAuth";
+import { useConfirm } from "../hooks/useConfirm";
 import { useToast } from "../hooks/useToast";
 
 export default function SettingsPage() {
   const { t, i18n } = useTranslation();
   const { user, logout, refreshUser } = useAuth();
   const { addToast } = useToast();
+  const { confirm, dialogProps } = useConfirm();
 
   const [language, setLanguage] = useState(i18n.language);
   const [isSaving, setIsSaving] = useState(false);
@@ -67,8 +70,15 @@ export default function SettingsPage() {
     }
   }
 
-  function handleLogout() {
-    if (!window.confirm(t("settings.logoutConfirm"))) return;
+  async function handleLogout() {
+    const confirmed = await confirm({
+      title: t("settings.logout"),
+      message: t("settings.logoutConfirm"),
+      confirmLabel: t("settings.logout"),
+      confirmVariant: "danger",
+      cancelLabel: t("common.cancel"),
+    });
+    if (!confirmed) return;
     logout();
   }
 
@@ -87,7 +97,14 @@ export default function SettingsPage() {
   }
 
   async function handleDeletePasskey(id: string) {
-    if (!window.confirm(t("passkeys.confirmDelete"))) return;
+    const confirmed = await confirm({
+      title: t("passkeys.deletePasskey"),
+      message: t("passkeys.confirmDelete"),
+      confirmLabel: t("common.remove"),
+      confirmVariant: "danger",
+      cancelLabel: t("common.cancel"),
+    });
+    if (!confirmed) return;
     try {
       await api.delete(`/api/v1/users/me/passkeys/${id}/`);
       await fetchPasskeys();
@@ -136,8 +153,16 @@ export default function SettingsPage() {
   }
 
   async function handleRemovePassword() {
-    const password = window.prompt(t("password.removeConfirm"));
-    if (!password) return;
+    const result = await confirm({
+      title: t("password.removePassword"),
+      message: t("password.removeConfirm"),
+      confirmLabel: t("common.confirm"),
+      confirmVariant: "danger",
+      cancelLabel: t("common.cancel"),
+      inputField: { type: "password", placeholder: t("password.currentPassword") },
+    });
+    if (!result) return;
+    const password = result as string;
     setPasswordError("");
     setPasswordSuccess("");
     try {
@@ -327,6 +352,8 @@ export default function SettingsPage() {
           {t("settings.logout")}
         </button>
       </div>
+
+      {dialogProps && <ConfirmDialog {...dialogProps} />}
     </div>
   );
 }

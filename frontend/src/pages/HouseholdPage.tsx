@@ -2,8 +2,10 @@ import { Clipboard, Link, LogOut, Pencil, Plus, Shield, UserMinus, UserPlus } fr
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { Household, Invite } from "../api/types";
+import { ConfirmDialog } from "../components/ui/ConfirmDialog";
 import { useToast } from "../hooks/useToast";
 import { useAuth } from "../hooks/useAuth";
+import { useConfirm } from "../hooks/useConfirm";
 import {
   useAcceptInvite,
   useCreateHousehold,
@@ -30,15 +32,44 @@ function MembersList({
 }) {
   const { t } = useTranslation();
   const { addToast } = useToast();
+  const { confirm, dialogProps } = useConfirm();
   const removeMember = useRemoveMember();
   const transferOwnership = useTransferOwnership();
 
-  function handleRemove(memberId: number) {
-    if (!window.confirm(t("household.removeMemberConfirm"))) return;
+  async function handleRemove(memberId: number) {
+    const confirmed = await confirm({
+      title: t("common.remove"),
+      message: t("household.removeMemberConfirm"),
+      confirmLabel: t("common.remove"),
+      confirmVariant: "danger",
+      cancelLabel: t("common.cancel"),
+    });
+    if (!confirmed) return;
     removeMember.mutate(
       { householdId: household.id, memberId },
       {
         onError: () => addToast(t("errors.memberRemove"), "error"),
+      },
+    );
+  }
+
+  async function handleTransferOwnership(memberId: number, email: string) {
+    const confirmed = await confirm({
+      title: t("household.transferOwnership"),
+      message: t("household.transferOwnershipConfirm", { email }),
+      confirmLabel: t("common.confirm"),
+      confirmVariant: "danger",
+      cancelLabel: t("common.cancel"),
+    });
+    if (!confirmed) return;
+    transferOwnership.mutate(
+      { householdId: household.id, memberId },
+      {
+        onSuccess: async () => {
+          await onOwnershipTransferred();
+          addToast(t("success.ownershipTransferred"), "success");
+        },
+        onError: () => addToast(t("errors.ownershipTransfer"), "error"),
       },
     );
   }
@@ -65,24 +96,7 @@ function MembersList({
               <div className="flex items-center gap-1">
                 {member.role !== "OWNER" && (
                   <button
-                    onClick={() => {
-                      if (
-                        !window.confirm(
-                          t("household.transferOwnershipConfirm", { email: member.email }),
-                        )
-                      )
-                        return;
-                      transferOwnership.mutate(
-                        { householdId: household.id, memberId: member.id },
-                        {
-                          onSuccess: async () => {
-                            await onOwnershipTransferred();
-                            addToast(t("success.ownershipTransferred"), "success");
-                          },
-                          onError: () => addToast(t("errors.ownershipTransfer"), "error"),
-                        },
-                      );
-                    }}
+                    onClick={() => handleTransferOwnership(member.id, member.email)}
                     disabled={transferOwnership.isPending}
                     className="rounded-md p-1.5 text-orange-500 hover:bg-orange-50 hover:text-orange-700 disabled:opacity-50"
                     aria-label={t("household.transferOwnership")}
@@ -103,6 +117,7 @@ function MembersList({
           </li>
         ))}
       </ul>
+      {dialogProps && <ConfirmDialog {...dialogProps} />}
     </div>
   );
 }
@@ -261,6 +276,7 @@ export default function HouseholdPage() {
   const { t } = useTranslation();
   const { addToast } = useToast();
   const { user, refreshUser } = useAuth();
+  const { confirm, dialogProps } = useConfirm();
   const { data: households, isLoading } = useHouseholds();
   const switchHousehold = useSwitchHousehold();
   const updateHousehold = useUpdateHousehold();
@@ -293,6 +309,25 @@ export default function HouseholdPage() {
         await refreshUser();
       },
       onError: () => addToast(t("errors.householdSwitch"), "error"),
+    });
+  }
+
+  async function handleLeave() {
+    if (!activeHousehold) return;
+    const confirmed = await confirm({
+      title: t("household.leaveHousehold"),
+      message: t("household.leaveConfirm"),
+      confirmLabel: t("household.leaveHousehold"),
+      confirmVariant: "danger",
+      cancelLabel: t("common.cancel"),
+    });
+    if (!confirmed) return;
+    leaveHousehold.mutate(activeHousehold.id, {
+      onSuccess: async () => {
+        await refreshUser();
+        addToast(t("success.householdLeft"), "success");
+      },
+      onError: () => addToast(t("errors.householdLeave"), "error"),
     });
   }
 
@@ -431,16 +466,7 @@ export default function HouseholdPage() {
       {activeHousehold && !isOwner && (
         <div className="mb-4 rounded-lg bg-white p-4 shadow-sm">
           <button
-            onClick={() => {
-              if (!window.confirm(t("household.leaveConfirm"))) return;
-              leaveHousehold.mutate(activeHousehold.id, {
-                onSuccess: async () => {
-                  await refreshUser();
-                  addToast(t("success.householdLeft"), "success");
-                },
-                onError: () => addToast(t("errors.householdLeave"), "error"),
-              });
-            }}
+            onClick={handleLeave}
             disabled={leaveHousehold.isPending}
             className="flex items-center gap-2 rounded-md border border-red-300 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 disabled:opacity-50"
           >
@@ -509,6 +535,8 @@ export default function HouseholdPage() {
           )}
         </div>
       )}
+
+      {dialogProps && <ConfirmDialog {...dialogProps} />}
     </div>
   );
 }

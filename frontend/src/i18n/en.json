@@ -14,7 +14,8 @@
     "retry": "Try again",
     "noResults": "Nothing found",
     "search": "Search",
-    "remove": "Remove"
+    "remove": "Remove",
+    "undo": "Undo"
   },
   "nav": {
     "recipes": "Recipes",
@@ -28,7 +29,7 @@
     "signIn": "Sign in with Passkey",
     "emailPlaceholder": "Email address",
     "loginFailed": "Couldn't log you in. Give it another try?",
-    "logoutConfirm": "Log out?",
+    "logoutConfirm": "Are you sure you want to log out?",
     "signInWithPassword": "Sign in with Password",
     "signInWithPasskey": "Sign in with Passkey",
     "password": "Password",
@@ -68,6 +69,7 @@
     "recipeName": "Recipe name",
     "noRecipes": "Your recipe collection is empty. Time to add some!",
     "deleteConfirm": "Delete this recipe?",
+    "deleted": "\"{{title}}\" deleted",
     "servings": "Servings",
     "prepTime": "Prep",
     "cookTime": "Cooking",
@@ -239,7 +241,7 @@
       "de": "Deutsch"
     },
     "logout": "Log out",
-    "logoutConfirm": "Log out?",
+    "logoutConfirm": "Are you sure you want to log out?",
     "account": "Account"
   },
   "errors": {
