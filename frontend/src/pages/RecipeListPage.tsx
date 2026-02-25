@@ -1,13 +1,45 @@
 import { useQueryClient } from "@tanstack/react-query";
-import { Plus } from "lucide-react";
+import { BookOpen, Plus, Search } from "lucide-react";
 import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import type { ListType } from "../api/types";
+import type { ListType, Recipe } from "../api/types";
 import RecipeCard from "../components/RecipeCard";
+import { EmptyState } from "../components/ui/EmptyState";
 import { RecipeListSkeleton } from "../components/ui/RecipeListSkeleton";
+import { SortSelect } from "../components/ui/SortSelect";
 import { useDeleteRecipe, useRecipes } from "../hooks/useRecipes";
 import { useToast } from "../hooks/useToast";
+
+type SortOption = "name-asc" | "name-desc" | "newest" | "updated";
+
+const SORT_STORAGE_KEY = "cookless-recipe-sort";
+
+function getSavedSort(): SortOption {
+  try {
+    const saved = localStorage.getItem(SORT_STORAGE_KEY);
+    if (saved === "name-asc" || saved === "name-desc" || saved === "newest" || saved === "updated") {
+      return saved;
+    }
+  } catch {
+    // localStorage unavailable
+  }
+  return "name-asc";
+}
+
+function sortRecipes(recipes: Recipe[], sort: SortOption, locale: string): Recipe[] {
+  const sorted = [...recipes];
+  switch (sort) {
+    case "name-asc":
+      return sorted.sort((a, b) => a.title.localeCompare(b.title, locale));
+    case "name-desc":
+      return sorted.sort((a, b) => b.title.localeCompare(a.title, locale));
+    case "newest":
+      return sorted.sort((a, b) => b.created_at.localeCompare(a.created_at));
+    case "updated":
+      return sorted.sort((a, b) => b.updated_at.localeCompare(a.updated_at));
+  }
+}
 
 const TABS: { key: ListType; labelKey: string }[] = [
   { key: "KNOWN", labelKey: "recipes.known" },
@@ -15,21 +47,47 @@ const TABS: { key: ListType; labelKey: string }[] = [
 ];
 
 export default function RecipeListPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { addToast } = useToast();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<ListType>("KNOWN");
   const [search, setSearch] = useState("");
+  const [sort, setSort] = useState<SortOption>(getSavedSort);
   const [pendingDeletes, setPendingDeletes] = useState<Set<string>>(new Set());
   const timersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
 
   const { data: recipes, isLoading } = useRecipes(activeTab);
   const deleteRecipe = useDeleteRecipe();
 
-  const filteredRecipes = (recipes ?? []).filter(
-    (r) => r.title.toLowerCase().includes(search.toLowerCase()) && !pendingDeletes.has(r.id),
+  function handleSortChange(value: string) {
+    const newSort = value as SortOption;
+    setSort(newSort);
+    try {
+      localStorage.setItem(SORT_STORAGE_KEY, newSort);
+    } catch {
+      // localStorage unavailable
+    }
+  }
+
+  const filteredRecipes = sortRecipes(
+    (recipes ?? []).filter(
+      (r) => r.title.toLowerCase().includes(search.toLowerCase()) && !pendingDeletes.has(r.id),
+    ),
+    sort,
+    i18n.language,
   );
+
+  const hasRecipes = (recipes ?? []).filter((r) => !pendingDeletes.has(r.id)).length > 0;
+  const isSearchEmpty = search.length > 0 && filteredRecipes.length === 0 && hasRecipes;
+  const isCollectionEmpty = !hasRecipes && !isLoading;
+
+  const sortOptions = [
+    { value: "name-asc", label: t("recipes.sortNameAZ") },
+    { value: "name-desc", label: t("recipes.sortNameZA") },
+    { value: "newest", label: t("recipes.sortNewest") },
+    { value: "updated", label: t("recipes.sortUpdated") },
+  ];
 
   function handleDelete(id: string) {
     const recipe = recipes?.find((r) => r.id === id);
@@ -101,7 +159,7 @@ export default function RecipeListPage() {
         ))}
       </div>
 
-      {/* Add recipe button + Search */}
+      {/* Add recipe button + Search + Sort */}
       <div className="mt-4 flex gap-2">
         <input
           type="text"
@@ -109,6 +167,12 @@ export default function RecipeListPage() {
           onChange={(e) => setSearch(e.target.value)}
           placeholder={t("common.search")}
           className="min-w-0 flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
+        />
+        <SortSelect
+          value={sort}
+          onChange={handleSortChange}
+          options={sortOptions}
+          ariaLabel={t("recipes.sortLabel")}
         />
         <button
           type="button"
@@ -124,8 +188,21 @@ export default function RecipeListPage() {
       <div className="mt-4 space-y-3">
         {isLoading && <RecipeListSkeleton />}
 
-        {!isLoading && filteredRecipes.length === 0 && (
-          <p className="text-center text-sm text-gray-500">{t("recipes.noRecipes")}</p>
+        {isCollectionEmpty && (
+          <EmptyState
+            icon={BookOpen}
+            title={t("recipes.noRecipesTitle")}
+            subtitle={t("recipes.noRecipesSubtitle")}
+            action={{ label: t("recipes.addFirstRecipe"), to: `/recipes/new?list=${activeTab}` }}
+          />
+        )}
+
+        {isSearchEmpty && (
+          <EmptyState
+            icon={Search}
+            title={t("recipes.noSearchResults")}
+            subtitle={t("recipes.noSearchResultsSubtitle")}
+          />
         )}
 
         {filteredRecipes.map((recipe) => (

@@ -1,8 +1,9 @@
-import { ListRestart } from "lucide-react";
+import { CheckCircle, ListRestart, ShoppingCart } from "lucide-react";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import type { IngredientCategory, ShoppingList } from "../api/types";
 import ShoppingCategory from "../components/ShoppingCategory";
+import { EmptyState } from "../components/ui/EmptyState";
 import { ShoppingListSkeleton } from "../components/ui/ShoppingListSkeleton";
 import { useBulkToggle, useShoppingLists, useToggleItem } from "../hooks/useShoppingList";
 import { useToast } from "../hooks/useToast";
@@ -38,6 +39,7 @@ function ShoppingListView({ shoppingList }: { shoppingList: ShoppingList }) {
     .filter((item) => item.is_checked)
     .map((item) => item.id);
   const hasCheckedItems = checkedItemIds.length > 0;
+  const allChecked = shoppingList.items.length > 0 && checkedItemIds.length === shoppingList.items.length;
 
   function handleUncheckAll() {
     if (!hasCheckedItems) return;
@@ -71,6 +73,14 @@ function ShoppingListView({ shoppingList }: { shoppingList: ShoppingList }) {
         </button>
       </div>
 
+      {allChecked && (
+        <EmptyState
+          icon={CheckCircle}
+          title={t("shopping.allDoneTitle")}
+          subtitle={t("shopping.allDoneSubtitle")}
+        />
+      )}
+
       <div className="space-y-3">
         {sortedCategories.map((category) => (
           <ShoppingCategory
@@ -100,9 +110,12 @@ export default function ShoppingListPage() {
       {isLoading && <ShoppingListSkeleton />}
 
       {!isLoading && !currentList && (
-        <div className="mt-12 text-center">
-          <p className="text-gray-500">{t("shopping.emptyState")}</p>
-        </div>
+        <EmptyState
+          icon={ShoppingCart}
+          title={t("shopping.emptyTitle")}
+          subtitle={t("shopping.emptySubtitle")}
+          action={{ label: t("shopping.goToPlan"), to: "/plan" }}
+        />
       )}
 
       {currentList && <ShoppingListView shoppingList={currentList} />}

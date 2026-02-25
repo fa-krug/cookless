@@ -93,9 +93,9 @@ describe("RecipeListPage undo delete", () => {
       expect(screen.getByText("Pasta Carbonara")).toBeInTheDocument();
     });
 
-    // Click delete on Pasta Carbonara
-    const deleteButtons = screen.getAllByRole("button", { name: /common.delete/i });
-    await user.click(deleteButtons[0]);
+    // Click delete on Pasta Carbonara (use specific aria-label since sort order may vary)
+    const deleteBtn = screen.getByRole("button", { name: /common\.delete Pasta Carbonara/i });
+    await user.click(deleteBtn);
 
     // Recipe should be hidden
     expect(screen.queryByText("Pasta Carbonara")).not.toBeInTheDocument();
@@ -118,8 +118,8 @@ describe("RecipeListPage undo delete", () => {
       expect(screen.getByText("Pasta Carbonara")).toBeInTheDocument();
     });
 
-    const deleteButtons = screen.getAllByRole("button", { name: /common.delete/i });
-    await user.click(deleteButtons[0]);
+    const deleteBtn = screen.getByRole("button", { name: /common\.delete Pasta Carbonara/i });
+    await user.click(deleteBtn);
 
     // Recipe hidden
     expect(screen.queryByText("Pasta Carbonara")).not.toBeInTheDocument();
@@ -143,8 +143,8 @@ describe("RecipeListPage undo delete", () => {
       expect(screen.getByText("Pasta Carbonara")).toBeInTheDocument();
     });
 
-    const deleteButtons = screen.getAllByRole("button", { name: /common.delete/i });
-    await user.click(deleteButtons[0]);
+    const deleteBtn = screen.getByRole("button", { name: /common\.delete Pasta Carbonara/i });
+    await user.click(deleteBtn);
 
     expect(mockDelete).not.toHaveBeenCalled();
 
