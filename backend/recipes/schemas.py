@@ -54,6 +54,7 @@ class RecipeOut(Schema):
     default_servings: int
     prep_time_minutes: int | None = None
     cook_time_minutes: int | None = None
+    leftover_days: int
     ingredients: list[RecipeIngredientOut]
     manual_steps: list[CookingStepOut]
     machine_steps: list[CookingStepOut]
@@ -87,6 +88,7 @@ class RecipeCreateIn(Schema):
     default_servings: int = 2
     prep_time_minutes: int | None = None
     cook_time_minutes: int | None = None
+    leftover_days: int = 1
     ingredients: list[RecipeIngredientIn] = []
     manual_steps: list[CookingStepIn] = []
     machine_steps: list[CookingStepIn] = []

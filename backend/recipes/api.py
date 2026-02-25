@@ -70,6 +70,7 @@ def create_recipe(request, payload: RecipeCreateIn):
             default_servings=payload.default_servings,
             prep_time_minutes=payload.prep_time_minutes,
             cook_time_minutes=payload.cook_time_minutes,
+            leftover_days=payload.leftover_days,
         )
         _save_ingredients(recipe, payload.ingredients)
         _save_steps(recipe, payload.manual_steps, "MANUAL")
@@ -97,6 +98,7 @@ def update_recipe_put(request, recipe_id: UUID, payload: RecipeCreateIn):
         recipe.default_servings = payload.default_servings
         recipe.prep_time_minutes = payload.prep_time_minutes
         recipe.cook_time_minutes = payload.cook_time_minutes
+        recipe.leftover_days = payload.leftover_days
         recipe.save()
         _save_ingredients(recipe, payload.ingredients)
         _save_steps(recipe, payload.manual_steps, "MANUAL")
@@ -114,6 +116,7 @@ def update_recipe_patch(request, recipe_id: UUID, payload: RecipeCreateIn):
         recipe.default_servings = payload.default_servings
         recipe.prep_time_minutes = payload.prep_time_minutes
         recipe.cook_time_minutes = payload.cook_time_minutes
+        recipe.leftover_days = payload.leftover_days
         recipe.save()
         _save_ingredients(recipe, payload.ingredients)
         _save_steps(recipe, payload.manual_steps, "MANUAL")
