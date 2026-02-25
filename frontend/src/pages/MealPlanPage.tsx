@@ -1,9 +1,9 @@
 import { CalendarPlus, Settings, Sparkles } from "lucide-react";
-import { MealPlanSkeleton } from "../components/ui/MealPlanSkeleton";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import GenerateDrawer from "../components/GenerateDrawer";
 import IterationCard from "../components/IterationCard";
+import { MealPlanSkeleton } from "../components/ui/MealPlanSkeleton";
 import {
   useMealPlans,
   useNextIteration,

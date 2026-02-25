@@ -6,11 +6,11 @@ import { useNavigate, useParams } from "react-router-dom";
 import type { Ingredient, Recipe, RecipeUpdatePayload } from "../api/types";
 import IngredientForm, { type IngredientRow } from "../components/IngredientForm";
 import StepEditor, { type StepRow } from "../components/StepEditor";
+import { RecipeDetailSkeleton } from "../components/ui/RecipeDetailSkeleton";
 import { createIngredient, useIngredients } from "../hooks/useIngredients";
 import { useDeleteRecipe, useMoveRecipe, useRecipe, useUpdateRecipe } from "../hooks/useRecipes";
 import { useToast } from "../hooks/useToast";
 import { useUnits } from "../hooks/useUnits";
-import { RecipeDetailSkeleton } from "../components/ui/RecipeDetailSkeleton";
 
 export default function RecipeDetailPage() {
   const { id } = useParams<{ id: string }>();

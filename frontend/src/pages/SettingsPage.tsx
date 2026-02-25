@@ -4,9 +4,9 @@ import { useTranslation } from "react-i18next";
 import { api } from "../api/client";
 import type { Passkey, User } from "../api/types";
 import { addPasskey } from "../api/webauthn";
+import { SettingsSkeleton } from "../components/ui/SettingsSkeleton";
 import { useAuth } from "../hooks/useAuth";
 import { useToast } from "../hooks/useToast";
-import { SettingsSkeleton } from "../components/ui/SettingsSkeleton";
 
 export default function SettingsPage() {
   const { t, i18n } = useTranslation();
