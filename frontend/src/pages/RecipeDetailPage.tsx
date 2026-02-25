@@ -7,6 +7,7 @@ import IngredientForm, { type IngredientRow } from "../components/IngredientForm
 import StepEditor, { type StepRow } from "../components/StepEditor";
 import { createIngredient, useIngredients } from "../hooks/useIngredients";
 import { useDeleteRecipe, useMoveRecipe, useRecipe, useUpdateRecipe } from "../hooks/useRecipes";
+import { useToast } from "../contexts/ToastContext";
 import { useUnits } from "../hooks/useUnits";
 
 export default function RecipeDetailPage() {
@@ -78,6 +79,7 @@ interface RecipeFormProps {
 function RecipeForm({ recipe, recipeId, allIngredients, allUnits }: RecipeFormProps) {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
+  const { addToast } = useToast();
   const lang = i18n.language === "de" ? "de" : "en";
   const nameKey = lang === "de" ? "name_de" : "name_en";
 
@@ -137,14 +139,17 @@ function RecipeForm({ recipe, recipeId, allIngredients, allUnits }: RecipeFormPr
     updateRecipe.mutate({ id: recipeId, data: payload }, {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["ingredients"] });
+        addToast(t("success.recipeSaved"), "success");
         navigate("/recipes");
       },
+      onError: () => addToast(t("errors.recipeSave"), "error"),
     });
   }
 
   function handleMove() {
     moveRecipe.mutate(recipeId, {
       onSuccess: () => navigate("/recipes"),
+      onError: () => addToast(t("errors.recipeMove"), "error"),
     });
   }
 
@@ -152,6 +157,7 @@ function RecipeForm({ recipe, recipeId, allIngredients, allUnits }: RecipeFormPr
     if (!window.confirm(t("recipes.deleteConfirm"))) return;
     deleteRecipe.mutate(recipeId, {
       onSuccess: () => navigate("/recipes"),
+      onError: () => addToast(t("errors.recipeDelete"), "error"),
     });
   }
 

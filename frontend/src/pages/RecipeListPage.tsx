@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import type { ListType } from "../api/types";
 import RecipeCard from "../components/RecipeCard";
 import { useCreateRecipe, useDeleteRecipe, useRecipes } from "../hooks/useRecipes";
+import { useToast } from "../contexts/ToastContext";
 
 const TABS: { key: ListType; labelKey: string }[] = [
   { key: "KNOWN", labelKey: "recipes.known" },
@@ -11,6 +12,7 @@ const TABS: { key: ListType; labelKey: string }[] = [
 
 export default function RecipeListPage() {
   const { t } = useTranslation();
+  const { addToast } = useToast();
   const [activeTab, setActiveTab] = useState<ListType>("KNOWN");
   const [search, setSearch] = useState("");
   const [newTitle, setNewTitle] = useState("");
@@ -27,13 +29,17 @@ export default function RecipeListPage() {
     e.preventDefault();
     const title = newTitle.trim();
     if (!title) return;
-    createRecipe.mutate({ title, list_type: activeTab });
+    createRecipe.mutate({ title, list_type: activeTab }, {
+      onError: () => addToast(t("errors.recipeSave"), "error"),
+    });
     setNewTitle("");
   }
 
   function handleDelete(id: string) {
     if (!window.confirm(t("recipes.deleteConfirm"))) return;
-    deleteRecipe.mutate(id);
+    deleteRecipe.mutate(id, {
+      onError: () => addToast(t("errors.recipeDelete"), "error"),
+    });
   }
 
   return (
