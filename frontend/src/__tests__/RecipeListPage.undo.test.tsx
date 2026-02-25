@@ -77,7 +77,7 @@ describe("RecipeListPage undo delete", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.useFakeTimers({ shouldAdvanceTime: true });
-    mockGet.mockResolvedValue(RECIPES);
+    mockGet.mockResolvedValue({ items: RECIPES, total_count: RECIPES.length });
     mockDelete.mockResolvedValue(undefined);
   });
 

@@ -58,7 +58,7 @@ export default function IterationCard({
 }: IterationCardProps) {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
-  const { data: recipes } = useRecipes();
+  const { data: recipesData } = useRecipes();
   const { data: shoppingLists } = useShoppingLists();
   const todayRef = useRef<HTMLDivElement>(null);
   const today = useMemo(() => getToday(), []);
@@ -70,15 +70,18 @@ export default function IterationCard({
 
   const { data: previewRecipe } = useRecipe(previewEntry?.recipeId ?? "");
 
+  const allRecipes = useMemo(
+    () => recipesData?.pages.flatMap((page) => page.items) ?? [],
+    [recipesData],
+  );
+
   const recipeMap = useMemo(() => {
     const map = new Map<string, RecipeSummary>();
-    if (recipes) {
-      for (const recipe of recipes) {
-        map.set(recipe.id, recipe);
-      }
+    for (const recipe of allRecipes) {
+      map.set(recipe.id, recipe);
     }
     return map;
-  }, [recipes]);
+  }, [allRecipes]);
 
   const entryMap = useMemo(() => {
     const map = new Map<string, MealPlanEntry>();

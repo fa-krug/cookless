@@ -102,7 +102,7 @@ describe("RecipeListPage sorting", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     storageMap.clear();
-    mockGet.mockResolvedValue(RECIPES);
+    mockGet.mockResolvedValue({ items: RECIPES, total_count: RECIPES.length });
   });
 
   it("sorts by name A-Z by default", async () => {
@@ -199,7 +199,7 @@ describe("RecipeListPage sorting", () => {
   });
 
   it("shows collection empty state when no recipes exist", async () => {
-    mockGet.mockResolvedValue([]);
+    mockGet.mockResolvedValue({ items: [], total_count: 0 });
     renderPage();
 
     await waitFor(() => {

@@ -8,6 +8,7 @@ import RecipeCard from "../components/RecipeCard";
 import { EmptyState } from "../components/ui/EmptyState";
 import { RecipeListSkeleton } from "../components/ui/RecipeListSkeleton";
 import { SortSelect } from "../components/ui/SortSelect";
+import { Spinner } from "../components/ui/Spinner";
 import { useDeleteRecipe, useRecipes } from "../hooks/useRecipes";
 import { useToast } from "../hooks/useToast";
 
@@ -58,6 +59,7 @@ export default function RecipeListPage() {
   const [sort, setSort] = useState<SortOption>(getSavedSort);
   const [pendingDeletes, setPendingDeletes] = useState<Set<string>>(new Set());
   const timersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
+  const loadMoreRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (newRecipeId) {
@@ -65,8 +67,25 @@ export default function RecipeListPage() {
     }
   }, [newRecipeId]);
 
-  const { data: recipes, isLoading } = useRecipes(activeTab);
+  const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
+    useRecipes(activeTab);
   const deleteRecipe = useDeleteRecipe();
+
+  const allRecipes = data?.pages.flatMap((page) => page.items) ?? [];
+
+  useEffect(() => {
+    if (!loadMoreRef.current || !hasNextPage) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
+        }
+      },
+      { threshold: 0.1 },
+    );
+    observer.observe(loadMoreRef.current);
+    return () => observer.disconnect();
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   function handleSortChange(value: string) {
     const newSort = value as SortOption;
@@ -79,14 +98,14 @@ export default function RecipeListPage() {
   }
 
   const filteredRecipes = sortRecipes(
-    (recipes ?? []).filter(
+    allRecipes.filter(
       (r) => r.title.toLowerCase().includes(search.toLowerCase()) && !pendingDeletes.has(r.id),
     ),
     sort,
     i18n.language,
   );
 
-  const hasRecipes = (recipes ?? []).filter((r) => !pendingDeletes.has(r.id)).length > 0;
+  const hasRecipes = allRecipes.filter((r) => !pendingDeletes.has(r.id)).length > 0;
   const isSearchEmpty = search.length > 0 && filteredRecipes.length === 0 && hasRecipes;
   const isCollectionEmpty = !hasRecipes && !isLoading;
 
@@ -98,7 +117,7 @@ export default function RecipeListPage() {
   ];
 
   function handleDelete(id: string) {
-    const recipe = recipes?.find((r) => r.id === id);
+    const recipe = allRecipes.find((r) => r.id === id);
     if (!recipe) return;
 
     // Track pending delete in state (for filtering) and ref (for timer cleanup)
@@ -221,6 +240,12 @@ export default function RecipeListPage() {
             highlight={recipe.id === newRecipeId}
           />
         ))}
+
+        {hasNextPage && (
+          <div ref={loadMoreRef} className="flex justify-center py-4">
+            {isFetchingNextPage && <Spinner size={24} />}
+          </div>
+        )}
       </div>
     </div>
   );

@@ -187,6 +187,13 @@ export interface Passkey {
   created_at: string;
 }
 
+// ── Pagination ──────────────────────────────────────────────────
+
+export interface PaginatedResponse<T> {
+  items: T[];
+  total_count: number;
+}
+
 // ── Generic ──────────────────────────────────────────────────────
 
 export interface MessageOut {

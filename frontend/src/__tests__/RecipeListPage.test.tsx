@@ -101,9 +101,11 @@ describe("RecipeListPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockGet.mockImplementation((url: string) => {
-      if (url.includes("list_type=KNOWN")) return Promise.resolve(KNOWN_RECIPES);
-      if (url.includes("list_type=TO_TRY")) return Promise.resolve(TO_TRY_RECIPES);
-      return Promise.resolve([]);
+      if (url.includes("list_type=KNOWN"))
+        return Promise.resolve({ items: KNOWN_RECIPES, total_count: KNOWN_RECIPES.length });
+      if (url.includes("list_type=TO_TRY"))
+        return Promise.resolve({ items: TO_TRY_RECIPES, total_count: TO_TRY_RECIPES.length });
+      return Promise.resolve({ items: [], total_count: 0 });
     });
     mockPost.mockResolvedValue({
       id: "99",
@@ -150,7 +152,7 @@ describe("RecipeListPage", () => {
   });
 
   it("shows empty state when no recipes", async () => {
-    mockGet.mockResolvedValue([]);
+    mockGet.mockResolvedValue({ items: [], total_count: 0 });
     renderPage();
 
     await waitFor(() => {

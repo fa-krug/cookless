@@ -1,13 +1,23 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "../api/client";
-import type { ListType, Recipe, RecipeSummary, RecipeUpdatePayload } from "../api/types";
+import type { ListType, PaginatedResponse, Recipe, RecipeSummary, RecipeUpdatePayload } from "../api/types";
+
+const PAGE_SIZE = 20;
 
 export function useRecipes(listType?: ListType) {
-  return useQuery<RecipeSummary[]>({
+  return useInfiniteQuery<PaginatedResponse<RecipeSummary>>({
     queryKey: ["recipes", listType],
-    queryFn: () => {
-      const params = listType ? `?list_type=${listType}` : "";
-      return api.get<RecipeSummary[]>(`/api/v1/recipes/${params}`);
+    queryFn: ({ pageParam = 0 }) => {
+      const params = new URLSearchParams();
+      if (listType) params.set("list_type", listType);
+      params.set("limit", PAGE_SIZE.toString());
+      params.set("offset", String(pageParam));
+      return api.get<PaginatedResponse<RecipeSummary>>(`/api/v1/recipes/?${params}`);
+    },
+    initialPageParam: 0,
+    getNextPageParam: (lastPage, allPages) => {
+      const loaded = allPages.reduce((sum, page) => sum + page.items.length, 0);
+      return loaded < lastPage.total_count ? loaded : undefined;
     },
   });
 }

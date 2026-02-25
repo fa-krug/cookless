@@ -1,10 +1,11 @@
+import type { InfiniteData } from "@tanstack/react-query";
 import { useQueryClient } from "@tanstack/react-query";
 import { ArrowLeftRight, ArrowLeft, Save, Trash2 } from "lucide-react";
 import { Spinner } from "../components/ui/Spinner";
 import { useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
-import type { Ingredient, Recipe, RecipeSummary, RecipeUpdatePayload } from "../api/types";
+import type { Ingredient, PaginatedResponse, Recipe, RecipeSummary, RecipeUpdatePayload } from "../api/types";
 import IngredientForm, { type IngredientRow } from "../components/IngredientForm";
 import StepEditor, { type StepRow } from "../components/StepEditor";
 import { RecipeDetailSkeleton } from "../components/ui/RecipeDetailSkeleton";
@@ -154,12 +155,22 @@ function RecipeForm({ recipe, recipeId, allIngredients, allUnits }: RecipeFormPr
   }
 
   function handleDelete() {
+    type InfiniteRecipes = InfiniteData<PaginatedResponse<RecipeSummary>>;
+
     // Optimistically remove from list cache
     const listQueryKey = ["recipes", recipe.list_type];
-    const previousRecipes = queryClient.getQueryData<RecipeSummary[]>(listQueryKey);
-    queryClient.setQueryData<RecipeSummary[]>(listQueryKey, (old) =>
-      old?.filter((r) => r.id !== recipeId),
-    );
+    const previousRecipes = queryClient.getQueryData<InfiniteRecipes>(listQueryKey);
+    queryClient.setQueryData<InfiniteRecipes>(listQueryKey, (old) => {
+      if (!old) return old;
+      return {
+        ...old,
+        pages: old.pages.map((page) => ({
+          ...page,
+          items: page.items.filter((r) => r.id !== recipeId),
+          total_count: page.total_count - 1,
+        })),
+      };
+    });
 
     // Navigate back immediately
     navigate("/recipes");
@@ -178,7 +189,7 @@ function RecipeForm({ recipe, recipeId, allIngredients, allUnits }: RecipeFormPr
             pendingDeleteRef.current = null;
           }
           // Restore cache and navigate back
-          queryClient.setQueryData<RecipeSummary[]>(listQueryKey, previousRecipes);
+          queryClient.setQueryData<InfiniteRecipes>(listQueryKey, previousRecipes);
           navigate(`/recipes/${recipeId}`);
         },
       },
@@ -190,7 +201,7 @@ function RecipeForm({ recipe, recipeId, allIngredients, allUnits }: RecipeFormPr
       if (!undone) {
         deleteRecipe.mutate(recipeId, {
           onError: () => {
-            queryClient.setQueryData<RecipeSummary[]>(listQueryKey, previousRecipes);
+            queryClient.setQueryData<InfiniteRecipes>(listQueryKey, previousRecipes);
             addToast(t("errors.recipeDelete"), "error");
           },
         });
