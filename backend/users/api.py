@@ -99,6 +99,16 @@ def set_password(request, payload: SetPasswordIn):
     return {"detail": "Password updated."}
 
 
+@router.post("/users/me/skip-passkey/", response=MessageOut, tags=["users"])
+def skip_passkey(request):
+    user = request.user
+    if user.onboarding_step != "ADD_PASSKEY":
+        raise HttpError(400, "Not at the passkey step.")
+    user.onboarding_step = "CREATE_HOUSEHOLD"
+    user.save()
+    return {"detail": "Passkey step skipped."}
+
+
 @router.delete("/users/me/password/", response=MessageOut, tags=["users"])
 def remove_password(request, payload: RemovePasswordIn):
     user = request.user

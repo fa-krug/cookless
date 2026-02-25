@@ -509,3 +509,22 @@ class TestTransferOwnership:
             f"/api/v1/households/{household.pk}/members/{owner_membership.pk}/transfer-ownership/"
         )
         assert resp.status_code == 404
+
+
+@pytest.mark.django_db
+class TestSkipPasskey:
+    def test_skip_passkey_advances_step(self, api_client, user):
+        user.onboarding_step = "ADD_PASSKEY"
+        user.save()
+        api_client.force_login(user)
+        resp = api_client.post("/api/v1/users/me/skip-passkey/")
+        assert resp.status_code == 200
+        user.refresh_from_db()
+        assert user.onboarding_step == "CREATE_HOUSEHOLD"
+
+    def test_skip_passkey_wrong_step(self, api_client, user):
+        user.onboarding_step = "CHANGE_PASSWORD"
+        user.save()
+        api_client.force_login(user)
+        resp = api_client.post("/api/v1/users/me/skip-passkey/")
+        assert resp.status_code == 400
