@@ -168,9 +168,9 @@ def test_list_recipes_query_count(auth_client, django_assert_max_num_queries):
             recipe=recipe, method="MACHINE", step_number=1, instruction="Blend it"
         )
 
-    # 1 query: session auth, 1: user, 1: household membership check,
+    # 1: session auth, 1: user, 1: active_household FK, 1: household membership check,
     # 1: recipes, 1: prefetch ingredients, 1: prefetch manual steps, 1: prefetch machine steps
-    with django_assert_max_num_queries(7):
+    with django_assert_max_num_queries(8):
         response = client.get("/api/v1/recipes/")
     assert response.status_code == 200
     assert len(response.json()) == 5

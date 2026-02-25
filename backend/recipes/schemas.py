@@ -63,10 +63,14 @@ class RecipeOut(Schema):
 
     @staticmethod
     def resolve_manual_steps(obj):
+        if hasattr(obj, "manual_steps_list"):
+            return obj.manual_steps_list
         return obj.steps.filter(method="MANUAL")
 
     @staticmethod
     def resolve_machine_steps(obj):
+        if hasattr(obj, "machine_steps_list"):
+            return obj.machine_steps_list
         return obj.steps.filter(method="MACHINE")
 
 

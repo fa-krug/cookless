@@ -1,6 +1,7 @@
 from uuid import UUID
 
 from django.db import transaction
+from django.db.models import Prefetch
 from django.shortcuts import get_object_or_404
 
 from ninja import Router
@@ -52,7 +53,17 @@ def _save_steps(recipe: Recipe, steps_data: list, method: str) -> None:
 def list_recipes(request, list_type: str | None = None):
     require_household_member(request)
     qs = Recipe.objects.filter(household=request.user.active_household).prefetch_related(
-        "ingredients", "steps"
+        "ingredients",
+        Prefetch(
+            "steps",
+            queryset=CookingStep.objects.filter(method="MANUAL"),
+            to_attr="manual_steps_list",
+        ),
+        Prefetch(
+            "steps",
+            queryset=CookingStep.objects.filter(method="MACHINE"),
+            to_attr="machine_steps_list",
+        ),
     )
     if list_type:
         qs = qs.filter(list_type=list_type)
@@ -82,7 +93,19 @@ def create_recipe(request, payload: RecipeCreateIn):
 def get_recipe(request, recipe_id: UUID):
     require_household_member(request)
     return get_object_or_404(
-        Recipe.objects.prefetch_related("ingredients", "steps"),
+        Recipe.objects.prefetch_related(
+            "ingredients",
+            Prefetch(
+                "steps",
+                queryset=CookingStep.objects.filter(method="MANUAL"),
+                to_attr="manual_steps_list",
+            ),
+            Prefetch(
+                "steps",
+                queryset=CookingStep.objects.filter(method="MACHINE"),
+                to_attr="machine_steps_list",
+            ),
+        ),
         pk=recipe_id,
         household=request.user.active_household,
     )
