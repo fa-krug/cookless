@@ -1,5 +1,6 @@
+import { useQueryClient } from "@tanstack/react-query";
 import { Plus } from "lucide-react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import type { ListType } from "../api/types";
@@ -17,21 +18,66 @@ export default function RecipeListPage() {
   const { t } = useTranslation();
   const { addToast } = useToast();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<ListType>("KNOWN");
   const [search, setSearch] = useState("");
+  const [pendingDeletes, setPendingDeletes] = useState<Set<string>>(new Set());
+  const timersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
 
   const { data: recipes, isLoading } = useRecipes(activeTab);
   const deleteRecipe = useDeleteRecipe();
 
-  const filteredRecipes = (recipes ?? []).filter((r) =>
-    r.title.toLowerCase().includes(search.toLowerCase()),
+  const filteredRecipes = (recipes ?? []).filter(
+    (r) => r.title.toLowerCase().includes(search.toLowerCase()) && !pendingDeletes.has(r.id),
   );
 
   function handleDelete(id: string) {
-    if (!window.confirm(t("recipes.deleteConfirm"))) return;
-    deleteRecipe.mutate(id, {
-      onError: () => addToast(t("errors.recipeDelete"), "error"),
+    const recipe = recipes?.find((r) => r.id === id);
+    if (!recipe) return;
+
+    // Track pending delete in state (for filtering) and ref (for timer cleanup)
+    setPendingDeletes((prev) => new Set(prev).add(id));
+
+    let undone = false;
+
+    // Show undo toast
+    addToast(t("recipes.deleted", { title: recipe.title }), "success", {
+      duration: 5000,
+      action: {
+        label: t("common.undo"),
+        onClick: () => {
+          undone = true;
+          const timer = timersRef.current.get(id);
+          if (timer) clearTimeout(timer);
+          timersRef.current.delete(id);
+          setPendingDeletes((prev) => {
+            const next = new Set(prev);
+            next.delete(id);
+            return next;
+          });
+        },
+      },
     });
+
+    // Schedule actual delete after 5 seconds
+    const timer = setTimeout(() => {
+      timersRef.current.delete(id);
+      setPendingDeletes((prev) => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
+      if (!undone) {
+        deleteRecipe.mutate(id, {
+          onError: () => {
+            queryClient.invalidateQueries({ queryKey: ["recipes"] });
+            addToast(t("errors.recipeDelete"), "error");
+          },
+        });
+      }
+    }, 5000);
+
+    timersRef.current.set(id, timer);
   }
 
   return (

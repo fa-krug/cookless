@@ -14,7 +14,8 @@
     "retry": "Nochmal versuchen",
     "noResults": "Nichts gefunden",
     "search": "Suchen",
-    "remove": "Entfernen"
+    "remove": "Entfernen",
+    "undo": "Rückgängig"
   },
   "nav": {
     "recipes": "Rezepte",
@@ -28,7 +29,7 @@
     "signIn": "Mit Passkey anmelden",
     "emailPlaceholder": "E-Mail-Adresse",
     "loginFailed": "Das hat leider nicht geklappt. Nochmal versuchen?",
-    "logoutConfirm": "Abmelden?",
+    "logoutConfirm": "Möchtest du dich wirklich abmelden?",
     "signInWithPassword": "Mit Passwort anmelden",
     "signInWithPasskey": "Mit Passkey anmelden",
     "password": "Passwort",
@@ -68,6 +69,7 @@
     "recipeName": "Rezeptname",
     "noRecipes": "Deine Rezeptsammlung ist noch leer. Leg los!",
     "deleteConfirm": "Dieses Rezept löschen?",
+    "deleted": "\"{{title}}\" gelöscht",
     "servings": "Portionen",
     "prepTime": "Vorbereitung",
     "cookTime": "Kochen",
@@ -239,7 +241,7 @@
       "de": "Deutsch"
     },
     "logout": "Abmelden",
-    "logoutConfirm": "Abmelden?",
+    "logoutConfirm": "Möchtest du dich wirklich abmelden?",
     "account": "Konto"
   },
   "errors": {
