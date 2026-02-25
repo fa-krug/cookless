@@ -94,6 +94,8 @@ def set_password(request, payload: SetPasswordIn):
     except ValidationError as e:
         raise HttpError(400, " ".join(e.messages)) from None
     user.set_password(payload.new_password)
+    if user.onboarding_step == "CHANGE_PASSWORD":
+        user.onboarding_step = "ADD_PASSKEY"
     user.save()
     login(request, user, backend="django.contrib.auth.backends.ModelBackend")
     return {"detail": "Password updated."}
@@ -145,7 +147,9 @@ def create_household(request, payload: HouseholdCreateIn):
     )
     if not request.user.active_household:
         request.user.active_household = household
-        request.user.save()
+    if request.user.onboarding_step == "CREATE_HOUSEHOLD":
+        request.user.onboarding_step = "COMPLETED"
+    request.user.save()
     return household
 
 
@@ -358,6 +362,9 @@ def add_passkey_complete(request, payload: RegisterCompleteIn):
         device_name=payload.device_name,
     )
     request.session.pop("webauthn_add_challenge", None)
+    if request.user.onboarding_step == "ADD_PASSKEY":
+        request.user.onboarding_step = "CREATE_HOUSEHOLD"
+        request.user.save()
     return credential
 
 

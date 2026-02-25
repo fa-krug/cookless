@@ -528,3 +528,47 @@ class TestSkipPasskey:
         api_client.force_login(user)
         resp = api_client.post("/api/v1/users/me/skip-passkey/")
         assert resp.status_code == 400
+
+
+@pytest.mark.django_db
+class TestOnboardingAdvancement:
+    def test_set_password_advances_from_change_password(self, api_client, user):
+        user.set_password("OldPass123!")
+        user.onboarding_step = "CHANGE_PASSWORD"
+        user.save()
+        api_client.force_login(user)
+        resp = api_client.post(
+            "/api/v1/users/me/password/",
+            json.dumps({"current_password": "OldPass123!", "new_password": "NewSecure456!"}),
+            content_type="application/json",
+        )
+        assert resp.status_code == 200
+        user.refresh_from_db()
+        assert user.onboarding_step == "ADD_PASSKEY"
+
+    def test_set_password_no_advance_if_not_onboarding(self, api_client, user):
+        user.set_password("OldPass123!")
+        user.onboarding_step = "COMPLETED"
+        user.save()
+        api_client.force_login(user)
+        resp = api_client.post(
+            "/api/v1/users/me/password/",
+            json.dumps({"current_password": "OldPass123!", "new_password": "NewSecure456!"}),
+            content_type="application/json",
+        )
+        assert resp.status_code == 200
+        user.refresh_from_db()
+        assert user.onboarding_step == "COMPLETED"
+
+    def test_create_household_advances_from_create_household(self, api_client, user):
+        user.onboarding_step = "CREATE_HOUSEHOLD"
+        user.save()
+        api_client.force_login(user)
+        resp = api_client.post(
+            "/api/v1/households/",
+            json.dumps({"name": "My Home"}),
+            content_type="application/json",
+        )
+        assert resp.status_code == 201
+        user.refresh_from_db()
+        assert user.onboarding_step == "COMPLETED"
