@@ -98,6 +98,13 @@ class TestUserMe:
         user.refresh_from_db()
         assert user.active_household == household
 
+    def test_get_me_includes_onboarding_step(self, api_client, user):
+        api_client.force_login(user)
+        resp = api_client.get("/api/v1/users/me/")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["onboarding_step"] == "CHANGE_PASSWORD"
+
     def test_patch_me_active_household_non_member_rejected(self, api_client, user, other_user):
         """Users cannot set active_household to a household they are not a member of."""
         h = Household.objects.create(name="Not Mine")
