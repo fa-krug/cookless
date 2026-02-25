@@ -53,7 +53,7 @@ def test_list_recipes_filtered(auth_client):
     Recipe.objects.create(household=household, title="Try1", list_type="TO_TRY", default_servings=2)
     response = client.get("/api/v1/recipes/?list_type=KNOWN")
     assert response.status_code == 200
-    assert len(response.json()) == 1
+    assert len(response.json()["items"]) == 1
 
 
 @pytest.mark.django_db
@@ -65,7 +65,7 @@ def test_other_household_recipes_not_visible(auth_client):
     )
     response = client.get("/api/v1/recipes/")
     assert response.status_code == 200
-    assert len(response.json()) == 0
+    assert len(response.json()["items"]) == 0
 
 
 @pytest.mark.django_db
@@ -169,11 +169,11 @@ def test_list_recipes_query_count(auth_client, django_assert_max_num_queries):
         )
 
     # 1: session auth, 1: user, 1: active_household FK, 1: household membership check,
-    # 1: recipes (no prefetch needed — list uses lean RecipeListOut schema)
-    with django_assert_max_num_queries(5):
+    # 1: COUNT query, 1: recipes (no prefetch needed — list uses lean RecipeListOut schema)
+    with django_assert_max_num_queries(6):
         response = client.get("/api/v1/recipes/")
     assert response.status_code == 200
-    assert len(response.json()) == 5
+    assert len(response.json()["items"]) == 5
 
 
 @pytest.mark.django_db
@@ -209,11 +209,11 @@ def test_list_recipes_excludes_nested_data(auth_client):
     response = client.get("/api/v1/recipes/")
     assert response.status_code == 200
     data = response.json()
-    assert len(data) == 1
-    assert "ingredients" not in data[0]
-    assert "manual_steps" not in data[0]
-    assert "machine_steps" not in data[0]
-    assert data[0]["title"] == "Pancakes"
+    assert len(data["items"]) == 1
+    assert "ingredients" not in data["items"][0]
+    assert "manual_steps" not in data["items"][0]
+    assert "machine_steps" not in data["items"][0]
+    assert data["items"][0]["title"] == "Pancakes"
 
 
 @pytest.mark.django_db
@@ -275,3 +275,70 @@ def test_update_recipe_replaces_ingredients_and_steps(auth_client):
     assert RecipeIngredient.objects.filter(recipe_id=recipe_id).count() == 2
     assert CookingStep.objects.filter(recipe_id=recipe_id, method="MANUAL").count() == 2
     assert CookingStep.objects.filter(recipe_id=recipe_id, method="MACHINE").count() == 1
+
+
+@pytest.mark.django_db
+def test_list_recipes_paginated(auth_client):
+    client, household = auth_client
+    for i in range(25):
+        Recipe.objects.create(
+            title=f"Recipe {i:02d}",
+            household=household,
+            list_type="KNOWN",
+            default_servings=2,
+        )
+
+    response = client.get("/api/v1/recipes/?limit=20&offset=0")
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data["items"]) == 20
+    assert data["total_count"] == 25
+
+    response = client.get("/api/v1/recipes/?limit=20&offset=20")
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data["items"]) == 5
+    assert data["total_count"] == 25
+
+
+@pytest.mark.django_db
+def test_list_recipes_paginated_with_list_type(auth_client):
+    client, household = auth_client
+    for i in range(10):
+        Recipe.objects.create(
+            title=f"Known {i}",
+            household=household,
+            list_type="KNOWN",
+            default_servings=2,
+        )
+    for i in range(5):
+        Recipe.objects.create(
+            title=f"ToTry {i}",
+            household=household,
+            list_type="TO_TRY",
+            default_servings=2,
+        )
+
+    response = client.get("/api/v1/recipes/?list_type=KNOWN&limit=20&offset=0")
+    data = response.json()
+    assert data["total_count"] == 10
+    assert len(data["items"]) == 10
+
+
+@pytest.mark.django_db
+def test_list_recipes_default_returns_all(auth_client):
+    """Without limit/offset params, returns all recipes wrapped in paginated response."""
+    client, household = auth_client
+    for i in range(5):
+        Recipe.objects.create(
+            title=f"Recipe {i}",
+            household=household,
+            list_type="KNOWN",
+            default_servings=2,
+        )
+
+    response = client.get("/api/v1/recipes/")
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data["items"]) == 5
+    assert data["total_count"] == 5

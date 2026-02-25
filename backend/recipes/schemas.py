@@ -53,6 +53,11 @@ class RecipeListOut(Schema):
     updated_at: datetime
 
 
+class PaginatedRecipeListOut(Schema):
+    items: list[RecipeListOut]
+    total_count: int
+
+
 class CookingStepOut(Schema):
     id: int
     step_number: int

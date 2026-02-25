@@ -11,8 +11,8 @@ from recipes.schemas import (
     CookingStepOut,
     IngredientCreateIn,
     IngredientOut,
+    PaginatedRecipeListOut,
     RecipeCreateIn,
-    RecipeListOut,
     RecipeOut,
     UnitOut,
 )
@@ -58,13 +58,24 @@ def _save_steps(recipe: Recipe, steps_data: list, method: str) -> None:
 # ── Recipes ──────────────────────────────────────────────────────────
 
 
-@router.get("/recipes/", response=list[RecipeListOut], tags=["recipes"])
-def list_recipes(request, list_type: str | None = None):
+@router.get("/recipes/", response=PaginatedRecipeListOut, tags=["recipes"])
+def list_recipes(
+    request,
+    list_type: str | None = None,
+    limit: int | None = None,
+    offset: int = 0,
+):
     require_household_member(request)
     qs = Recipe.objects.filter(household=request.user.active_household)
     if list_type:
         qs = qs.filter(list_type=list_type)
-    return qs
+
+    total_count = qs.count()
+
+    if limit is not None:
+        qs = qs[offset : offset + limit]
+
+    return {"items": qs, "total_count": total_count}
 
 
 @router.post("/recipes/", response={201: RecipeOut}, tags=["recipes"])
