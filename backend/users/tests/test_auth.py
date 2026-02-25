@@ -191,6 +191,26 @@ def test_password_register_email_taken():
 
 
 @pytest.mark.django_db
+def test_password_register_expired_invite():
+    client = Client()
+    invite = _create_invite()
+    invite.expires_at = timezone.now() - timedelta(days=1)
+    invite.save()
+    response = client.post(
+        "/api/v1/auth/register/password/",
+        json.dumps(
+            {
+                "email": "expired@example.com",
+                "password": "securepassword1",
+                "invite_code": invite.code,
+            }
+        ),
+        content_type="application/json",
+    )
+    assert response.status_code == 400
+
+
+@pytest.mark.django_db
 def test_password_register_weak_password():
     client = Client()
     invite = _create_invite()
@@ -338,6 +358,24 @@ def test_remove_password_without_passkey_fails():
     client.force_login(user)
     response = client.delete("/api/v1/users/me/password/")
     assert response.status_code == 400
+
+
+@pytest.mark.django_db
+def test_set_password_requires_authentication():
+    client = Client()
+    response = client.post(
+        "/api/v1/users/me/password/",
+        json.dumps({"new_password": "somepassword1"}),
+        content_type="application/json",
+    )
+    assert response.status_code in (401, 403)
+
+
+@pytest.mark.django_db
+def test_remove_password_requires_authentication():
+    client = Client()
+    response = client.delete("/api/v1/users/me/password/")
+    assert response.status_code in (401, 403)
 
 
 @pytest.mark.django_db
