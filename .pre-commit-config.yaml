@@ -13,3 +13,15 @@ repos:
         language: system
         types: [python]
         pass_filenames: false
+      - id: eslint
+        name: eslint
+        entry: bash -c 'cd frontend && npm run lint'
+        language: system
+        files: ^frontend/
+        pass_filenames: false
+      - id: tsc
+        name: typescript
+        entry: bash -c 'cd frontend && npx tsc -b'
+        language: system
+        files: ^frontend/
+        pass_filenames: false
