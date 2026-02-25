@@ -6,6 +6,7 @@ import type { Passkey, User } from "../api/types";
 import { addPasskey } from "../api/webauthn";
 import { useAuth } from "../hooks/useAuth";
 import { useToast } from "../hooks/useToast";
+import { SettingsSkeleton } from "../components/ui/SettingsSkeleton";
 
 export default function SettingsPage() {
   const { t, i18n } = useTranslation();
@@ -197,7 +198,7 @@ export default function SettingsPage() {
         <h2 className="mb-3 text-lg font-semibold text-gray-900">{t("passkeys.title")}</h2>
 
         {passkeysLoading ? (
-          <p className="text-sm text-gray-500">{t("common.loading")}</p>
+          <SettingsSkeleton />
         ) : (
           <div className="space-y-3">
             {passkeys.map((passkey) => (
