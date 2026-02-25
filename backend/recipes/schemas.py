@@ -41,6 +41,18 @@ class RecipeIngredientOut(Schema):
         return obj.unit_id
 
 
+class RecipeListOut(Schema):
+    id: UUID
+    title: str
+    list_type: str
+    default_servings: int
+    prep_time_minutes: int | None = None
+    cook_time_minutes: int | None = None
+    leftover_days: int | None = None
+    created_at: datetime
+    updated_at: datetime
+
+
 class CookingStepOut(Schema):
     id: int
     step_number: int

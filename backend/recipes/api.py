@@ -12,6 +12,7 @@ from recipes.schemas import (
     IngredientCreateIn,
     IngredientOut,
     RecipeCreateIn,
+    RecipeListOut,
     RecipeOut,
     UnitOut,
 )
@@ -49,22 +50,10 @@ def _save_steps(recipe: Recipe, steps_data: list, method: str) -> None:
 # ── Recipes ──────────────────────────────────────────────────────────
 
 
-@router.get("/recipes/", response=list[RecipeOut], tags=["recipes"])
+@router.get("/recipes/", response=list[RecipeListOut], tags=["recipes"])
 def list_recipes(request, list_type: str | None = None):
     require_household_member(request)
-    qs = Recipe.objects.filter(household=request.user.active_household).prefetch_related(
-        "ingredients",
-        Prefetch(
-            "steps",
-            queryset=CookingStep.objects.filter(method="MANUAL"),
-            to_attr="manual_steps_list",
-        ),
-        Prefetch(
-            "steps",
-            queryset=CookingStep.objects.filter(method="MACHINE"),
-            to_attr="machine_steps_list",
-        ),
-    )
+    qs = Recipe.objects.filter(household=request.user.active_household)
     if list_type:
         qs = qs.filter(list_type=list_type)
     return qs
