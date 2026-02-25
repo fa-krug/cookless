@@ -11,10 +11,10 @@ export default function RecipeCard({ recipe, onDelete }: RecipeCardProps) {
   const { t } = useTranslation();
 
   return (
-    <div className="flex items-center justify-between rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
+    <div className="flex min-w-0 items-center justify-between rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
       <Link to={`/recipes/${recipe.id}`} className="min-w-0 flex-1">
         <h3 className="truncate text-lg font-medium text-gray-900">{recipe.title}</h3>
-        <div className="mt-1 flex gap-3 text-sm text-gray-500">
+        <div className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-sm text-gray-500">
           {recipe.prep_time_minutes != null && (
             <span>
               {t("recipes.prepTime")}: {recipe.prep_time_minutes} {t("recipes.minutes")}

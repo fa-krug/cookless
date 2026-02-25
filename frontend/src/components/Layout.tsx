@@ -23,7 +23,7 @@ export default function Layout() {
   return (
     <div className="flex min-h-screen bg-white md:flex-row">
       <BottomNav />
-      <div className="flex min-h-screen flex-1 flex-col md:ml-56">
+      <div className="flex min-h-screen min-w-0 flex-1 flex-col md:ml-56">
         <InstallBanner />
         <main className="mx-auto w-full max-w-3xl flex-1 overflow-y-auto pb-16 md:pb-0">
           <Outlet />

@@ -83,8 +83,10 @@ export default function SettingsPage() {
     try {
       await addPasskey(navigator.userAgent);
       await fetchPasskeys();
-    } catch {
-      // User may have cancelled the ceremony
+    } catch (err) {
+      // Silence user cancellation (browser WebAuthn dialog dismissed)
+      if (err instanceof DOMException && err.name === "NotAllowedError") return;
+      addToast(t("errors.passkeyAdd"), "error");
     } finally {
       setAddingPasskey(false);
     }
@@ -140,12 +142,16 @@ export default function SettingsPage() {
   }
 
   async function handleRemovePassword() {
-    if (!window.confirm(t("password.removeConfirm"))) return;
+    const password = window.prompt(t("password.removeConfirm"));
+    if (!password) return;
     setPasswordError("");
     setPasswordSuccess("");
     try {
-      await api.delete("/api/v1/users/me/password/");
+      await api.delete("/api/v1/users/me/password/", {
+        current_password: password,
+      });
       await refreshUser();
+      setCurrentPassword("");
       setPasswordSuccess(t("password.passwordRemoved"));
       setTimeout(() => setPasswordSuccess(""), 2000);
     } catch (err) {

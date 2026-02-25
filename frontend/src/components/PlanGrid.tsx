@@ -1,9 +1,10 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import type { MealPlan, MealPlanEntry, Recipe } from "../api/types";
 import { useRecipes } from "../hooks/useRecipes";
 import { useShoppingLists } from "../hooks/useShoppingList";
+import RecipePreviewModal from "./RecipePreviewModal";
 
 interface PlanGridProps {
   plan: MealPlan;
@@ -30,11 +31,22 @@ function isFirstDay(dateStr: string, plan: MealPlan): boolean {
   return dateStr === plan.start_date;
 }
 
+function getToday(): string {
+  const now = new Date();
+  return now.toISOString().split("T")[0];
+}
+
 export default function PlanGrid({ plan }: PlanGridProps) {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const { data: recipes } = useRecipes();
   const { data: shoppingLists } = useShoppingLists();
+  const todayRef = useRef<HTMLDivElement>(null);
+  const today = useMemo(() => getToday(), []);
+  const [previewEntry, setPreviewEntry] = useState<{
+    recipe: Recipe;
+    servings: number;
+  } | null>(null);
 
   const recipeMap = useMemo(() => {
     const map = new Map<string, Recipe>();
@@ -58,6 +70,12 @@ export default function PlanGrid({ plan }: PlanGridProps) {
 
   const dates = useMemo(() => getDates(plan), [plan]);
 
+  useEffect(() => {
+    if (todayRef.current) {
+      todayRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, []);
+
   const shoppingList = shoppingLists?.find((sl) => sl.meal_plan === plan.id);
   const shoppingItemCount = shoppingList?.items.length ?? 0;
 
@@ -69,11 +87,34 @@ export default function PlanGrid({ plan }: PlanGridProps) {
         const recipeName = recipe?.title ?? "...";
         const firstDay = isFirstDay(date, plan);
 
+        const isToday = date === today;
+
         return (
-          <div key={date} className="rounded-lg border border-gray-200 bg-white shadow-sm">
-            <div className="border-b border-gray-100 px-4 py-2">
-              <h3 className="text-sm font-semibold text-gray-700">
+          <div
+            key={date}
+            ref={isToday ? todayRef : undefined}
+            className={`rounded-lg border shadow-sm ${
+              isToday
+                ? "border-orange-400 bg-orange-50 ring-2 ring-orange-300"
+                : "border-gray-200 bg-white"
+            }`}
+          >
+            <div
+              className={`border-b px-4 py-2 ${
+                isToday ? "border-orange-200" : "border-gray-100"
+              }`}
+            >
+              <h3
+                className={`text-sm font-semibold ${
+                  isToday ? "text-orange-600" : "text-gray-700"
+                }`}
+              >
                 {formatDate(date, i18n.language)}
+                {isToday && (
+                  <span className="ml-2 text-xs font-normal text-orange-500">
+                    {t("plan.today")}
+                  </span>
+                )}
               </h3>
             </div>
 
@@ -101,7 +142,9 @@ export default function PlanGrid({ plan }: PlanGridProps) {
               {/* Lunch entry */}
               {entry && (
                 <button
-                  onClick={() => recipe && navigate(`/recipes/${recipe.id}`)}
+                  onClick={() =>
+                    recipe && setPreviewEntry({ recipe, servings: entry.servings })
+                  }
                   className="flex w-full items-center gap-2 px-4 py-3 text-left hover:bg-gray-50"
                 >
                   <span className="w-14 shrink-0 text-xs font-medium uppercase text-gray-400">
@@ -137,6 +180,13 @@ export default function PlanGrid({ plan }: PlanGridProps) {
           </div>
         );
       })}
+      {previewEntry && (
+        <RecipePreviewModal
+          recipe={previewEntry.recipe}
+          servings={previewEntry.servings}
+          onClose={() => setPreviewEntry(null)}
+        />
+      )}
     </div>
   );
 }

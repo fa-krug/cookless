@@ -77,6 +77,10 @@ class SetPasswordIn(Schema):
     new_password: str
 
 
+class RemovePasswordIn(Schema):
+    current_password: str
+
+
 class RegisterBeginIn(Schema):
     email: str
     invite_code: str

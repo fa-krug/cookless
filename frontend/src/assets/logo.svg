@@ -1,53 +1,38 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
   <defs>
-    <linearGradient id="gradTop" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#b6f492" />
-      <stop offset="100%" stop-color="#6cdb4e" />
-    </linearGradient>
-
-    <linearGradient id="gradMid" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#4cedea" />
-      <stop offset="100%" stop-color="#249ee8" />
-    </linearGradient>
-
-    <linearGradient id="gradBot" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#ffbf46" />
-      <stop offset="100%" stop-color="#f76a16" />
-    </linearGradient>
-
     <g id="containerGeometry">
-      <path d="M 144 120 
-               L 368 120 
-               L 353 190 
-               A 15 15 0 0 1 338 205 
-               L 174 205 
-               A 15 15 0 0 1 159 190 
+      <path d="M 144 120
+               L 368 120
+               L 353 190
+               A 15 15 0 0 1 338 205
+               L 174 205
+               A 15 15 0 0 1 159 190
                Z" />
-               
-      <path d="M 146 100 
-               L 366 100 
-               A 10 10 0 0 1 376 110 
-               L 386 110 
-               A 10 10 0 0 1 396 120 
-               L 396 125 
-               A 5 5 0 0 1 391 130 
-               L 376 130 
-               A 2 2 0 0 1 374 128 
-               L 374 120 
-               L 138 120 
-               L 138 128 
-               A 2 2 0 0 1 136 130 
-               L 121 130 
-               A 5 5 0 0 1 116 125 
-               L 116 120 
-               A 10 10 0 0 1 126 110 
-               L 136 110 
-               A 10 10 0 0 1 146 100 
+
+      <path d="M 146 100
+               L 366 100
+               A 10 10 0 0 1 376 110
+               L 386 110
+               A 10 10 0 0 1 396 120
+               L 396 125
+               A 5 5 0 0 1 391 130
+               L 376 130
+               A 2 2 0 0 1 374 128
+               L 374 120
+               L 138 120
+               L 138 128
+               A 2 2 0 0 1 136 130
+               L 121 130
+               A 5 5 0 0 1 116 125
+               L 116 120
+               A 10 10 0 0 1 126 110
+               L 136 110
+               A 10 10 0 0 1 146 100
                Z" />
     </g>
   </defs>
 
-  <use href="#containerGeometry" x="0" y="-10" fill="url(#gradTop)" />
-  <use href="#containerGeometry" x="0" y="105" fill="url(#gradMid)" />
-  <use href="#containerGeometry" x="0" y="220" fill="url(#gradBot)" />
+  <use href="#containerGeometry" x="0" y="-10" fill="#3b82f6" />
+  <use href="#containerGeometry" x="0" y="105" fill="#3b82f6" />
+  <use href="#containerGeometry" x="0" y="220" fill="#3b82f6" />
 </svg>

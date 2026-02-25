@@ -115,7 +115,8 @@
     "newPlan": "Neu erstellen",
     "coldDish": "Kaltes Essen",
     "shoppingPreview": "{{count}} Artikel",
-    "defaultLeftoverDays": "Standard-Reste (Tage)"
+    "defaultLeftoverDays": "Standard-Reste (Tage)",
+    "today": "Heute"
   },
   "shopping": {
     "title": "Einkaufsliste",
@@ -207,7 +208,7 @@
     "passwordSet": "Passwort festgelegt!",
     "passwordChanged": "Passwort geändert!",
     "passwordRemoved": "Passwort entfernt.",
-    "removeConfirm": "Passwort entfernen? Du benötigst dann einen Passkey zum Anmelden.",
+    "removeConfirm": "Aktuelles Passwort eingeben, um das Entfernen zu bestätigen:",
     "noPasswordSet": "Kein Passwort festgelegt."
   },
   "settings": {
@@ -239,6 +240,7 @@
     "householdSwitch": "Haushalt konnte nicht gewechselt werden.",
     "memberRemove": "Mitglied konnte nicht entfernt werden.",
     "inviteCreate": "Einladung konnte nicht erstellt werden.",
+    "passkeyAdd": "Passkey konnte nicht hinzugefügt werden.",
     "passkeyDelete": "Passkey konnte nicht entfernt werden."
   },
   "success": {

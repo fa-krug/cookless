@@ -29,6 +29,7 @@ from users.schemas import (
     RegisterBeginIn,
     RegisterCompleteIn,
     RegisterPasswordIn,
+    RemovePasswordIn,
     SetPasswordIn,
     UserOut,
     UserUpdateIn,
@@ -98,10 +99,12 @@ def set_password(request, payload: SetPasswordIn):
 
 
 @router.delete("/users/me/password/", response=MessageOut, tags=["users"])
-def remove_password(request):
+def remove_password(request, payload: RemovePasswordIn):
     user = request.user
     if not user.has_usable_password():
         raise HttpError(400, "No password is set.")
+    if not user.check_password(payload.current_password):
+        raise HttpError(400, "Current password is incorrect.")
     if not user.has_passkey:
         raise HttpError(400, "Cannot remove password without at least one passkey.")
     user.set_unusable_password()

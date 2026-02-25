@@ -34,9 +34,9 @@ env = environ.Env(
 )
 
 # Read environment file (.env) if it exists
-env_file = BASE_DIR / ".env"
+env_file = BASE_DIR.parent / ".env"
 if env_file.exists():
-    environ.Env.read_env(str(env_file))
+    environ.Env.read_env(str(env_file), overwrite=True)
 
 
 # Quick-start development settings - unsuitable for production

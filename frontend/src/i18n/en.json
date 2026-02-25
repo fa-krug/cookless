@@ -115,7 +115,8 @@
     "newPlan": "Create new",
     "coldDish": "Cold dish",
     "shoppingPreview": "{{count}} items",
-    "defaultLeftoverDays": "Default leftover days"
+    "defaultLeftoverDays": "Default leftover days",
+    "today": "Today"
   },
   "shopping": {
     "title": "Shopping List",
@@ -207,7 +208,7 @@
     "passwordSet": "Password set!",
     "passwordChanged": "Password changed!",
     "passwordRemoved": "Password removed.",
-    "removeConfirm": "Remove your password? You'll need a passkey to log in.",
+    "removeConfirm": "Enter your current password to confirm removal:",
     "noPasswordSet": "No password set."
   },
   "settings": {
@@ -239,6 +240,7 @@
     "householdSwitch": "Could not switch household.",
     "memberRemove": "Could not remove member.",
     "inviteCreate": "Could not create invite.",
+    "passkeyAdd": "Could not add passkey.",
     "passkeyDelete": "Could not remove passkey."
   },
   "success": {

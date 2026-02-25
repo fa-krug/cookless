@@ -187,7 +187,7 @@ function RecipeForm({ recipe, recipeId, allIngredients, allUnits }: RecipeFormPr
         </div>
 
         {/* Servings, Prep Time, Cook Time */}
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-3 gap-2">
           <div>
             <label className="mb-1 block text-sm font-medium text-gray-700">
               {t("recipes.servings")}

@@ -86,7 +86,7 @@ export const api = {
     return request<T>(url, { ...options, method: "PATCH", body });
   },
 
-  delete<T = void>(url: string, options?: RequestOptions) {
-    return request<T>(url, { ...options, method: "DELETE" });
+  delete<T = void>(url: string, body?: unknown, options?: RequestOptions) {
+    return request<T>(url, { ...options, method: "DELETE", body });
   },
 };
