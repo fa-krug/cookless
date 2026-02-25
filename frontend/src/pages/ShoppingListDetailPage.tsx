@@ -1,8 +1,10 @@
+import { ShoppingCart } from "lucide-react";
 import { useMemo } from "react";
 import { useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import type { IngredientCategory, ShoppingListItem } from "../api/types";
 import ShoppingCategory from "../components/ShoppingCategory";
+import { EmptyState } from "../components/ui/EmptyState";
 import { useBulkToggle, useShoppingList, useToggleItem } from "../hooks/useShoppingList";
 import { useToast } from "../hooks/useToast";
 
@@ -76,9 +78,12 @@ export default function ShoppingListDetailPage() {
       {isLoading && <p className="text-sm text-gray-500">{t("common.loading")}</p>}
 
       {!isLoading && !shoppingList && (
-        <div className="mt-12 text-center">
-          <p className="text-gray-500">{t("shopping.emptyState")}</p>
-        </div>
+        <EmptyState
+          icon={ShoppingCart}
+          title={t("shopping.emptyTitle")}
+          subtitle={t("shopping.emptySubtitle")}
+          action={{ label: t("shopping.goToPlan"), to: "/plan" }}
+        />
       )}
 
       {shoppingList && (

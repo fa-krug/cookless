@@ -1,4 +1,5 @@
-import { Calendar, CalendarPlus, Settings, Sparkles } from "lucide-react";
+import { Calendar, CalendarPlus, Settings } from "lucide-react";
+import { EmptyState } from "../components/ui/EmptyState";
 import { Spinner } from "../components/ui/Spinner";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -80,17 +81,12 @@ export default function MealPlanPage() {
 
       {/* Empty state */}
       {!isLoading && !currentPlan && (
-        <div className="mt-12 flex flex-col items-center text-center">
-          <Calendar size={48} className="text-gray-400" />
-          <p className="mt-4 text-gray-500">{t("plan.noPlan")}</p>
-          <button
-            onClick={() => setDrawerOpen(true)}
-            className="mt-4 inline-flex items-center gap-2 rounded-lg bg-orange-500 px-6 py-3 text-sm font-semibold text-white hover:bg-orange-600"
-          >
-            <Sparkles size={16} />
-            {t("plan.setup")}
-          </button>
-        </div>
+        <EmptyState
+          icon={Calendar}
+          title={t("plan.noPlanTitle")}
+          subtitle={t("plan.noPlanSubtitle")}
+          action={{ label: t("plan.setup"), onClick: () => setDrawerOpen(true) }}
+        />
       )}
 
       {currentPlan && (
@@ -122,6 +118,16 @@ export default function MealPlanPage() {
               isArchived={false}
               onRenew={handleRenew}
               isRenewing={renewIteration.isPending}
+            />
+          )}
+
+          {/* No active iteration */}
+          {!activeIteration && !activeIterationEnded && (
+            <EmptyState
+              icon={CalendarPlus}
+              title={t("plan.noActiveTitle")}
+              subtitle={t("plan.noActiveSubtitle")}
+              action={{ label: t("plan.generateNext"), onClick: handleNextIteration }}
             />
           )}
 

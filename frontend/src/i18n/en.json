@@ -142,6 +142,10 @@
     "updateConfig": "Update plan",
     "iterationEnded": "This plan has wrapped up!",
     "generateNext": "Plan the next round",
+    "noPlanTitle": "No meal plan yet",
+    "noPlanSubtitle": "Set up your first plan to get cooking!",
+    "noActiveTitle": "No active plan",
+    "noActiveSubtitle": "Generate your next meal plan to get started",
     "pastIterations": "Previous plans",
     "renew": "Refresh"
   },
@@ -153,6 +157,7 @@
     "goToPlan": "Go to meal plan",
     "allDoneTitle": "All done!",
     "allDoneSubtitle": "Everything on this list has been checked off",
+    "backToPlan": "Back to meal plan",
     "uncheckAll": "Reset",
     "linkedToPlan": "From your meal plan",
     "noItems": "Nothing on the list",

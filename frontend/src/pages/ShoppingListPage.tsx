@@ -79,6 +79,7 @@ function ShoppingListView({ shoppingList }: { shoppingList: ShoppingList }) {
           icon={CheckCircle}
           title={t("shopping.allDoneTitle")}
           subtitle={t("shopping.allDoneSubtitle")}
+          action={{ label: t("shopping.backToPlan"), to: "/plan" }}
         />
       )}
 
