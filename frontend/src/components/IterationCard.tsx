@@ -251,6 +251,7 @@ export default function IterationCard({
 
       {previewEntry && (
         <RecipePreviewModal
+          open
           recipe={previewEntry.recipe}
           servings={previewEntry.servings}
           onClose={() => setPreviewEntry(null)}
