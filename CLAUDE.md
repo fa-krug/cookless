@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository. See also `backend/CLAUDE.md` and `frontend/CLAUDE.md` for detailed per-layer guidance.
 
 ## Common Commands
 
@@ -29,55 +29,25 @@ docker-compose up               # dev (hot-reload, port 8000)
 docker-compose -f docker-compose.production.yml up  # production (Postgres)
 ```
 
-## Architecture
+## Architecture Overview
 
-**Meal planning PWA** — Django Ninja API backend + React/TypeScript frontend.
+**Meal planning PWA** -- Django Ninja API backend + React/TypeScript frontend.
 
-### Backend (Django 5.1 + Django Ninja)
+### Backend (Django 6.0 + Django Ninja)
 
-Three Django apps:
-- **`users`** — User model (UUID pk, email + passkey auth (WebAuthn)), PasskeyCredential, Household, HouseholdMember (OWNER/MEMBER roles), Invite (7-day expiry, auto-generated code)
-- **`recipes`** — Recipe (scoped to household, KNOWN/TO_TRY list types), RecipeIngredient, CookingStep (MANUAL/MACHINE), Ingredient (bilingual en/de), Unit (with conversion support)
-- **`cookless`** — Project config, API instance, auth classes
+Five Django apps: `users`, `recipes`, `planner`, `shopping`, `cookless` (project config). All endpoints under `/api/v1/` via 4 routers. Session auth with passkey + password support. Multi-tenant -- all data scoped to `request.user.active_household`.
 
-**API structure:**
-- `backend/cookless/api.py` — NinjaAPI instance, registers routers from each app
-- `backend/{app}/api.py` — Function-based views with `@router` decorators
-- `backend/{app}/schemas.py` — Pydantic schemas (`*In` for request, `*Out` for response)
-- All endpoints under `/api/v1/`, OpenAPI docs at `/api/v1/docs`
+### Frontend (React 19 + TypeScript + Vite + Tailwind CSS 4)
 
-**Auth:** Session auth (`SessionAuth`). Users authenticate via WebAuthn passkeys (registration and login flows use `py_webauthn`). Sessions are managed with Django's built-in session framework.
-
-**Permissions:** Helper functions in `backend/users/permissions.py` — `require_household_member(request)` and `require_household_owner(request, household)` raise `HttpError(401/403)`. Called at the top of view functions.
-
-**Multi-tenancy:** All recipe data scoped to `request.user.active_household`.
-
-### Frontend (React 19 + TypeScript + Vite + Tailwind CSS)
-
-- TanStack React Query for server state
-- React Router DOM v7 for routing
-- react-i18next for i18n (en/de)
-- PWA via vite-plugin-pwa (theme: #f97316 orange)
-- Vite dev server proxies `/api/*` → `http://localhost:8000`
-
-### Testing Patterns
-
-Backend tests use **Django `Client`** (not DRF APIClient):
-```python
-@pytest.mark.django_db
-def test_example(auth_client):
-    client, household = auth_client
-    response = client.post("/api/v1/recipes/", json.dumps({...}), content_type="application/json")
-    assert response.status_code == 201
-```
+TanStack React Query for server state. React Router DOM v7 with lazy-loaded pages. PWA with custom Workbox service worker (offline shopping list toggles). i18n in English and German.
 
 ### Lint/Format Config
 
 - **Ruff:** line-length 100, Python 3.13, rules: E/F/W/I/B/SIM/C4/DJ
-- **isort sections:** future → stdlib → django → third-party → first-party → local
-- **First-party packages:** cookless, recipes, planner, shopping, users
+- **isort sections:** future -> stdlib -> django -> third-party -> first-party -> local
+- **First-party packages:** cookless, planner, recipes, shopping, users
 - **MyPy:** django-stubs plugin, check_untyped_defs enabled
 
 ### Environment Variables (via django-environ)
 
-`DEBUG`, `SECRET_KEY`, `ALLOWED_HOSTS`, `DATABASE_URL` (empty = SQLite), `CORS_ALLOWED_ORIGINS`, WebAuthn settings (`WEBAUTHN_RP_ID`, `WEBAUTHN_RP_NAME`, `WEBAUTHN_ORIGIN`)
+`DEBUG`, `SECRET_KEY`, `ALLOWED_HOSTS`, `DATABASE_URL` (empty = SQLite), `CORS_ALLOWED_ORIGINS`, WebAuthn settings (`WEBAUTHN_RP_ID`, `WEBAUTHN_RP_NAME`, `WEBAUTHN_ORIGIN` -- support comma-separated lists for multiple origins), Email settings (`EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_USE_TLS`, `EMAIL_USE_SSL`, `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD`, `DEFAULT_FROM_EMAIL`, `SERVER_EMAIL`, `ADMIN_EMAIL`), `SUPERUSER_EMAIL`/`SUPERUSER_PASSWORD` (auto-created on container startup via docker-entrypoint.sh)

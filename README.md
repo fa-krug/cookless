@@ -1,4 +1,4 @@
-# Cook Less
+# Cookless
 
 A meal planning PWA that minimizes cooking effort through batch cooking and ingredient overlap optimization. Built with Django Ninja and React.
 
@@ -7,19 +7,21 @@ A meal planning PWA that minimizes cooking effort through batch cooking and ingr
 - **Recipe management** -- organize recipes into Known and To Try lists with bilingual ingredient support (English/German)
 - **Meal plan generation** -- balances familiar and new recipes while optimizing ingredient overlap across meals
 - **Shopping list generation** -- aggregates ingredients across planned meals with unit conversion
+- **Cooking view** -- step-by-step cooking guide with screen wake lock
 - **Multi-user households** -- owner/member roles with a code-based invite system
-- **PWA** -- installable with offline support via service worker
+- **Onboarding wizard** -- guided setup for new users (set password, add passkey, create household)
+- **PWA** -- installable with offline shopping list support via Workbox service worker
 - **i18n** -- English and German
 
 ## Tech Stack
 
-| Layer    | Technology                                                  |
-|----------|-------------------------------------------------------------|
-| Backend  | Python 3.13, Django 5.1, Django Ninja, Pydantic            |
-| Frontend | React 19, TypeScript, Vite, Tailwind CSS, TanStack Query   |
-| Auth     | Session (browser) + Bearer token (API), Sign in with Apple  |
-| Database | SQLite (dev), PostgreSQL (prod)                             |
-| Deploy   | Docker single-container, WhiteNoise serves static + SPA     |
+| Layer    | Technology                                                     |
+|----------|----------------------------------------------------------------|
+| Backend  | Python 3.13, Django 6.0, Django Ninja, Pydantic               |
+| Frontend | React 19, TypeScript, Vite, Tailwind CSS 4, TanStack Query    |
+| Auth     | WebAuthn passkeys + email/password, Django sessions            |
+| Database | SQLite (dev), PostgreSQL (prod)                                |
+| Deploy   | Docker single-container, WhiteNoise serves static + SPA        |
 
 ## Prerequisites
 
@@ -50,21 +52,32 @@ npm install
 npm run dev    # starts Vite on :5173, proxies /api to :8000
 ```
 
+### Bootstrap (first deployment)
+
+```bash
+cd backend
+python manage.py create_first_household "My Home"   # prints invite code
+# First user to register with this invite becomes the household owner
+```
+
 ### Environment Variables
 
-Configure via `.env` in the project root or export directly:
+Configure via `.env` in the project root or export directly. See `.env.example` for all available settings.
 
-| Variable                | Default   | Description                              |
-|-------------------------|-----------|------------------------------------------|
-| `DEBUG`                 | `True`    | Django debug mode                        |
-| `SECRET_KEY`            | generated | Django secret key                        |
-| `ALLOWED_HOSTS`         | `*`       | Comma-separated allowed hosts            |
-| `DATABASE_URL`          | (empty)   | Database URL; empty uses SQLite          |
-| `CORS_ALLOWED_ORIGINS`  | (empty)   | Comma-separated CORS origins             |
-| `APPLE_CLIENT_ID`       | --        | Apple Sign In client ID                  |
-| `APPLE_SECRET_KEY`      | --        | Apple Sign In secret key                 |
-| `APPLE_KEY_ID`          | --        | Apple Sign In key ID                     |
-| `APPLE_CERTIFICATE_KEY` | --        | Apple Sign In certificate key            |
+| Variable                | Default   | Description                                    |
+|-------------------------|-----------|------------------------------------------------|
+| `DEBUG`                 | `True`    | Django debug mode                              |
+| `SECRET_KEY`            | generated | Django secret key (required in production)     |
+| `ALLOWED_HOSTS`         | `*`       | Comma-separated allowed hosts                  |
+| `DATABASE_URL`          | (empty)   | Database URL; empty uses SQLite                |
+| `CORS_ALLOWED_ORIGINS`  | (empty)   | Comma-separated CORS origins                   |
+| `WEBAUTHN_RP_ID`        | --        | WebAuthn relying party ID (comma-separated)    |
+| `WEBAUTHN_RP_NAME`      | --        | WebAuthn relying party name                    |
+| `WEBAUTHN_ORIGIN`       | --        | WebAuthn allowed origins (comma-separated)     |
+| `EMAIL_HOST`            | (empty)   | SMTP host for outbound email                   |
+| `ADMIN_EMAIL`           | (empty)   | Admin email(s) for error notifications         |
+| `SUPERUSER_EMAIL`       | (empty)   | Auto-create superuser on container startup     |
+| `SUPERUSER_PASSWORD`    | (empty)   | Superuser password (required with email above) |
 
 ## Development
 
@@ -112,18 +125,26 @@ Uses PostgreSQL. Django serves the React SPA and static files via WhiteNoise.
 ```
 backend/
   cookless/       # project config, API instance, auth classes
-  users/          # User, Household, HouseholdMember, Invite
+  users/          # User, Household, HouseholdMember, Invite, PasskeyCredential
   recipes/        # Recipe, RecipeIngredient, CookingStep, Ingredient, Unit
-  planner/        # MealPlan, MealPlanEntry, plan generator
-  shopping/       # ShoppingList, ShoppingListItem, list generator
+  planner/        # MealPlan, PlanIteration, MealPlanEntry
+  shopping/       # ShoppingList, ShoppingListItem
 frontend/
-  src/            # React app (pages, components, hooks, i18n)
+  src/
+    api/          # API client, types, WebAuthn helpers
+    components/   # app components + ui/ primitives
+    contexts/     # AuthContext, ToastContext
+    hooks/        # React Query hooks, utility hooks
+    i18n/         # translations (en.json, de.json)
+    pages/        # route page components
+    sw.ts         # custom Workbox service worker
+docs/plans/       # implementation plans and design docs
 ```
 
 - API endpoints live at `/api/v1/`, with OpenAPI docs at `/api/v1/docs`
 - Each Django app has `api.py` (views), `schemas.py` (Pydantic), and `models.py`
-- All recipe data is scoped to the user's active household (multi-tenant)
-- Auth supports both session cookies (browser) and Bearer tokens (API clients)
+- All data is scoped to the user's active household (multi-tenant)
+- Auth uses Django sessions with WebAuthn passkeys and/or email/password
 
 ## License
 
