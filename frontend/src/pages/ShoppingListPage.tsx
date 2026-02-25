@@ -3,9 +3,11 @@ import { useTranslation } from "react-i18next";
 import type { IngredientCategory, ShoppingList } from "../api/types";
 import ShoppingCategory from "../components/ShoppingCategory";
 import { useBulkToggle, useShoppingLists, useToggleItem } from "../hooks/useShoppingList";
+import { useToast } from "../contexts/ToastContext";
 
 function ShoppingListView({ shoppingList }: { shoppingList: ShoppingList }) {
   const { t } = useTranslation();
+  const { addToast } = useToast();
   const toggleItem = useToggleItem();
   const bulkToggle = useBulkToggle();
 
@@ -37,11 +39,18 @@ function ShoppingListView({ shoppingList }: { shoppingList: ShoppingList }) {
 
   function handleUncheckAll() {
     if (!hasCheckedItems) return;
-    bulkToggle.mutate({ item_ids: checkedItemIds, is_checked: false });
+    bulkToggle.mutate(
+      { item_ids: checkedItemIds, is_checked: false },
+      {
+        onError: () => addToast(t("errors.shoppingUpdate"), "error"),
+      },
+    );
   }
 
   function handleToggleItem(itemId: string) {
-    toggleItem.mutate(itemId);
+    toggleItem.mutate(itemId, {
+      onError: () => addToast(t("errors.shoppingUpdate"), "error"),
+    });
   }
 
   function formatDate(dateStr: string): string {

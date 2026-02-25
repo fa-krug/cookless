@@ -4,10 +4,12 @@ import { useTranslation } from "react-i18next";
 import type { IngredientCategory, ShoppingListItem } from "../api/types";
 import ShoppingCategory from "../components/ShoppingCategory";
 import { useBulkToggle, useShoppingList, useToggleItem } from "../hooks/useShoppingList";
+import { useToast } from "../contexts/ToastContext";
 
 export default function ShoppingListDetailPage() {
   const { id } = useParams();
   const { t } = useTranslation();
+  const { addToast } = useToast();
   const { data: shoppingList, isLoading } = useShoppingList(id);
   const toggleItem = useToggleItem();
   const bulkToggle = useBulkToggle();
@@ -40,11 +42,18 @@ export default function ShoppingListDetailPage() {
 
   function handleUncheckAll() {
     if (!hasCheckedItems) return;
-    bulkToggle.mutate({ item_ids: checkedItemIds, is_checked: false });
+    bulkToggle.mutate(
+      { item_ids: checkedItemIds, is_checked: false },
+      {
+        onError: () => addToast(t("errors.shoppingUpdate"), "error"),
+      },
+    );
   }
 
   function handleToggleItem(itemId: string) {
-    toggleItem.mutate(itemId);
+    toggleItem.mutate(itemId, {
+      onError: () => addToast(t("errors.shoppingUpdate"), "error"),
+    });
   }
 
   function formatDate(dateStr: string): string {

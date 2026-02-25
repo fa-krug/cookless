@@ -4,10 +4,12 @@ import { api } from "../api/client";
 import type { Passkey, User } from "../api/types";
 import { addPasskey } from "../api/webauthn";
 import { useAuth } from "../hooks/useAuth";
+import { useToast } from "../contexts/ToastContext";
 
 export default function SettingsPage() {
   const { t, i18n } = useTranslation();
   const { user, logout, refreshUser } = useAuth();
+  const { addToast } = useToast();
 
   const [language, setLanguage] = useState(i18n.language);
   const [defaultServings, setDefaultServings] = useState(user?.settings.default_servings ?? 2);
@@ -64,6 +66,8 @@ export default function SettingsPage() {
       await refreshUser();
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
+    } catch {
+      addToast(t("errors.settingsSave"), "error");
     } finally {
       setIsSaving(false);
     }
