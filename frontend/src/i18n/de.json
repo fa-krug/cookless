@@ -103,7 +103,8 @@
     "stepNumber": "Schritt {{number}}",
     "description": "Beschreibung",
     "duration": "Dauer",
-    "noSteps": "Noch keine Schritte"
+    "noSteps": "Noch keine Schritte",
+    "reorder": "Schritt neu anordnen"
   },
   "plan": {
     "title": "Essensplan",

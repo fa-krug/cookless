@@ -103,7 +103,8 @@
     "stepNumber": "Step {{number}}",
     "description": "Description",
     "duration": "Duration",
-    "noSteps": "No steps yet"
+    "noSteps": "No steps yet",
+    "reorder": "Reorder step"
   },
   "plan": {
     "title": "Meal Plan",

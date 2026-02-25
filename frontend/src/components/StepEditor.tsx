@@ -1,5 +1,9 @@
-import { Plus, X } from "lucide-react";
+import { DndContext, closestCenter, type DragEndEvent } from "@dnd-kit/core";
+import { SortableContext, arrayMove, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import { Plus } from "lucide-react";
 import { useTranslation } from "react-i18next";
+
+import SortableStep from "./SortableStep";
 
 export interface StepRow {
   step_number: number;
@@ -15,6 +19,8 @@ interface StepEditorProps {
 export default function StepEditor({ steps, onChange, label }: StepEditorProps) {
   const { t } = useTranslation();
 
+  const stepIds = steps.map((_, i) => `step-${i}`);
+
   function addStep() {
     onChange([...steps, { step_number: steps.length + 1, instruction: "" }]);
   }
@@ -29,6 +35,16 @@ export default function StepEditor({ steps, onChange, label }: StepEditorProps) 
       i === index ? { ...step, instruction } : step,
     );
     onChange(updated);
+  }
+
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    const oldIndex = stepIds.indexOf(active.id as string);
+    const newIndex = stepIds.indexOf(over.id as string);
+    const reordered = arrayMove(steps, oldIndex, newIndex);
+    onChange(reordered.map((step, i) => ({ ...step, step_number: i + 1 })));
   }
 
   return (
@@ -49,30 +65,22 @@ export default function StepEditor({ steps, onChange, label }: StepEditorProps) 
         <p className="mt-2 text-sm text-gray-500">{t("steps.noSteps")}</p>
       )}
 
-      <div className="mt-2 space-y-2">
-        {steps.map((step, index) => (
-          <div key={index} className="flex items-start gap-2">
-            <span className="shrink-0 pt-1.5 text-sm font-medium text-gray-500">
-              {t("steps.stepNumber", { number: step.step_number })}
-            </span>
-            <textarea
-              value={step.instruction}
-              onChange={(e) => updateInstruction(index, e.target.value)}
-              placeholder={t("steps.instruction")}
-              rows={2}
-              className="min-w-0 flex-1 rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
-            />
-            <button
-              type="button"
-              onClick={() => removeStep(index)}
-              className="shrink-0 rounded-md p-1.5 text-red-600 hover:bg-red-50"
-              aria-label={t("common.remove")}
-            >
-              <X size={18} />
-            </button>
+      <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        <SortableContext items={stepIds} strategy={verticalListSortingStrategy}>
+          <div className="mt-2 space-y-2">
+            {steps.map((step, index) => (
+              <SortableStep
+                key={stepIds[index]}
+                id={stepIds[index]}
+                stepNumber={step.step_number}
+                instruction={step.instruction}
+                onInstructionChange={(instruction) => updateInstruction(index, instruction)}
+                onRemove={() => removeStep(index)}
+              />
+            ))}
           </div>
-        ))}
-      </div>
+        </SortableContext>
+      </DndContext>
     </div>
   );
 }
