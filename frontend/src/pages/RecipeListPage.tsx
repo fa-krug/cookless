@@ -1,8 +1,8 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { BookOpen, Plus, Search } from "lucide-react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import type { ListType, RecipeSummary } from "../api/types";
 import RecipeCard from "../components/RecipeCard";
 import { EmptyState } from "../components/ui/EmptyState";
@@ -50,12 +50,20 @@ export default function RecipeListPage() {
   const { t, i18n } = useTranslation();
   const { addToast } = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
   const queryClient = useQueryClient();
+  const newRecipeId = (location.state as { newRecipeId?: string })?.newRecipeId;
   const [activeTab, setActiveTab] = useState<ListType>("KNOWN");
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<SortOption>(getSavedSort);
   const [pendingDeletes, setPendingDeletes] = useState<Set<string>>(new Set());
   const timersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
+
+  useEffect(() => {
+    if (newRecipeId) {
+      window.history.replaceState({}, "");
+    }
+  }, [newRecipeId]);
 
   const { data: recipes, isLoading } = useRecipes(activeTab);
   const deleteRecipe = useDeleteRecipe();
@@ -206,7 +214,12 @@ export default function RecipeListPage() {
         )}
 
         {filteredRecipes.map((recipe) => (
-          <RecipeCard key={recipe.id} recipe={recipe} onDelete={handleDelete} />
+          <RecipeCard
+            key={recipe.id}
+            recipe={recipe}
+            onDelete={handleDelete}
+            highlight={recipe.id === newRecipeId}
+          />
         ))}
       </div>
     </div>

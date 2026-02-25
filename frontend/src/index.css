@@ -2,6 +2,7 @@
 
 @theme {
   --animate-slide-down: slide-down 0.3s ease-out;
+  --animate-highlight: highlight-fade 2s ease-out;
 }
 
 @keyframes slide-down {
@@ -13,6 +14,11 @@
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+@keyframes highlight-fade {
+  0% { background-color: rgb(255 237 213); }
+  100% { background-color: transparent; }
 }
 
 @layer base {

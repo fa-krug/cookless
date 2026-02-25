@@ -69,10 +69,10 @@ export default function RecipeCreatePage() {
     };
 
     createRecipe.mutate(payload, {
-      onSuccess: () => {
+      onSuccess: (newRecipe) => {
         queryClient.invalidateQueries({ queryKey: ["ingredients"] });
         addToast(t("success.recipeSaved"), "success");
-        navigate("/recipes");
+        navigate("/recipes", { state: { newRecipeId: newRecipe.id } });
       },
       onError: () => addToast(t("errors.recipeSave"), "error"),
     });
