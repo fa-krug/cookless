@@ -5,6 +5,7 @@ import { ApiError } from "../api/client";
 import type { MealPlan } from "../api/types";
 import { useSetupPlan } from "../hooks/useMealPlan";
 import { useToast } from "../hooks/useToast";
+import Drawer from "./ui/Drawer";
 
 interface GenerateDrawerProps {
   isOpen: boolean;
@@ -108,15 +109,7 @@ function DrawerForm({ existingPlan, onClose }: DrawerFormProps) {
   const isUpdate = !!existingPlan;
 
   return (
-    <div className="mx-auto max-h-[85vh] max-w-lg overflow-y-auto px-6 pb-8 pt-4">
-      <div className="mb-4 flex justify-center">
-        <div className="h-1 w-10 rounded-full bg-gray-300" />
-      </div>
-
-      <h2 className="mb-6 text-lg font-semibold text-gray-900">
-        {isUpdate ? t("plan.updateConfig") : t("plan.setup")}
-      </h2>
-
+    <div className="space-y-4">
       {/* Iteration length */}
       <div className="mb-4">
         <label className="mb-1 block text-sm font-medium text-gray-700">
@@ -239,6 +232,8 @@ export default function GenerateDrawer({
   onClose,
   existingPlan,
 }: GenerateDrawerProps) {
+  const { t } = useTranslation();
+
   // Use a key to remount DrawerForm each time the drawer opens,
   // which resets form state from props without useEffect+setState.
   const [openCount, setOpenCount] = useState(0);
@@ -251,27 +246,19 @@ export default function GenerateDrawer({
     setWasOpen(false);
   }
 
-  return (
-    <>
-      {isOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-black/30"
-          onClick={onClose}
-          aria-hidden="true"
-        />
-      )}
+  const isUpdate = !!existingPlan;
 
-      <div
-        className={`fixed inset-x-0 bottom-0 z-50 transform rounded-t-2xl bg-white shadow-xl transition-transform duration-300 ease-out ${
-          isOpen ? "translate-y-0" : "translate-y-full"
-        }`}
-      >
-        <DrawerForm
-          key={openCount}
-          existingPlan={existingPlan}
-          onClose={onClose}
-        />
-      </div>
-    </>
+  return (
+    <Drawer
+      open={isOpen}
+      onClose={onClose}
+      title={isUpdate ? t("plan.updateConfig") : t("plan.setup")}
+    >
+      <DrawerForm
+        key={openCount}
+        existingPlan={existingPlan}
+        onClose={onClose}
+      />
+    </Drawer>
   );
 }
