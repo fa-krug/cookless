@@ -76,6 +76,15 @@ def test_generate_plan_respects_ratio():
 
 
 @pytest.mark.django_db
+def test_recipe_leftover_days_default():
+    household = Household.objects.create(name="Home")
+    recipe = Recipe.objects.create(
+        household=household, title="Test", list_type="KNOWN", default_servings=2
+    )
+    assert recipe.leftover_days == 1
+
+
+@pytest.mark.django_db
 def test_generate_plan_has_leftovers():
     household = Household.objects.create(name="Home")
     _create_recipes(household)

@@ -58,6 +58,7 @@ class Recipe(models.Model):
     default_servings = models.PositiveIntegerField(default=2)
     prep_time_minutes = models.PositiveIntegerField(null=True, blank=True)
     cook_time_minutes = models.PositiveIntegerField(null=True, blank=True)
+    leftover_days = models.PositiveIntegerField(default=1)
     image = models.ImageField(upload_to="recipes/", blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
