@@ -214,3 +214,64 @@ def test_list_recipes_excludes_nested_data(auth_client):
     assert "manual_steps" not in data[0]
     assert "machine_steps" not in data[0]
     assert data[0]["title"] == "Pancakes"
+
+
+@pytest.mark.django_db
+def test_update_recipe_replaces_ingredients_and_steps(auth_client):
+    """Updating a recipe should replace all ingredients and steps."""
+    client, household = auth_client
+    flour = Ingredient.objects.create(name_en="Flour", name_de="Mehl", category="PANTRY")
+    sugar = Ingredient.objects.create(name_en="Sugar", name_de="Zucker", category="PANTRY")
+    gram = Unit.objects.create(name_en="gram", name_de="Gramm", abbreviation="g")
+
+    # Create with flour
+    create_resp = client.post(
+        "/api/v1/recipes/",
+        json.dumps(
+            {
+                "title": "Cake",
+                "list_type": "KNOWN",
+                "default_servings": 4,
+                "ingredients": [
+                    {"ingredient": flour.pk, "quantity": "200.00", "unit": gram.pk, "order": 1}
+                ],
+                "manual_steps": [{"step_number": 1, "instruction": "Mix"}],
+                "machine_steps": [],
+            }
+        ),
+        content_type="application/json",
+    )
+    recipe_id = create_resp.json()["id"]
+
+    # Update: replace flour with sugar+flour, add a second manual step and a machine step
+    update_resp = client.put(
+        f"/api/v1/recipes/{recipe_id}/",
+        json.dumps(
+            {
+                "title": "Cake v2",
+                "list_type": "KNOWN",
+                "default_servings": 8,
+                "ingredients": [
+                    {"ingredient": sugar.pk, "quantity": "150.00", "unit": gram.pk, "order": 1},
+                    {"ingredient": flour.pk, "quantity": "300.00", "unit": gram.pk, "order": 2},
+                ],
+                "manual_steps": [
+                    {"step_number": 1, "instruction": "Sift"},
+                    {"step_number": 2, "instruction": "Fold"},
+                ],
+                "machine_steps": [{"step_number": 1, "instruction": "Blend"}],
+            }
+        ),
+        content_type="application/json",
+    )
+    assert update_resp.status_code == 200
+    data = update_resp.json()
+    assert data["title"] == "Cake v2"
+    assert len(data["ingredients"]) == 2
+    assert len(data["manual_steps"]) == 2
+    assert len(data["machine_steps"]) == 1
+
+    # Verify old data is gone
+    assert RecipeIngredient.objects.filter(recipe_id=recipe_id).count() == 2
+    assert CookingStep.objects.filter(recipe_id=recipe_id, method="MANUAL").count() == 2
+    assert CookingStep.objects.filter(recipe_id=recipe_id, method="MACHINE").count() == 1
