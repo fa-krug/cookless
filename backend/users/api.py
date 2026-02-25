@@ -235,8 +235,9 @@ def list_passkeys(request):
 @router.delete("/users/me/passkeys/{passkey_id}/", response={204: None}, tags=["passkeys"])
 def delete_passkey(request, passkey_id: UUID):
     credential = get_object_or_404(PasskeyCredential, id=passkey_id, user=request.user)
-    if PasskeyCredential.objects.filter(user=request.user).count() <= 1:
-        raise HttpError(400, "Cannot delete your only passkey.")
+    is_last_passkey = PasskeyCredential.objects.filter(user=request.user).count() <= 1
+    if is_last_passkey and not request.user.has_usable_password():
+        raise HttpError(400, "Cannot delete your only passkey without a password set.")
     credential.delete()
     return None
 

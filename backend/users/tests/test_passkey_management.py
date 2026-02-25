@@ -62,6 +62,24 @@ def test_delete_last_passkey_rejected(user_with_passkey):
 
 
 @pytest.mark.django_db
+def test_delete_last_passkey_allowed_with_password():
+    client = Client()
+    user = User.objects.create_user(email="delete-last@example.com")
+    user.set_password("securepassword1")
+    user.save()
+    credential = PasskeyCredential.objects.create(
+        user=user,
+        credential_id=b"cred-delete-last",
+        public_key=b"key-delete-last",
+        sign_count=0,
+        device_name="Test",
+    )
+    client.force_login(user)
+    response = client.delete(f"/api/v1/users/me/passkeys/{credential.id}/")
+    assert response.status_code == 204
+
+
+@pytest.mark.django_db
 def test_list_passkeys_unauthenticated():
     client = Client()
     resp = client.get("/api/v1/users/me/passkeys/")
