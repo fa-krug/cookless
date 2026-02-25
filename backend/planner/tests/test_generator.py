@@ -55,6 +55,7 @@ def test_generate_plan_fills_all_days():
     entries = plan.entries.all()
     dates_covered = {e.date for e in entries}
     assert len(dates_covered) == 7
+    assert all(e.meal_type == "LUNCH" for e in entries)
 
 
 @pytest.mark.django_db
@@ -99,3 +100,77 @@ def test_generate_plan_has_leftovers():
     assert leftover_entries.count() > 0
     for entry in leftover_entries:
         assert entry.source_entry is not None
+
+
+@pytest.mark.django_db
+def test_generate_plan_lunch_only():
+    """Plan should only create LUNCH entries, no DINNER."""
+    household = Household.objects.create(name="Home")
+    _create_recipes(household)
+    plan = generate_meal_plan(
+        household=household,
+        start_date=date(2026, 3, 1),
+        days=7,
+        servings=2,
+    )
+    entries = plan.entries.all()
+    meal_types = {e.meal_type for e in entries}
+    assert meal_types == {"LUNCH"}
+
+
+@pytest.mark.django_db
+def test_generate_plan_leftovers_not_consecutive():
+    """Leftover of a recipe should not appear on the day immediately after cooking."""
+    household = Household.objects.create(name="Home")
+    _create_recipes(household, known=10, to_try=5)
+    plan = generate_meal_plan(
+        household=household,
+        start_date=date(2026, 3, 1),
+        days=14,
+        servings=2,
+    )
+    leftover_entries = plan.entries.filter(is_leftover=True)
+    for entry in leftover_entries:
+        source = entry.source_entry
+        assert source is not None
+        day_gap = (entry.date - source.date).days
+        assert day_gap >= 2, (
+            f"Leftover on {entry.date} is only {day_gap} day(s) after cooking on {source.date}"
+        )
+
+
+@pytest.mark.django_db
+def test_generate_plan_uses_recipe_leftover_days():
+    """Recipes with leftover_days=0 should produce no leftover entries."""
+    household = Household.objects.create(name="Home")
+    recipes = _create_recipes(household, known=5, to_try=3)
+    for r in recipes:
+        r.leftover_days = 0
+        r.save()
+    plan = generate_meal_plan(
+        household=household,
+        start_date=date(2026, 3, 1),
+        days=7,
+        servings=2,
+    )
+    leftover_entries = plan.entries.filter(is_leftover=True)
+    assert leftover_entries.count() == 0
+
+
+@pytest.mark.django_db
+def test_generate_plan_default_leftover_days_override():
+    """default_leftover_days should apply to recipes without explicit leftover_days."""
+    household = Household.objects.create(name="Home")
+    _create_recipes(household, known=5, to_try=3)
+    plan = generate_meal_plan(
+        household=household,
+        start_date=date(2026, 3, 1),
+        days=14,
+        servings=2,
+        default_leftover_days=2,
+    )
+    cooking_entries = plan.entries.filter(is_leftover=False)
+    leftover_entries = plan.entries.filter(is_leftover=True)
+    for ce in cooking_entries:
+        lo_count = leftover_entries.filter(source_entry=ce).count()
+        assert lo_count <= 2

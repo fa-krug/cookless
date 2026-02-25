@@ -7,33 +7,27 @@ from recipes.models import Recipe
 
 
 def generate_meal_plan(
-    household,
-    start_date,
-    days=7,
-    servings=2,
-    known_ratio=0.7,
-    meals_per_day=2,
-    default_leftover_days=1,
+    household, start_date, days=7, servings=2, known_ratio=0.7, default_leftover_days=1
 ):
-    total_meal_slots = days * meals_per_day
-    # Estimate ~2 meals per cooking session (cook + leftover)
-    cooking_sessions = max(total_meal_slots // 2, 1)
+    avg_leftover = default_leftover_days
+    slots_per_recipe = 1 + avg_leftover
+    total_lunch_slots = days
+    cooking_sessions = max(total_lunch_slots // slots_per_recipe, 1)
+
     known_count = round(cooking_sessions * known_ratio)
     try_count = cooking_sessions - known_count
 
     known_recipes = list(Recipe.objects.filter(household=household, list_type="KNOWN"))
     try_recipes = list(Recipe.objects.filter(household=household, list_type="TO_TRY"))
 
-    # Step 1 & 2: Select recipes with ingredient overlap scoring
     best_set = _select_recipes_with_overlap(known_recipes, try_recipes, known_count, try_count)
 
-    # Step 3 & 4: Assign to schedule with leftovers
     plan = MealPlan.objects.create(
         household=household,
         start_date=start_date,
         end_date=start_date + timedelta(days=days - 1),
     )
-    _assign_schedule(plan, best_set, start_date, days, servings, meals_per_day)
+    _assign_schedule_lunch_only(plan, best_set, start_date, days, servings, default_leftover_days)
     return plan
 
 
@@ -60,116 +54,104 @@ def _ingredient_overlap_score(recipes):
     return sum(count for count in ingredient_counts.values() if count > 1)
 
 
-def regenerate_meal_plan(plan, servings=None, known_ratio=0.7, meals_per_day=2):
-    """Regenerate a meal plan in-place: delete unlocked entries, fill empty slots."""
-    # Delete unlocked entries
-    plan.entries.filter(is_locked=False).delete()
+def _assign_schedule_lunch_only(plan, recipes, start_date, days, servings, default_leftover_days):
+    """Assign recipes to lunch slots only. Spread leftovers non-consecutively."""
+    dates = [start_date + timedelta(days=i) for i in range(days)]
+    assigned = {}  # date -> entry or True
 
-    # Infer servings from locked entries if not provided
+    random.shuffle(recipes)
+
+    for recipe in recipes:
+        leftover_count = (
+            recipe.leftover_days if recipe.leftover_days is not None else default_leftover_days
+        )
+
+        # Find first free date for cooking
+        cook_date = None
+        for d in dates:
+            if d not in assigned:
+                cook_date = d
+                break
+        if cook_date is None:
+            break
+
+        cooking_entry = MealPlanEntry.objects.create(
+            meal_plan=plan,
+            date=cook_date,
+            meal_type="LUNCH",
+            recipe=recipe,
+            servings=servings,
+            is_leftover=False,
+        )
+        assigned[cook_date] = cooking_entry
+
+        # Place leftovers: skip at least 1 day after cooking, non-consecutive
+        placed_leftovers = 0
+        last_placed_date = cook_date
+        for d in dates:
+            if placed_leftovers >= leftover_count:
+                break
+            if d in assigned:
+                continue
+            if (d - cook_date).days < 2:
+                continue
+            if (d - last_placed_date).days < 2:
+                continue
+            MealPlanEntry.objects.create(
+                meal_plan=plan,
+                date=d,
+                meal_type="LUNCH",
+                recipe=recipe,
+                servings=servings,
+                is_leftover=True,
+                source_entry=cooking_entry,
+            )
+            assigned[d] = True
+            last_placed_date = d
+            placed_leftovers += 1
+
+    # Fill remaining empty dates with additional recipes
+    empty_dates = [d for d in dates if d not in assigned]
+    if empty_dates:
+        all_recipes = list(
+            Recipe.objects.filter(household=plan.household).exclude(id__in=[r.id for r in recipes])
+        )
+        if not all_recipes:
+            all_recipes = list(Recipe.objects.filter(household=plan.household))
+        random.shuffle(all_recipes)
+        recipe_cycle = all_recipes * ((len(empty_dates) // max(len(all_recipes), 1)) + 1)
+        for i, d in enumerate(empty_dates):
+            if i < len(recipe_cycle):
+                MealPlanEntry.objects.create(
+                    meal_plan=plan,
+                    date=d,
+                    meal_type="LUNCH",
+                    recipe=recipe_cycle[i],
+                    servings=servings,
+                    is_leftover=False,
+                )
+
+
+def regenerate_meal_plan(plan, servings=None, known_ratio=0.7, default_leftover_days=1):
+    """Regenerate a meal plan: delete all entries, recreate with lunch-only."""
     if servings is None:
-        locked_entries = plan.entries.filter(is_locked=True)
-        if locked_entries.exists():
-            servings = locked_entries.order_by("-servings").first().servings
-        else:
-            servings = 2
+        entries = plan.entries.all()
+        servings = entries.order_by("-servings").first().servings if entries.exists() else 2
 
-    # Determine all slots for the plan period
     days = (plan.end_date - plan.start_date).days + 1
-    meal_types = ["LUNCH", "DINNER"][:meals_per_day]
-    all_slots = []
-    for day_offset in range(days):
-        for meal_type in meal_types:
-            all_slots.append((plan.start_date + timedelta(days=day_offset), meal_type))
-
-    # Find which slots are already occupied by locked entries
-    occupied = set()
-    for entry in plan.entries.all():
-        occupied.add((entry.date, entry.meal_type))
-
-    empty_slots = [(d, m) for d, m in all_slots if (d, m) not in occupied]
-
-    if not empty_slots:
-        return plan
-
-    # Estimate how many cooking sessions we need (pairs of cook + leftover)
-    # Use ceiling division so an odd number of slots still gets fully covered
-    cooking_sessions = max(-(-len(empty_slots) // 2), 1)
-    known_count = round(cooking_sessions * known_ratio)
-    try_count = cooking_sessions - known_count
+    plan.entries.all().delete()
 
     known_recipes = list(Recipe.objects.filter(household=plan.household, list_type="KNOWN"))
     try_recipes = list(Recipe.objects.filter(household=plan.household, list_type="TO_TRY"))
 
+    avg_leftover = default_leftover_days
+    slots_per_recipe = 1 + avg_leftover
+    cooking_sessions = max(days // slots_per_recipe, 1)
+    known_count = round(cooking_sessions * known_ratio)
+    try_count = cooking_sessions - known_count
+
     recipes = _select_recipes_with_overlap(known_recipes, try_recipes, known_count, try_count)
-
-    # Fill empty slots with cook + leftover pairs
-    slot_index = 0
-    random.shuffle(recipes)
-
-    for recipe in recipes:
-        if slot_index >= len(empty_slots):
-            break
-        date, meal_type = empty_slots[slot_index]
-        cooking_entry = MealPlanEntry.objects.create(
-            meal_plan=plan,
-            date=date,
-            meal_type=meal_type,
-            recipe=recipe,
-            servings=servings,
-            is_leftover=False,
-        )
-        slot_index += 1
-
-        if slot_index < len(empty_slots):
-            lo_date, lo_meal = empty_slots[slot_index]
-            MealPlanEntry.objects.create(
-                meal_plan=plan,
-                date=lo_date,
-                meal_type=lo_meal,
-                recipe=recipe,
-                servings=servings,
-                is_leftover=True,
-                source_entry=cooking_entry,
-            )
-            slot_index += 1
-
+    _assign_schedule_lunch_only(
+        plan, recipes, plan.start_date, days, servings, default_leftover_days
+    )
     return plan
-
-
-def _assign_schedule(plan, recipes, start_date, days, servings, meals_per_day):
-    meal_types = ["LUNCH", "DINNER"][:meals_per_day]
-    slots = []
-    for day_offset in range(days):
-        for meal_type in meal_types:
-            slots.append((start_date + timedelta(days=day_offset), meal_type))
-
-    slot_index = 0
-    random.shuffle(recipes)
-
-    for recipe in recipes:
-        if slot_index >= len(slots):
-            break
-        date, meal_type = slots[slot_index]
-        cooking_entry = MealPlanEntry.objects.create(
-            meal_plan=plan,
-            date=date,
-            meal_type=meal_type,
-            recipe=recipe,
-            servings=servings,
-            is_leftover=False,
-        )
-        slot_index += 1
-
-        # Assign leftover for next available slot
-        if slot_index < len(slots):
-            lo_date, lo_meal = slots[slot_index]
-            MealPlanEntry.objects.create(
-                meal_plan=plan,
-                date=lo_date,
-                meal_type=lo_meal,
-                recipe=recipe,
-                servings=servings,
-                is_leftover=True,
-                source_entry=cooking_entry,
-            )
-            slot_index += 1

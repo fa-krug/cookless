@@ -270,53 +270,8 @@ def test_regenerate_plan(auth_client):
     # Regenerate returns the SAME plan
     assert data["id"] == plan_id
     assert data["start_date"] == "2026-03-01"
-    assert len(data["entries"]) > 0
-    # No extra plans were created
-    assert MealPlan.objects.filter(household=household).count() == 1
-
-
-@pytest.mark.django_db
-def test_regenerate_keeps_locked_entries(auth_client):
-    client, household = auth_client
-    _create_recipes(household)
-    gen_response = client.post(
-        "/api/v1/meal-plans/generate/",
-        json.dumps({"start_date": "2026-03-01", "days": 7}),
-        content_type="application/json",
-    )
-    plan_id = gen_response.json()["id"]
-    entry = gen_response.json()["entries"][0]
-    entry_id = entry["id"]
-
-    # Lock an entry
-    client.put(
-        f"/api/v1/meal-plans/entries/{entry_id}/",
-        json.dumps({"recipe": entry["recipe"], "is_locked": True}),
-        content_type="application/json",
-    )
-
-    response = client.post(f"/api/v1/meal-plans/{plan_id}/regenerate/")
-    assert response.status_code == 200
-    data = response.json()
-
-    # Same plan returned
-    assert data["id"] == plan_id
-
-    # Locked entry is preserved in the response
-    entry_ids = [e["id"] for e in data["entries"]]
-    assert entry_id in entry_ids
-
-    locked_entries = [e for e in data["entries"] if e["is_locked"]]
-    assert len(locked_entries) == 1
-    assert locked_entries[0]["id"] == entry_id
-
-    # Empty slots were filled with new unlocked entries
-    unlocked_entries = [e for e in data["entries"] if not e["is_locked"]]
-    assert len(unlocked_entries) > 0
-
-    # Total entries should cover all meal slots (7 days * 2 meals)
-    assert len(data["entries"]) == 14
-
+    assert len(data["entries"]) == 7
+    assert all(e["meal_type"] == "LUNCH" for e in data["entries"])
     # No extra plans were created
     assert MealPlan.objects.filter(household=household).count() == 1
 
@@ -394,12 +349,14 @@ def test_generate_plan_accepts_default_leftover_days(auth_client):
     _create_recipes(household)
     response = client.post(
         "/api/v1/meal-plans/generate/",
-        json.dumps({
-            "start_date": "2026-03-01",
-            "days": 7,
-            "servings": 2,
-            "default_leftover_days": 2,
-        }),
+        json.dumps(
+            {
+                "start_date": "2026-03-01",
+                "days": 7,
+                "servings": 2,
+                "default_leftover_days": 2,
+            }
+        ),
         content_type="application/json",
     )
     assert response.status_code == 201
