@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime
 from decimal import Decimal
 from uuid import UUID
 
@@ -28,17 +28,14 @@ class ShoppingListItemOut(Schema):
 
 class ShoppingListOut(Schema):
     id: UUID
-    meal_plan: UUID
+    iteration: UUID
+    shopping_date: date | None
     items: list[ShoppingListItemOut]
     created_at: datetime
 
     @staticmethod
-    def resolve_meal_plan(obj):
-        return obj.meal_plan_id
-
-
-class GenerateShoppingListIn(Schema):
-    meal_plan: UUID
+    def resolve_iteration(obj):
+        return obj.iteration_id
 
 
 class BulkToggleIn(Schema):

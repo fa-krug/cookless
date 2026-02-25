@@ -70,10 +70,9 @@ class TestFullMealPlanFlow:
     Steps:
     1. Create user + household (via fixture)
     2. Add 5 recipes with ingredients (via API)
-    3. Generate meal plan
-    4. Generate shopping list
-    5. Verify shopping list has aggregated ingredients
-    6. Check off items (toggle + bulk toggle)
+    3. Setup meal plan (creates iteration + shopping lists)
+    4. Verify shopping lists were auto-created
+    5. Check off items (toggle + bulk toggle)
     """
 
     def test_end_to_end_flow(self, auth_client, units):
@@ -99,9 +98,6 @@ class TestFullMealPlanFlow:
         assert len(resp.json()) == 12
 
         # ── Step 2: Create 5 recipes (3 KNOWN, 2 TO_TRY) ──────────────
-        # Recipes share overlapping ingredients (flour, eggs, milk, butter, onion, garlic)
-
-        # KNOWN recipe 1: Pancakes (flour, eggs, milk, butter, sugar)
         _create_recipe(
             client,
             "Pancakes",
@@ -130,7 +126,6 @@ class TestFullMealPlanFlow:
             ],
         )
 
-        # KNOWN recipe 2: Chicken Rice (chicken, rice, onion, garlic, butter)
         _create_recipe(
             client,
             "Chicken Rice",
@@ -169,7 +164,6 @@ class TestFullMealPlanFlow:
             ],
         )
 
-        # KNOWN recipe 3: Pasta Bake (pasta, cheese, tomato, onion, garlic)
         _create_recipe(
             client,
             "Pasta Bake",
@@ -208,7 +202,6 @@ class TestFullMealPlanFlow:
             ],
         )
 
-        # TO_TRY recipe 1: French Toast (flour, eggs, milk, butter, sugar)
         _create_recipe(
             client,
             "French Toast",
@@ -237,7 +230,6 @@ class TestFullMealPlanFlow:
             ],
         )
 
-        # TO_TRY recipe 2: Tomato Rice (rice, tomato, onion, garlic, chicken)
         _create_recipe(
             client,
             "Tomato Rice",
@@ -285,23 +277,32 @@ class TestFullMealPlanFlow:
         assert resp.status_code == 200
         assert len(resp.json()) == 2
 
-        # ── Step 3: Generate meal plan ──────────────────────────────────
+        # ── Step 3: Setup meal plan ───────────────────────────────────
         resp = client.post(
-            "/api/v1/meal-plans/generate/",
-            json.dumps({"start_date": "2026-03-01", "days": 7, "servings": 2}),
+            "/api/v1/meal-plans/setup/",
+            json.dumps(
+                {
+                    "start_date": "2026-03-01",
+                    "iteration_weeks": 1,
+                    "shopping_days": [5],
+                    "servings": 2,
+                    "known_ratio": 0.7,
+                    "default_leftover_days": 1,
+                }
+            ),
             content_type="application/json",
         )
-        assert resp.status_code == 201, f"Failed to generate meal plan: {resp.content}"
+        assert resp.status_code == 201, f"Failed to setup meal plan: {resp.content}"
         meal_plan = resp.json()
         plan_id = meal_plan["id"]
 
-        # Meal plan should have entries covering the week
-        assert len(meal_plan["entries"]) > 0
-        assert meal_plan["start_date"] == "2026-03-01"
-        assert meal_plan["end_date"] == "2026-03-07"
+        # Meal plan should have one iteration with entries
+        assert len(meal_plan["iterations"]) == 1
+        iteration = meal_plan["iterations"][0]
+        assert len(iteration["entries"]) > 0
 
         # Each entry should have required fields
-        for entry in meal_plan["entries"]:
+        for entry in iteration["entries"]:
             assert entry["meal_type"] in ("LUNCH", "DINNER")
             assert entry["servings"] == 2
             assert "recipe" in entry
@@ -317,20 +318,18 @@ class TestFullMealPlanFlow:
         assert resp.status_code == 200
         assert resp.json()["id"] == plan_id
 
-        # ── Step 4: Generate shopping list ──────────────────────────────
-        resp = client.post(
-            "/api/v1/shopping-lists/generate/",
-            json.dumps({"meal_plan": plan_id}),
-            content_type="application/json",
-        )
-        assert resp.status_code == 201, f"Failed to generate shopping list: {resp.content}"
-        shopping_list = resp.json()
-        shopping_list_id = shopping_list["id"]
+        # ── Step 4: Verify shopping lists were auto-created ───────────
+        resp = client.get("/api/v1/shopping-lists/")
+        assert resp.status_code == 200
+        shopping_lists = resp.json()
+        assert len(shopping_lists) >= 1
 
-        assert shopping_list["meal_plan"] == plan_id
+        shopping_list = shopping_lists[0]
+        shopping_list_id = shopping_list["id"]
+        assert shopping_list["iteration"] == iteration["id"]
         assert len(shopping_list["items"]) > 0
 
-        # ── Step 5: Verify shopping list aggregation ────────────────────
+        # ── Step 5: Verify shopping list aggregation ──────────────────
         items = shopping_list["items"]
 
         # All items should start unchecked
@@ -351,12 +350,7 @@ class TestFullMealPlanFlow:
         assert resp.status_code == 200
         assert resp.json()["id"] == shopping_list_id
 
-        # Verify shopping list listing
-        resp = client.get("/api/v1/shopping-lists/")
-        assert resp.status_code == 200
-        assert len(resp.json()) == 1
-
-        # ── Step 6: Toggle individual items and bulk toggle ─────────────
+        # ── Step 6: Toggle individual items and bulk toggle ───────────
         # Toggle first item ON
         first_item_id = items[0]["id"]
         resp = client.patch(

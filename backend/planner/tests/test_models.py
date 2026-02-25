@@ -2,7 +2,7 @@ from datetime import date
 
 import pytest
 
-from planner.models import MealPlan, MealPlanEntry
+from planner.models import MealPlan, MealPlanEntry, PlanIteration
 from recipes.models import Recipe
 from users.models import Household
 
@@ -15,10 +15,21 @@ def test_create_meal_plan_with_entries():
     )
 
     plan = MealPlan.objects.create(
-        household=household, start_date=date(2026, 3, 1), end_date=date(2026, 3, 7)
+        household=household,
+        iteration_weeks=1,
+        shopping_days=[5],
+        servings=2,
+        known_ratio=0.7,
+        default_leftover_days=1,
+    )
+    iteration = PlanIteration.objects.create(
+        meal_plan=plan,
+        start_date=date(2026, 3, 1),
+        end_date=date(2026, 3, 7),
+        status="ACTIVE",
     )
     cooking_entry = MealPlanEntry.objects.create(
-        meal_plan=plan,
+        iteration=iteration,
         date=date(2026, 3, 1),
         meal_type="DINNER",
         recipe=recipe,
@@ -26,7 +37,7 @@ def test_create_meal_plan_with_entries():
         is_leftover=False,
     )
     leftover_entry = MealPlanEntry.objects.create(
-        meal_plan=plan,
+        iteration=iteration,
         date=date(2026, 3, 2),
         meal_type="LUNCH",
         recipe=recipe,
@@ -34,7 +45,7 @@ def test_create_meal_plan_with_entries():
         is_leftover=True,
         source_entry=cooking_entry,
     )
-    assert plan.entries.count() == 2
+    assert iteration.entries.count() == 2
     assert leftover_entry.source_entry == cooking_entry
 
 
@@ -42,9 +53,28 @@ def test_create_meal_plan_with_entries():
 def test_meal_plan_str():
     household = Household.objects.create(name="Home")
     plan = MealPlan.objects.create(
-        household=household, start_date=date(2026, 3, 1), end_date=date(2026, 3, 7)
+        household=household,
+        iteration_weeks=1,
+        shopping_days=[5],
     )
-    assert str(plan) == "Home: 2026-03-01 to 2026-03-07"
+    assert str(plan) == "MealPlan for Home"
+
+
+@pytest.mark.django_db
+def test_plan_iteration_str():
+    household = Household.objects.create(name="Home")
+    plan = MealPlan.objects.create(
+        household=household,
+        iteration_weeks=1,
+        shopping_days=[5],
+    )
+    iteration = PlanIteration.objects.create(
+        meal_plan=plan,
+        start_date=date(2026, 3, 1),
+        end_date=date(2026, 3, 7),
+        status="ACTIVE",
+    )
+    assert str(iteration) == "Home: 2026-03-01 to 2026-03-07 (ACTIVE)"
 
 
 @pytest.mark.django_db
@@ -54,10 +84,18 @@ def test_meal_plan_entry_str():
         household=household, title="Pasta", list_type="KNOWN", default_servings=2
     )
     plan = MealPlan.objects.create(
-        household=household, start_date=date(2026, 3, 1), end_date=date(2026, 3, 7)
+        household=household,
+        iteration_weeks=1,
+        shopping_days=[5],
+    )
+    iteration = PlanIteration.objects.create(
+        meal_plan=plan,
+        start_date=date(2026, 3, 1),
+        end_date=date(2026, 3, 7),
+        status="ACTIVE",
     )
     entry = MealPlanEntry.objects.create(
-        meal_plan=plan,
+        iteration=iteration,
         date=date(2026, 3, 1),
         meal_type="DINNER",
         recipe=recipe,
@@ -73,10 +111,18 @@ def test_meal_plan_entry_defaults():
         household=household, title="Pasta", list_type="KNOWN", default_servings=2
     )
     plan = MealPlan.objects.create(
-        household=household, start_date=date(2026, 3, 1), end_date=date(2026, 3, 7)
+        household=household,
+        iteration_weeks=1,
+        shopping_days=[5],
+    )
+    iteration = PlanIteration.objects.create(
+        meal_plan=plan,
+        start_date=date(2026, 3, 1),
+        end_date=date(2026, 3, 7),
+        status="ACTIVE",
     )
     entry = MealPlanEntry.objects.create(
-        meal_plan=plan,
+        iteration=iteration,
         date=date(2026, 3, 1),
         meal_type="BREAKFAST",
         recipe=recipe,
@@ -94,10 +140,18 @@ def test_meal_plan_cascade_delete():
         household=household, title="Pasta", list_type="KNOWN", default_servings=2
     )
     plan = MealPlan.objects.create(
-        household=household, start_date=date(2026, 3, 1), end_date=date(2026, 3, 7)
+        household=household,
+        iteration_weeks=1,
+        shopping_days=[5],
+    )
+    iteration = PlanIteration.objects.create(
+        meal_plan=plan,
+        start_date=date(2026, 3, 1),
+        end_date=date(2026, 3, 7),
+        status="ACTIVE",
     )
     MealPlanEntry.objects.create(
-        meal_plan=plan,
+        iteration=iteration,
         date=date(2026, 3, 1),
         meal_type="DINNER",
         recipe=recipe,
@@ -115,11 +169,19 @@ def test_meal_plan_entry_meal_type_choices():
         household=household, title="Pasta", list_type="KNOWN", default_servings=2
     )
     plan = MealPlan.objects.create(
-        household=household, start_date=date(2026, 3, 1), end_date=date(2026, 3, 7)
+        household=household,
+        iteration_weeks=1,
+        shopping_days=[5],
+    )
+    iteration = PlanIteration.objects.create(
+        meal_plan=plan,
+        start_date=date(2026, 3, 1),
+        end_date=date(2026, 3, 7),
+        status="ACTIVE",
     )
     for meal_type in ["BREAKFAST", "LUNCH", "DINNER", "SNACK"]:
         entry = MealPlanEntry.objects.create(
-            meal_plan=plan,
+            iteration=iteration,
             date=date(2026, 3, 1),
             meal_type=meal_type,
             recipe=recipe,

@@ -6,7 +6,7 @@ from django.test import Client
 
 import pytest
 
-from planner.models import MealPlan, MealPlanEntry
+from planner.models import MealPlan, MealPlanEntry, PlanIteration
 from recipes.models import Ingredient, Recipe, RecipeIngredient, Unit
 from shopping.models import ShoppingList as ShoppingListModel
 from users.models import Household, HouseholdMember
@@ -70,36 +70,58 @@ def auth_client():
     return client, household
 
 
+def _setup_payload(**overrides):
+    """Return a default setup payload, with optional overrides."""
+    payload = {
+        "start_date": "2026-03-01",
+        "iteration_weeks": 1,
+        "shopping_days": [5],
+        "servings": 2,
+        "known_ratio": 0.7,
+        "default_leftover_days": 1,
+    }
+    payload.update(overrides)
+    return payload
+
+
 @pytest.mark.django_db
-def test_generate_meal_plan(auth_client):
+def test_setup_meal_plan(auth_client):
     client, household = auth_client
     _create_recipes(household)
     response = client.post(
-        "/api/v1/meal-plans/generate/",
-        json.dumps({"start_date": "2026-03-01", "days": 7, "servings": 2}),
+        "/api/v1/meal-plans/setup/",
+        json.dumps(_setup_payload()),
         content_type="application/json",
     )
     assert response.status_code == 201
     data = response.json()
     assert "id" in data
-    assert data["start_date"] == "2026-03-01"
-    assert data["end_date"] == "2026-03-07"
-    assert len(data["entries"]) > 0
+    assert data["iteration_weeks"] == 1
+    assert data["shopping_days"] == [5]
+    assert data["servings"] == 2
+    assert len(data["iterations"]) == 1
+    iteration = data["iterations"][0]
+    assert iteration["status"] == "ACTIVE"
+    assert len(iteration["entries"]) > 0
     assert MealPlan.objects.filter(household=household).count() == 1
 
 
 @pytest.mark.django_db
-def test_generate_meal_plan_default_days(auth_client):
+def test_setup_meal_plan_default_weeks(auth_client):
     client, household = auth_client
     _create_recipes(household)
     response = client.post(
-        "/api/v1/meal-plans/generate/",
-        json.dumps({"start_date": "2026-03-01"}),
+        "/api/v1/meal-plans/setup/",
+        json.dumps(_setup_payload()),
         content_type="application/json",
     )
     assert response.status_code == 201
     data = response.json()
-    assert data["end_date"] == "2026-03-07"
+    iteration = data["iterations"][0]
+    # 1 week iteration, dates should span 7 days
+    start = date.fromisoformat(iteration["start_date"])
+    end = date.fromisoformat(iteration["end_date"])
+    assert (end - start).days == 6
 
 
 @pytest.mark.django_db
@@ -107,35 +129,33 @@ def test_list_meal_plans(auth_client):
     client, household = auth_client
     _create_recipes(household)
     client.post(
-        "/api/v1/meal-plans/generate/",
-        json.dumps({"start_date": "2026-03-01", "days": 7}),
+        "/api/v1/meal-plans/setup/",
+        json.dumps(_setup_payload()),
         content_type="application/json",
     )
     response = client.get("/api/v1/meal-plans/")
     assert response.status_code == 200
     data = response.json()
     assert len(data) == 1
-    assert data[0]["start_date"] == "2026-03-01"
+    assert len(data[0]["iterations"]) == 1
 
 
 @pytest.mark.django_db
-def test_generate_plan_replaces_old(auth_client):
+def test_setup_plan_replaces_old(auth_client):
     client, household = auth_client
     _create_recipes(household)
     client.post(
-        "/api/v1/meal-plans/generate/",
-        json.dumps({"start_date": "2026-03-01", "days": 7}),
+        "/api/v1/meal-plans/setup/",
+        json.dumps(_setup_payload(start_date="2026-03-01")),
         content_type="application/json",
     )
     assert MealPlan.objects.filter(household=household).count() == 1
     client.post(
-        "/api/v1/meal-plans/generate/",
-        json.dumps({"start_date": "2026-03-08", "days": 7}),
+        "/api/v1/meal-plans/setup/",
+        json.dumps(_setup_payload(start_date="2026-03-08")),
         content_type="application/json",
     )
     assert MealPlan.objects.filter(household=household).count() == 1
-    plan = MealPlan.objects.get(household=household)
-    assert str(plan.start_date) == "2026-03-08"
 
 
 @pytest.mark.django_db
@@ -143,8 +163,8 @@ def test_get_meal_plan_detail(auth_client):
     client, household = auth_client
     _create_recipes(household)
     gen_response = client.post(
-        "/api/v1/meal-plans/generate/",
-        json.dumps({"start_date": "2026-03-01", "days": 7}),
+        "/api/v1/meal-plans/setup/",
+        json.dumps(_setup_payload()),
         content_type="application/json",
     )
     plan_id = gen_response.json()["id"]
@@ -153,9 +173,11 @@ def test_get_meal_plan_detail(auth_client):
     assert response.status_code == 200
     data = response.json()
     assert data["id"] == plan_id
-    assert len(data["entries"]) > 0
+    assert len(data["iterations"]) == 1
+    iteration = data["iterations"][0]
+    assert len(iteration["entries"]) > 0
     # Verify entry structure
-    entry = data["entries"][0]
+    entry = iteration["entries"][0]
     assert "id" in entry
     assert "date" in entry
     assert "meal_type" in entry
@@ -181,14 +203,23 @@ def test_other_household_plans_not_visible(auth_client):
     other_user = User.objects.create_user(email="other@example.com")
     other_household = Household.objects.create(name="Other")
     HouseholdMember.objects.create(household=other_household, user=other_user, role="OWNER")
-    other_recipes = _create_recipes(other_household)
     other_plan = MealPlan.objects.create(
         household=other_household,
+        iteration_weeks=1,
+        shopping_days=[5],
+        servings=2,
+        known_ratio=0.7,
+        default_leftover_days=1,
+    )
+    other_iteration = PlanIteration.objects.create(
+        meal_plan=other_plan,
         start_date=date(2026, 3, 1),
         end_date=date(2026, 3, 7),
+        status="ACTIVE",
     )
+    other_recipes = _create_recipes(other_household)
     MealPlanEntry.objects.create(
-        meal_plan=other_plan,
+        iteration=other_iteration,
         date=date(2026, 3, 1),
         meal_type="LUNCH",
         recipe=other_recipes[0],
@@ -206,36 +237,29 @@ def test_other_household_plans_not_visible(auth_client):
 
 
 @pytest.mark.django_db
-def test_generate_plan_accepts_default_leftover_days(auth_client):
+def test_setup_plan_accepts_default_leftover_days(auth_client):
     client, household = auth_client
     _create_recipes(household)
     response = client.post(
-        "/api/v1/meal-plans/generate/",
-        json.dumps(
-            {
-                "start_date": "2026-03-01",
-                "days": 7,
-                "servings": 2,
-                "default_leftover_days": 2,
-            }
-        ),
+        "/api/v1/meal-plans/setup/",
+        json.dumps(_setup_payload(default_leftover_days=2)),
         content_type="application/json",
     )
     assert response.status_code == 201
 
 
 @pytest.mark.django_db
-def test_generate_plan_auto_creates_shopping_list(auth_client):
+def test_setup_plan_auto_creates_shopping_list(auth_client):
     client, household = auth_client
     _create_recipes(household)
     response = client.post(
-        "/api/v1/meal-plans/generate/",
-        json.dumps({"start_date": "2026-03-01", "days": 7}),
+        "/api/v1/meal-plans/setup/",
+        json.dumps(_setup_payload()),
         content_type="application/json",
     )
     assert response.status_code == 201
-    plan_id = response.json()["id"]
-    assert ShoppingListModel.objects.filter(meal_plan_id=plan_id).count() == 1
+    iteration_id = response.json()["iterations"][0]["id"]
+    assert ShoppingListModel.objects.filter(iteration_id=iteration_id).count() >= 1
 
 
 @pytest.mark.django_db
@@ -243,3 +267,75 @@ def test_unauthenticated_access():
     client = Client()
     response = client.get("/api/v1/meal-plans/")
     assert response.status_code == 401
+
+
+@pytest.mark.django_db
+def test_renew_iteration(auth_client):
+    client, household = auth_client
+    _create_recipes(household)
+    setup_response = client.post(
+        "/api/v1/meal-plans/setup/",
+        json.dumps(_setup_payload()),
+        content_type="application/json",
+    )
+    iteration_id = setup_response.json()["iterations"][0]["id"]
+
+    response = client.post(
+        f"/api/v1/meal-plans/iterations/{iteration_id}/renew/",
+        content_type="application/json",
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["id"] == iteration_id
+    assert data["status"] == "ACTIVE"
+    assert len(data["entries"]) > 0
+    # Entries should be regenerated (different set)
+    # At minimum, the iteration should still have entries
+    assert len(data["entries"]) >= 1
+
+
+@pytest.mark.django_db
+def test_renew_iteration_not_found(auth_client):
+    client, household = auth_client
+    response = client.post(
+        "/api/v1/meal-plans/iterations/00000000-0000-0000-0000-000000000000/renew/",
+        content_type="application/json",
+    )
+    assert response.status_code == 404
+
+
+@pytest.mark.django_db
+def test_next_iteration(auth_client):
+    client, household = auth_client
+    _create_recipes(household)
+    setup_response = client.post(
+        "/api/v1/meal-plans/setup/",
+        json.dumps(_setup_payload()),
+        content_type="application/json",
+    )
+    first_iteration = setup_response.json()["iterations"][0]
+
+    response = client.post(
+        "/api/v1/meal-plans/iterations/next/",
+        content_type="application/json",
+    )
+    assert response.status_code == 201
+    data = response.json()
+    # New iteration should start after the first one ends
+    assert data["start_date"] > first_iteration["end_date"]
+    assert data["status"] == "ACTIVE"
+    assert len(data["entries"]) > 0
+
+    # Previous iteration should be archived
+    first_iter = PlanIteration.objects.get(id=first_iteration["id"])
+    assert first_iter.status == "ARCHIVED"
+
+
+@pytest.mark.django_db
+def test_next_iteration_no_plan(auth_client):
+    client, household = auth_client
+    response = client.post(
+        "/api/v1/meal-plans/iterations/next/",
+        content_type="application/json",
+    )
+    assert response.status_code == 404

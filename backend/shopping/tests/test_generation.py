@@ -3,10 +3,30 @@ from decimal import Decimal
 
 import pytest
 
-from planner.models import MealPlan, MealPlanEntry
+from planner.models import MealPlan, MealPlanEntry, PlanIteration
 from recipes.models import Ingredient, Recipe, RecipeIngredient, Unit
 from shopping.services import generate_shopping_list
 from users.models import Household
+
+
+def _create_plan_with_iteration(household, **plan_kwargs):
+    """Create a MealPlan with an active PlanIteration."""
+    defaults = {
+        "iteration_weeks": 1,
+        "shopping_days": [5],
+        "servings": 2,
+        "known_ratio": 0.7,
+        "default_leftover_days": 1,
+    }
+    defaults.update(plan_kwargs)
+    plan = MealPlan.objects.create(household=household, **defaults)
+    iteration = PlanIteration.objects.create(
+        meal_plan=plan,
+        start_date=date(2026, 3, 1),
+        end_date=date(2026, 3, 7),
+        status="ACTIVE",
+    )
+    return plan, iteration
 
 
 @pytest.mark.django_db
@@ -25,11 +45,9 @@ def test_shopping_list_aggregates_ingredients():
     )
     RecipeIngredient.objects.create(recipe=r2, ingredient=flour, quantity=300, unit=gram, order=1)
 
-    plan = MealPlan.objects.create(
-        household=household, start_date=date(2026, 3, 1), end_date=date(2026, 3, 7)
-    )
+    plan, iteration = _create_plan_with_iteration(household)
     MealPlanEntry.objects.create(
-        meal_plan=plan,
+        iteration=iteration,
         date=date(2026, 3, 1),
         meal_type="DINNER",
         recipe=r1,
@@ -37,7 +55,7 @@ def test_shopping_list_aggregates_ingredients():
         is_leftover=False,
     )
     MealPlanEntry.objects.create(
-        meal_plan=plan,
+        iteration=iteration,
         date=date(2026, 3, 3),
         meal_type="DINNER",
         recipe=r2,
@@ -61,11 +79,9 @@ def test_shopping_list_skips_leftovers():
     )
     RecipeIngredient.objects.create(recipe=r1, ingredient=flour, quantity=200, unit=gram, order=1)
 
-    plan = MealPlan.objects.create(
-        household=household, start_date=date(2026, 3, 1), end_date=date(2026, 3, 7)
-    )
+    plan, iteration = _create_plan_with_iteration(household)
     cooking = MealPlanEntry.objects.create(
-        meal_plan=plan,
+        iteration=iteration,
         date=date(2026, 3, 1),
         meal_type="DINNER",
         recipe=r1,
@@ -73,7 +89,7 @@ def test_shopping_list_skips_leftovers():
         is_leftover=False,
     )
     MealPlanEntry.objects.create(
-        meal_plan=plan,
+        iteration=iteration,
         date=date(2026, 3, 2),
         meal_type="LUNCH",
         recipe=r1,
@@ -101,11 +117,9 @@ def test_shopping_list_scales_by_servings():
     )
     RecipeIngredient.objects.create(recipe=r1, ingredient=flour, quantity=200, unit=gram, order=1)
 
-    plan = MealPlan.objects.create(
-        household=household, start_date=date(2026, 3, 1), end_date=date(2026, 3, 7)
-    )
+    plan, iteration = _create_plan_with_iteration(household)
     MealPlanEntry.objects.create(
-        meal_plan=plan,
+        iteration=iteration,
         date=date(2026, 3, 1),
         meal_type="DINNER",
         recipe=r1,
@@ -144,11 +158,9 @@ def test_shopping_list_converts_to_base_units():
         recipe=r2, ingredient=flour, quantity=Decimal("1.5"), unit=kg, order=1
     )
 
-    plan = MealPlan.objects.create(
-        household=household, start_date=date(2026, 3, 1), end_date=date(2026, 3, 7)
-    )
+    plan, iteration = _create_plan_with_iteration(household)
     MealPlanEntry.objects.create(
-        meal_plan=plan,
+        iteration=iteration,
         date=date(2026, 3, 1),
         meal_type="DINNER",
         recipe=r1,
@@ -156,7 +168,7 @@ def test_shopping_list_converts_to_base_units():
         is_leftover=False,
     )
     MealPlanEntry.objects.create(
-        meal_plan=plan,
+        iteration=iteration,
         date=date(2026, 3, 3),
         meal_type="DINNER",
         recipe=r2,
@@ -183,11 +195,9 @@ def test_shopping_list_replaces_existing_for_same_plan():
     )
     RecipeIngredient.objects.create(recipe=r1, ingredient=flour, quantity=200, unit=gram, order=1)
 
-    plan = MealPlan.objects.create(
-        household=household, start_date=date(2026, 3, 1), end_date=date(2026, 3, 7)
-    )
+    plan, iteration = _create_plan_with_iteration(household)
     MealPlanEntry.objects.create(
-        meal_plan=plan,
+        iteration=iteration,
         date=date(2026, 3, 1),
         meal_type="DINNER",
         recipe=r1,
@@ -200,7 +210,7 @@ def test_shopping_list_replaces_existing_for_same_plan():
 
     from shopping.models import ShoppingList
 
-    assert ShoppingList.objects.filter(meal_plan=plan).count() == 1
+    assert ShoppingList.objects.filter(iteration=iteration).count() == 1
     assert first_list.id != second_list.id
 
 
@@ -208,9 +218,7 @@ def test_shopping_list_replaces_existing_for_same_plan():
 def test_shopping_list_empty_plan_creates_empty_list():
     """An empty meal plan produces a shopping list with no items."""
     household = Household.objects.create(name="Home")
-    plan = MealPlan.objects.create(
-        household=household, start_date=date(2026, 3, 1), end_date=date(2026, 3, 7)
-    )
+    plan, iteration = _create_plan_with_iteration(household)
 
     shopping_list = generate_shopping_list(plan)
     assert shopping_list.items.count() == 0
@@ -230,11 +238,9 @@ def test_shopping_list_multiple_ingredients_per_recipe():
     RecipeIngredient.objects.create(recipe=r1, ingredient=flour, quantity=300, unit=gram, order=1)
     RecipeIngredient.objects.create(recipe=r1, ingredient=sugar, quantity=150, unit=gram, order=2)
 
-    plan = MealPlan.objects.create(
-        household=household, start_date=date(2026, 3, 1), end_date=date(2026, 3, 7)
-    )
+    plan, iteration = _create_plan_with_iteration(household)
     MealPlanEntry.objects.create(
-        meal_plan=plan,
+        iteration=iteration,
         date=date(2026, 3, 1),
         meal_type="DINNER",
         recipe=r1,
