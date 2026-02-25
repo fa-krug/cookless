@@ -10,7 +10,7 @@ class ShoppingListItemInline(admin.TabularInline):
 
 @admin.register(ShoppingList)
 class ShoppingListAdmin(admin.ModelAdmin):
-    list_display = ["meal_plan", "created_at"]
+    list_display = ["iteration", "shopping_date", "created_at"]
     inlines = [ShoppingListItemInline]
 
 

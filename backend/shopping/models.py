@@ -5,13 +5,14 @@ from django.db import models
 
 class ShoppingList(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    meal_plan = models.ForeignKey(
-        "planner.MealPlan", on_delete=models.CASCADE, related_name="shopping_lists"
+    iteration = models.ForeignKey(
+        "planner.PlanIteration", on_delete=models.CASCADE, related_name="shopping_lists"
     )
+    shopping_date = models.DateField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self) -> str:
-        return f"Shopping list for {self.meal_plan}"
+        return f"Shopping list for {self.iteration}"
 
 
 class ShoppingListItem(models.Model):
