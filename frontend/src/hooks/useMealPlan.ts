@@ -7,6 +7,7 @@ interface GeneratePlanPayload {
   days: number;
   servings: number;
   known_ratio: number;
+  default_leftover_days: number;
 }
 
 interface UpdateEntryPayload {
