@@ -5,7 +5,7 @@ from django.test import Client
 
 import pytest
 
-from recipes.models import Ingredient, Recipe, Unit
+from recipes.models import CookingStep, Ingredient, Recipe, RecipeIngredient, Unit
 from users.models import Household, HouseholdMember
 
 User = get_user_model()
@@ -145,6 +145,35 @@ def test_recipe_includes_leftover_days(auth_client):
     assert response.status_code == 201
     data = response.json()
     assert data["leftover_days"] == 3
+
+
+@pytest.mark.django_db
+def test_list_recipes_query_count(auth_client, django_assert_max_num_queries):
+    """Listing recipes should use a constant number of queries regardless of recipe count."""
+    client, household = auth_client
+    ingredient = Ingredient.objects.create(name_en="Flour", name_de="Mehl", category="PANTRY")
+    unit = Unit.objects.create(name_en="gram", name_de="Gramm", abbreviation="g")
+
+    for i in range(5):
+        recipe = Recipe.objects.create(
+            household=household, title=f"Recipe {i}", list_type="KNOWN", default_servings=2
+        )
+        RecipeIngredient.objects.create(
+            recipe=recipe, ingredient=ingredient, quantity=100, unit=unit, order=1
+        )
+        CookingStep.objects.create(
+            recipe=recipe, method="MANUAL", step_number=1, instruction="Do something"
+        )
+        CookingStep.objects.create(
+            recipe=recipe, method="MACHINE", step_number=1, instruction="Blend it"
+        )
+
+    # 1 query: session auth, 1: user, 1: household membership check,
+    # 1: recipes, 1: prefetch ingredients, 1: prefetch manual steps, 1: prefetch machine steps
+    with django_assert_max_num_queries(7):
+        response = client.get("/api/v1/recipes/")
+    assert response.status_code == 200
+    assert len(response.json()) == 5
 
 
 @pytest.mark.django_db
