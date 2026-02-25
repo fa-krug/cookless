@@ -22,6 +22,13 @@ export function useRecipes(listType?: ListType) {
   });
 }
 
+export function useAllRecipeSummaries() {
+  return useQuery<PaginatedResponse<RecipeSummary>>({
+    queryKey: ["recipes", "all-summaries"],
+    queryFn: () => api.get<PaginatedResponse<RecipeSummary>>("/api/v1/recipes/"),
+  });
+}
+
 export function useCreateRecipe() {
   const queryClient = useQueryClient();
 

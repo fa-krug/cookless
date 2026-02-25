@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import type { MealPlanEntry, PlanIteration, RecipeSummary } from "../api/types";
-import { useRecipe, useRecipes } from "../hooks/useRecipes";
+import { useAllRecipeSummaries, useRecipe } from "../hooks/useRecipes";
 import { useShoppingLists } from "../hooks/useShoppingList";
 import RecipePreviewModal from "./RecipePreviewModal";
 
@@ -58,7 +58,7 @@ export default function IterationCard({
 }: IterationCardProps) {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
-  const { data: recipesData } = useRecipes();
+  const { data: recipesData } = useAllRecipeSummaries();
   const { data: shoppingLists } = useShoppingLists();
   const todayRef = useRef<HTMLDivElement>(null);
   const today = useMemo(() => getToday(), []);
@@ -70,10 +70,7 @@ export default function IterationCard({
 
   const { data: previewRecipe } = useRecipe(previewEntry?.recipeId ?? "");
 
-  const allRecipes = useMemo(
-    () => recipesData?.pages.flatMap((page) => page.items) ?? [],
-    [recipesData],
-  );
+  const allRecipes = recipesData?.items ?? [];
 
   const recipeMap = useMemo(() => {
     const map = new Map<string, RecipeSummary>();

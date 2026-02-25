@@ -73,6 +73,8 @@ def list_recipes(
     total_count = qs.count()
 
     if limit is not None:
+        limit = max(1, min(limit, 100))
+        offset = max(0, offset)
         qs = qs[offset : offset + limit]
 
     return {"items": qs, "total_count": total_count}
