@@ -1,9 +1,13 @@
 import json
+from datetime import timedelta
 
 from django.contrib.auth import get_user_model
 from django.test import Client
+from django.utils import timezone
 
 import pytest
+
+from users.models import Household, HouseholdMember, Invite, PasskeyCredential
 
 User = get_user_model()
 
@@ -109,12 +113,6 @@ def test_password_login_no_password_set():
 
 # ── Password Registration ───────────────────────────────────────────
 
-from datetime import timedelta
-
-from django.utils import timezone
-
-from users.models import Household, HouseholdMember, Invite
-
 _invite_counter = 0
 
 
@@ -123,9 +121,7 @@ def _create_invite():
     _invite_counter += 1
     owner = User.objects.create_user(email=f"owner-{_invite_counter}@example.com")
     household = Household.objects.create(name="Test Household")
-    HouseholdMember.objects.create(
-        household=household, user=owner, role=HouseholdMember.Role.OWNER
-    )
+    HouseholdMember.objects.create(household=household, user=owner, role=HouseholdMember.Role.OWNER)
     invite = Invite.objects.create(
         household=household,
         created_by=owner,
@@ -140,11 +136,13 @@ def test_password_register_success():
     invite = _create_invite()
     response = client.post(
         "/api/v1/auth/register/password/",
-        json.dumps({
-            "email": "newuser@example.com",
-            "password": "securepassword1",
-            "invite_code": invite.code,
-        }),
+        json.dumps(
+            {
+                "email": "newuser@example.com",
+                "password": "securepassword1",
+                "invite_code": invite.code,
+            }
+        ),
         content_type="application/json",
     )
     assert response.status_code == 200
@@ -161,11 +159,13 @@ def test_password_register_invalid_invite():
     client = Client()
     response = client.post(
         "/api/v1/auth/register/password/",
-        json.dumps({
-            "email": "newuser2@example.com",
-            "password": "securepassword1",
-            "invite_code": "invalid-code",
-        }),
+        json.dumps(
+            {
+                "email": "newuser2@example.com",
+                "password": "securepassword1",
+                "invite_code": "invalid-code",
+            }
+        ),
         content_type="application/json",
     )
     assert response.status_code == 400
@@ -178,11 +178,13 @@ def test_password_register_email_taken():
     User.objects.create_user(email="taken@example.com")
     response = client.post(
         "/api/v1/auth/register/password/",
-        json.dumps({
-            "email": "taken@example.com",
-            "password": "securepassword1",
-            "invite_code": invite.code,
-        }),
+        json.dumps(
+            {
+                "email": "taken@example.com",
+                "password": "securepassword1",
+                "invite_code": invite.code,
+            }
+        ),
         content_type="application/json",
     )
     assert response.status_code == 409
@@ -194,11 +196,13 @@ def test_password_register_weak_password():
     invite = _create_invite()
     response = client.post(
         "/api/v1/auth/register/password/",
-        json.dumps({
-            "email": "weakpw@example.com",
-            "password": "123",
-            "invite_code": invite.code,
-        }),
+        json.dumps(
+            {
+                "email": "weakpw@example.com",
+                "password": "123",
+                "invite_code": invite.code,
+            }
+        ),
         content_type="application/json",
     )
     assert response.status_code == 400
@@ -210,11 +214,13 @@ def test_password_register_consumes_invite():
     invite = _create_invite()
     client.post(
         "/api/v1/auth/register/password/",
-        json.dumps({
-            "email": "consumer@example.com",
-            "password": "securepassword1",
-            "invite_code": invite.code,
-        }),
+        json.dumps(
+            {
+                "email": "consumer@example.com",
+                "password": "securepassword1",
+                "invite_code": invite.code,
+            }
+        ),
         content_type="application/json",
     )
     invite.refresh_from_db()
@@ -301,8 +307,6 @@ def test_set_password_weak_rejected():
 
 
 # ── Remove Password ─────────────────────────────────────────────────
-
-from users.models import PasskeyCredential
 
 
 @pytest.mark.django_db
