@@ -36,9 +36,4 @@ class GeneratePlanIn(Schema):
     days: int = 7
     servings: int = 2
     known_ratio: float = 0.7
-
-
-class UpdateEntryIn(Schema):
-    recipe: UUID
-    servings: int | None = None
-    is_locked: bool | None = None
+    default_leftover_days: int = 1

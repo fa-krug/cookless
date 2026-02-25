@@ -105,23 +105,17 @@
   "plan": {
     "title": "Meal Plan",
     "generate": "Generate Plan",
-    "regenerate": "Regenerate",
-    "swap": "Swap",
-    "lock": "Lock",
-    "unlock": "Unlock",
-    "locked": "Locked",
     "noPlan": "No meal plan yet. Generate one to get started!",
-    "weekOf": "Week of {{date}}",
     "days": "Days",
     "servings": "Servings",
     "knownRatio": "Known recipes ratio",
-    "createShoppingList": "Create Shopping List",
     "lunch": "Lunch",
     "dinner": "Dinner",
     "leftover": "Leftover",
-    "swapRecipe": "Swap recipe",
-    "selectRecipe": "Select a recipe",
-    "emptyState": "No meal plan yet"
+    "newPlan": "Create new",
+    "coldDish": "Cold dish",
+    "shoppingPreview": "{{count}} items",
+    "defaultLeftoverDays": "Default leftover days"
   },
   "shopping": {
     "title": "Shopping List",

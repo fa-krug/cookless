@@ -84,6 +84,7 @@ export interface Recipe {
   default_servings: number;
   prep_time_minutes: number | null;
   cook_time_minutes: number | null;
+  leftover_days: number | null;
   ingredients: RecipeIngredient[];
   manual_steps: CookingStep[];
   machine_steps: CookingStep[];
@@ -109,6 +110,7 @@ export interface RecipeUpdatePayload {
   default_servings: number;
   prep_time_minutes: number | null;
   cook_time_minutes: number | null;
+  leftover_days: number | null;
   ingredients: RecipeIngredientPayload[];
   manual_steps: CookingStepPayload[];
   machine_steps: CookingStepPayload[];

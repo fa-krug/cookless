@@ -128,6 +128,24 @@ def test_create_and_read_recipe_with_nested_data(auth_client):
 
 
 @pytest.mark.django_db
+def test_recipe_includes_leftover_days(auth_client):
+    client, household = auth_client
+    response = client.post(
+        "/api/v1/recipes/",
+        json.dumps({
+            "title": "Test",
+            "list_type": "KNOWN",
+            "default_servings": 2,
+            "leftover_days": 3,
+        }),
+        content_type="application/json",
+    )
+    assert response.status_code == 201
+    data = response.json()
+    assert data["leftover_days"] == 3
+
+
+@pytest.mark.django_db
 def test_create_ingredient(auth_client):
     client, household = auth_client
     response = client.post(
