@@ -201,19 +201,30 @@ jobs:
           STACK_ID: ${{ secrets.PORTAINER_STACK_ID }}
         run: |
           set -e
+
           echo "Fetching stack configuration..."
-          STACK_RESPONSE=$(curl -sf -H "X-API-Key: $API_KEY" "$PORTAINER_URL/api/stacks/$STACK_ID")
-          ENV_VARS=$(echo "$STACK_RESPONSE" | jq -c '.Env // []')
-          WEBHOOK=$(echo "$STACK_RESPONSE" | jq -c 'if .Webhook == "" or .Webhook == null then null else .Webhook end')
+          STACK_CODE=$(curl -s -o /tmp/stack.json -w "%{http_code}" \
+            -H "X-API-Key: $API_KEY" \
+            "$PORTAINER_URL/api/stacks/$STACK_ID")
+          if [ "$STACK_CODE" != "200" ]; then
+            echo "::error::Failed to fetch stack config (HTTP $STACK_CODE)"
+            cat /tmp/stack.json 2>/dev/null || true
+            exit 1
+          fi
+          ENV_VARS=$(jq -c '.Env // []' /tmp/stack.json)
+          WEBHOOK=$(jq -c 'if .Webhook == "" or .Webhook == null then null else .Webhook end' /tmp/stack.json)
+
           echo "Fetching stack file content..."
-          FILE_RESPONSE=$(curl -sf -H "X-API-Key: $API_KEY" "$PORTAINER_URL/api/stacks/$STACK_ID/file")
-          STACK_FILE_CONTENT=$(echo "$FILE_RESPONSE" | jq -r '.StackFileContent')
-          echo "Debug: ENV_VARS=${ENV_VARS:-(empty)}"
-          echo "Debug: WEBHOOK=${WEBHOOK:-(empty)}"
-          echo "Debug: STACK_FILE_CONTENT length=$(echo -n "$STACK_FILE_CONTENT" | wc -c)"
-          # Default empty --argjson values to valid JSON
-          ENV_VARS="${ENV_VARS:-[]}"
-          WEBHOOK="${WEBHOOK:-null}"
+          FILE_CODE=$(curl -s -o /tmp/stackfile.json -w "%{http_code}" \
+            -H "X-API-Key: $API_KEY" \
+            "$PORTAINER_URL/api/stacks/$STACK_ID/file")
+          if [ "$FILE_CODE" != "200" ]; then
+            echo "::error::Failed to fetch stack file (HTTP $FILE_CODE)"
+            cat /tmp/stackfile.json 2>/dev/null || true
+            exit 1
+          fi
+          STACK_FILE_CONTENT=$(jq -r '.StackFileContent' /tmp/stackfile.json)
+
           echo "Redeploying stack..."
           PAYLOAD=$(jq -n \
             --arg content "$STACK_FILE_CONTENT" \
@@ -230,19 +241,23 @@ jobs:
             echo "Stack redeployed successfully!"
           elif [ "$HTTP_CODE" = "524" ]; then
             echo "Got 524 timeout, checking stack status..."
-            CHECK_CODE=$(curl -s -o /tmp/check.txt -w "%{http_code}" -H "X-API-Key: $API_KEY" "$PORTAINER_URL/api/stacks/$STACK_ID")
+            CHECK_CODE=$(curl -s -o /tmp/check.txt -w "%{http_code}" \
+              -H "X-API-Key: $API_KEY" \
+              "$PORTAINER_URL/api/stacks/$STACK_ID")
             if [ "$CHECK_CODE" = "200" ]; then
-              STATUS=$(cat /tmp/check.txt | jq -r '.Status')
+              STATUS=$(jq -r '.Status' /tmp/check.txt)
               if [ "$STATUS" = "1" ]; then
                 echo "Stack is running - deployment likely succeeded!"
               else
                 echo "::warning::Stack status: $STATUS - may need attention"
               fi
             else
-              echo "::error::Could not verify stack status: $CHECK_CODE"
+              echo "::error::Could not verify stack status (HTTP $CHECK_CODE)"
+              cat /tmp/check.txt 2>/dev/null || true
               exit 1
             fi
           else
             echo "::error::Failed to redeploy stack (HTTP $HTTP_CODE)"
+            cat /tmp/response.txt 2>/dev/null || true
             exit 1
           fi
