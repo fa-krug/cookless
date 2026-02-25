@@ -1,4 +1,4 @@
-import { Clipboard, Link, Plus, UserMinus, UserPlus } from "lucide-react";
+import { Clipboard, Link, LogOut, Pencil, Plus, Shield, UserMinus, UserPlus } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { Household, Invite } from "../api/types";
@@ -8,9 +8,13 @@ import {
   useAcceptInvite,
   useCreateHousehold,
   useCreateInvite,
+  useDeleteHousehold,
   useHouseholds,
+  useLeaveHousehold,
   useRemoveMember,
   useSwitchHousehold,
+  useTransferOwnership,
+  useUpdateHousehold,
 } from "../hooks/useHousehold";
 
 function MembersList({
@@ -25,6 +29,7 @@ function MembersList({
   const { t } = useTranslation();
   const { addToast } = useToast();
   const removeMember = useRemoveMember();
+  const transferOwnership = useTransferOwnership();
 
   function handleRemove(memberId: number) {
     if (!window.confirm(t("household.removeMemberConfirm"))) return;
@@ -55,14 +60,41 @@ function MembersList({
               </span>
             </div>
             {isOwner && member.email !== currentUserEmail && (
-              <button
-                onClick={() => handleRemove(member.id)}
-                disabled={removeMember.isPending}
-                className="rounded-md p-1.5 text-red-500 hover:bg-red-50 hover:text-red-700 disabled:opacity-50"
-                aria-label={t("common.remove")}
-              >
-                <UserMinus size={16} />
-              </button>
+              <div className="flex items-center gap-1">
+                {member.role !== "OWNER" && (
+                  <button
+                    onClick={() => {
+                      if (
+                        !window.confirm(
+                          t("household.transferOwnershipConfirm", { email: member.email }),
+                        )
+                      )
+                        return;
+                      transferOwnership.mutate(
+                        { householdId: household.id, memberId: member.id },
+                        {
+                          onSuccess: () =>
+                            addToast(t("success.ownershipTransferred"), "success"),
+                          onError: () => addToast(t("errors.ownershipTransfer"), "error"),
+                        },
+                      );
+                    }}
+                    disabled={transferOwnership.isPending}
+                    className="rounded-md p-1.5 text-orange-500 hover:bg-orange-50 hover:text-orange-700 disabled:opacity-50"
+                    aria-label={t("household.transferOwnership")}
+                  >
+                    <Shield size={16} />
+                  </button>
+                )}
+                <button
+                  onClick={() => handleRemove(member.id)}
+                  disabled={removeMember.isPending}
+                  className="rounded-md p-1.5 text-red-500 hover:bg-red-50 hover:text-red-700 disabled:opacity-50"
+                  aria-label={t("common.remove")}
+                >
+                  <UserMinus size={16} />
+                </button>
+              </div>
             )}
           </li>
         ))}
@@ -227,6 +259,14 @@ export default function HouseholdPage() {
   const { user, refreshUser } = useAuth();
   const { data: households, isLoading } = useHouseholds();
   const switchHousehold = useSwitchHousehold();
+  const updateHousehold = useUpdateHousehold();
+  const deleteHousehold = useDeleteHousehold();
+  const leaveHousehold = useLeaveHousehold();
+
+  const [isEditing, setIsEditing] = useState(false);
+  const [editName, setEditName] = useState("");
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteConfirmName, setDeleteConfirmName] = useState("");
 
   const activeHouseholdId = user?.active_household?.id ?? null;
   const activeHousehold = households?.find((h) => h.id === activeHouseholdId) ?? null;
@@ -284,13 +324,69 @@ export default function HouseholdPage() {
       {/* Current household info */}
       {activeHousehold && (
         <div className="mb-4 rounded-lg bg-white p-4 shadow-sm">
-          <h2 className="text-lg font-semibold text-gray-900">
+          <h2 className="mb-2 text-lg font-semibold text-gray-900">
             {t("household.currentHousehold")}
           </h2>
-          <p className="mt-1 text-sm text-gray-600">
-            {activeHousehold.name} &middot;{" "}
-            {t("household.members")} ({activeHousehold.members.length})
-          </p>
+          {isEditing ? (
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (!editName.trim()) return;
+                updateHousehold.mutate(
+                  { id: activeHousehold.id, name: editName.trim() },
+                  {
+                    onSuccess: async () => {
+                      setIsEditing(false);
+                      await refreshUser();
+                    },
+                    onError: () => addToast(t("errors.settingsSave"), "error"),
+                  },
+                );
+              }}
+              className="flex gap-2"
+            >
+              <input
+                type="text"
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+                className="flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
+                autoFocus
+              />
+              <button
+                type="submit"
+                disabled={!editName.trim() || updateHousehold.isPending}
+                className="rounded-md bg-orange-500 px-3 py-2 text-sm font-medium text-white hover:bg-orange-600 disabled:opacity-50"
+              >
+                {t("common.save")}
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsEditing(false)}
+                className="rounded-md bg-gray-200 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-300"
+              >
+                {t("common.cancel")}
+              </button>
+            </form>
+          ) : (
+            <div className="flex items-center gap-2">
+              <p className="text-sm text-gray-600">
+                {activeHousehold.name} &middot; {t("household.members")} (
+                {activeHousehold.members.length})
+              </p>
+              {isOwner && (
+                <button
+                  onClick={() => {
+                    setEditName(activeHousehold.name);
+                    setIsEditing(true);
+                  }}
+                  className="rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                  aria-label={t("household.editName")}
+                >
+                  <Pencil size={14} />
+                </button>
+              )}
+            </div>
+          )}
         </div>
       )}
 
@@ -321,6 +417,89 @@ export default function HouseholdPage() {
       <div className="mb-4">
         <JoinHouseholdSection />
       </div>
+
+      {/* Leave household (non-owner only) */}
+      {activeHousehold && !isOwner && (
+        <div className="mb-4 rounded-lg bg-white p-4 shadow-sm">
+          <button
+            onClick={() => {
+              if (!window.confirm(t("household.leaveConfirm"))) return;
+              leaveHousehold.mutate(activeHousehold.id, {
+                onSuccess: async () => {
+                  await refreshUser();
+                  addToast(t("success.householdLeft"), "success");
+                },
+                onError: () => addToast(t("errors.householdLeave"), "error"),
+              });
+            }}
+            disabled={leaveHousehold.isPending}
+            className="flex items-center gap-2 rounded-md border border-red-300 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 disabled:opacity-50"
+          >
+            <LogOut size={16} />
+            {t("household.leaveHousehold")}
+          </button>
+        </div>
+      )}
+
+      {/* Delete household (owner only, danger zone) */}
+      {activeHousehold && isOwner && (
+        <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-4">
+          <h2 className="mb-2 text-lg font-semibold text-red-900">
+            {t("household.deleteHousehold")}
+          </h2>
+          {!showDeleteConfirm ? (
+            <button
+              onClick={() => setShowDeleteConfirm(true)}
+              className="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
+            >
+              {t("household.deleteHousehold")}
+            </button>
+          ) : (
+            <div>
+              <p className="mb-2 text-sm text-red-800">
+                {t("household.deleteConfirm", { name: activeHousehold.name })}
+              </p>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={deleteConfirmName}
+                  onChange={(e) => setDeleteConfirmName(e.target.value)}
+                  placeholder={t("household.deleteConfirmPlaceholder")}
+                  className="flex-1 rounded-md border border-red-300 px-3 py-2 text-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
+                />
+                <button
+                  onClick={() => {
+                    deleteHousehold.mutate(activeHousehold.id, {
+                      onSuccess: async () => {
+                        setShowDeleteConfirm(false);
+                        setDeleteConfirmName("");
+                        await refreshUser();
+                        addToast(t("success.householdDeleted"), "success");
+                      },
+                      onError: () => addToast(t("errors.householdDelete"), "error"),
+                    });
+                  }}
+                  disabled={
+                    deleteConfirmName !== activeHousehold.name || deleteHousehold.isPending
+                  }
+                  className="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+                >
+                  {t("common.delete")}
+                </button>
+                <button
+                  onClick={() => {
+                    setShowDeleteConfirm(false);
+                    setDeleteConfirmName("");
+                  }}
+                  className="rounded-md bg-gray-200 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-300"
+                >
+                  {t("common.cancel")}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
