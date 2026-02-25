@@ -1,9 +1,9 @@
-django>=5.1,<5.2
-django-ninja>=1.0,<2.0
-django-cors-headers>=4.4,<5.0
-django-environ>=0.11,<1.0
-whitenoise>=6.7,<7.0
-gunicorn>=22.0,<23.0
-Pillow>=10.4,<11.0
-webauthn>=2.0,<3.0
+django>=6.0,<6.1
+django-ninja>=1.5,<2.0
+django-cors-headers>=4.9,<5.0
+django-environ>=0.13,<1.0
+whitenoise>=6.11,<7.0
+gunicorn>=25.1,<26.0
+Pillow>=12.1,<13.0
+webauthn>=2.7,<3.0
 psycopg2-binary>=2.9,<3.0
