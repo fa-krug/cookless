@@ -1,3 +1,4 @@
+import { ChevronDown, RefreshCw, ShoppingCart } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
@@ -28,14 +29,17 @@ function getDates(iteration: PlanIteration): string[] {
   const end = new Date(iteration.end_date + "T00:00:00");
   const current = new Date(start);
   while (current <= end) {
-    dates.push(current.toISOString().split("T")[0]);
+    dates.push(
+      `${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, "0")}-${String(current.getDate()).padStart(2, "0")}`,
+    );
     current.setDate(current.getDate() + 1);
   }
   return dates;
 }
 
 function getToday(): string {
-  return new Date().toISOString().split("T")[0];
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
 /** Convert JS getDay() (0=Sun..6=Sat) to backend weekday (0=Mon..6=Sun). */
@@ -119,25 +123,18 @@ export default function IterationCard({
         >
           {headerLabel}
           {isArchived && (
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-              className={`ml-1 inline h-4 w-4 transition-transform ${collapsed ? "" : "rotate-180"}`}
-            >
-              <path
-                fillRule="evenodd"
-                d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z"
-                clipRule="evenodd"
-              />
-            </svg>
+            <ChevronDown
+              size={16}
+              className={`ml-1 inline transition-transform ${collapsed ? "" : "rotate-180"}`}
+            />
           )}
         </h3>
         {!isArchived && onRenew && (
           <button
             onClick={onRenew}
-            className="rounded-lg border border-orange-300 px-3 py-1 text-xs font-medium text-orange-500 hover:bg-orange-50"
+            className="flex items-center gap-1.5 rounded-lg border border-orange-300 px-3 py-1 text-xs font-medium text-orange-500 hover:bg-orange-50"
           >
+            <RefreshCw size={14} />
             {t("plan.renew")}
           </button>
         )}
@@ -186,14 +183,7 @@ export default function IterationCard({
                       </span>
                     )}
                     {isShoppingDay && (
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 20 20"
-                        fill="currentColor"
-                        className="ml-2 h-4 w-4 text-blue-400"
-                      >
-                        <path d="M1 1.75A.75.75 0 0 1 1.75 1h1.628a1.75 1.75 0 0 1 1.734 1.51L5.18 3h10.07A1.75 1.75 0 0 1 17 5.018l-1.14 7.584A1.75 1.75 0 0 1 14.128 14H6.872a1.75 1.75 0 0 1-1.732-1.398L3.395 2.253a.25.25 0 0 0-.248-.216H1.75A.75.75 0 0 1 1 1.75ZM6 17.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3ZM15.5 17.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3Z" />
-                      </svg>
+                      <ShoppingCart size={16} className="ml-2 text-blue-400" />
                     )}
                   </h3>
                 </div>
@@ -205,14 +195,7 @@ export default function IterationCard({
                       onClick={() => navigate(`/shopping/${shoppingInfo.id}`)}
                       className="flex w-full items-center gap-2 px-4 py-3 text-left hover:bg-blue-50"
                     >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 20 20"
-                        fill="currentColor"
-                        className="h-4 w-4 text-blue-500"
-                      >
-                        <path d="M1 1.75A.75.75 0 0 1 1.75 1h1.628a1.75 1.75 0 0 1 1.734 1.51L5.18 3h10.07A1.75 1.75 0 0 1 17 5.018l-1.14 7.584A1.75 1.75 0 0 1 14.128 14H6.872a1.75 1.75 0 0 1-1.732-1.398L3.395 2.253a.25.25 0 0 0-.248-.216H1.75A.75.75 0 0 1 1 1.75ZM6 17.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3ZM15.5 17.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3Z" />
-                      </svg>
+                      <ShoppingCart size={16} className="text-blue-500" />
                       <span className="text-sm font-medium text-blue-500">
                         {t("plan.shoppingPreview", {
                           count: shoppingInfo.itemCount,

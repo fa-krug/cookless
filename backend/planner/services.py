@@ -16,7 +16,6 @@ def setup_meal_plan(
     servings: int,
     known_ratio: float,
     default_leftover_days: int,
-    start_date: date,
 ) -> MealPlan:
     """Create or update a meal plan for the household and generate the first iteration."""
     validate_shopping_days(shopping_days)
@@ -35,7 +34,7 @@ def setup_meal_plan(
     # Delete all existing iterations (cascade deletes entries)
     plan.iterations.all().delete()
 
-    _generate_iteration(plan, start_date)
+    _generate_iteration(plan, date.today())
     return plan
 
 

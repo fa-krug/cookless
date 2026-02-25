@@ -10,7 +10,6 @@ class SetupPlanIn(Schema):
     servings: int = Field(default=2, ge=1, le=12)
     known_ratio: float = Field(default=0.7, ge=0.0, le=1.0)
     default_leftover_days: int = Field(default=1, ge=0, le=3)
-    start_date: date
 
 
 class MealPlanEntryOut(Schema):

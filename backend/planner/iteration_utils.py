@@ -34,27 +34,21 @@ def compute_iteration_dates(
     shopping_days: list[int],
     iteration_weeks: int,
 ) -> tuple[date, date]:
-    """Snap requested_start forward to the nearest shopping day and compute end date.
+    """Compute iteration start and end dates.
+
+    The iteration starts on the requested date (typically today) and spans
+    the given number of weeks.
 
     Args:
-        requested_start: The desired start date.
+        requested_start: The desired start date (typically today).
         shopping_days: List of weekday integers (0=Monday .. 6=Sunday).
+            Kept for API compatibility but no longer affects start date.
         iteration_weeks: Number of weeks in the iteration.
 
     Returns:
         Tuple of (start_date, end_date).
     """
-    current_weekday = requested_start.weekday()
-    shopping_set = sorted(shopping_days)
-
-    # Find the smallest forward offset to a shopping day
-    min_offset = 7  # worst case: wrap around full week
-    for sd in shopping_set:
-        offset = (sd - current_weekday) % 7
-        if offset < min_offset:
-            min_offset = offset
-
-    start = requested_start + timedelta(days=min_offset)
+    start = requested_start
     end = start + timedelta(weeks=iteration_weeks) - timedelta(days=1)
     return start, end
 

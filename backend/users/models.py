@@ -8,7 +8,7 @@ from django.utils import timezone
 
 
 def _default_user_settings() -> dict:
-    return {"default_servings": 2, "known_new_ratio": 0.7, "plan_days": 7}
+    return {}
 
 
 class UserManager(BaseUserManager["User"]):

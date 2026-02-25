@@ -45,12 +45,12 @@ class TestValidateShoppingDays:
 
 
 class TestComputeIterationDates:
-    def test_snap_forward_to_shopping_day(self):
+    def test_starts_on_requested_date(self):
         start, end = compute_iteration_dates(date(2026, 2, 25), [5], iteration_weeks=1)
-        assert start == date(2026, 2, 28)  # Wed snaps to Sat
-        assert end == date(2026, 3, 6)  # Sat + 7 - 1 = Fri
+        assert start == date(2026, 2, 25)  # Wed, starts today
+        assert end == date(2026, 3, 3)  # Wed + 7 - 1 = Tue
 
-    def test_already_on_shopping_day(self):
+    def test_one_week_span(self):
         start, end = compute_iteration_dates(date(2026, 2, 28), [5], iteration_weeks=1)
         assert start == date(2026, 2, 28)
         assert end == date(2026, 3, 6)
@@ -60,11 +60,11 @@ class TestComputeIterationDates:
         assert start == date(2026, 2, 28)
         assert end == date(2026, 3, 13)
 
-    def test_two_shopping_days_snaps_to_nearest(self):
+    def test_shopping_days_do_not_affect_start(self):
         # shopping on Wed(2) + Sat(5), start date is Thu(3)
         start, end = compute_iteration_dates(date(2026, 2, 26), [2, 5], iteration_weeks=1)
-        assert start == date(2026, 2, 28)  # Thu snaps forward to Sat
-        assert start.weekday() in [2, 5]
+        assert start == date(2026, 2, 26)  # Thu, no snapping
+        assert end == date(2026, 3, 4)
 
 
 class TestComputeShoppingSegments:

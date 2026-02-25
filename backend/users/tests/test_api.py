@@ -52,7 +52,7 @@ class TestUserMe:
         data = resp.json()
         assert data["email"] == "alice@example.com"
         assert data["preferred_language"] == "en"
-        assert data["settings"] == {"default_servings": 2, "known_new_ratio": 0.7, "plan_days": 7}
+        assert data["settings"] == {}
         assert data["active_household"] is None
 
     def test_get_me_with_active_household(self, api_client, user, household):
@@ -75,7 +75,7 @@ class TestUserMe:
 
     def test_patch_me_settings(self, api_client, user):
         api_client.force_login(user)
-        new_settings = {"default_servings": 4, "known_new_ratio": 0.5, "plan_days": 5}
+        new_settings = {"theme": "dark"}
         resp = api_client.patch(
             "/api/v1/users/me/",
             json.dumps({"settings": new_settings}),

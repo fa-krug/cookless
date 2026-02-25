@@ -1,4 +1,4 @@
-from datetime import date, timedelta
+from datetime import timedelta
 
 import pytest
 
@@ -49,7 +49,6 @@ class TestSetupMealPlan:
             servings=2,
             known_ratio=0.7,
             default_leftover_days=1,
-            start_date=date(2026, 2, 28),
         )
         assert plan.iteration_weeks == 1
         assert plan.shopping_days == [5]
@@ -68,7 +67,6 @@ class TestSetupMealPlan:
             servings=2,
             known_ratio=0.7,
             default_leftover_days=1,
-            start_date=date(2026, 2, 28),
         )
         plan2 = setup_meal_plan(
             household=household,
@@ -77,12 +75,11 @@ class TestSetupMealPlan:
             servings=4,
             known_ratio=0.5,
             default_leftover_days=0,
-            start_date=date(2026, 3, 4),
         )
         assert plan1.id == plan2.id
         assert plan2.iteration_weeks == 2
 
-    def test_iteration_dates_snap_to_shopping_day(self, auth_client):
+    def test_iteration_starts_today(self, auth_client):
         _, household = auth_client
         _create_recipes(household)
         plan = setup_meal_plan(
@@ -92,13 +89,12 @@ class TestSetupMealPlan:
             servings=2,
             known_ratio=0.7,
             default_leftover_days=1,
-            start_date=date(2026, 2, 25),
         )
         iteration = plan.iterations.first()
         assert iteration is not None
-        # 2026-02-25 is Wednesday (weekday=2), shopping_day=5 (Saturday)
-        # snaps forward to Saturday 2026-02-28
-        assert iteration.start_date == date(2026, 2, 28)
+        from datetime import date
+
+        assert iteration.start_date == date.today()
 
 
 @pytest.mark.django_db
@@ -113,7 +109,6 @@ class TestGenerateNextIteration:
             servings=2,
             known_ratio=0.7,
             default_leftover_days=1,
-            start_date=date(2026, 2, 28),
         )
         prev = plan.iterations.first()
         assert prev is not None
@@ -133,7 +128,6 @@ class TestGenerateNextIteration:
             servings=2,
             known_ratio=0.7,
             default_leftover_days=0,
-            start_date=date(2026, 2, 28),
         )
         first_iter = plan.iterations.first()
         assert first_iter is not None
@@ -159,7 +153,6 @@ class TestRenewIteration:
             servings=2,
             known_ratio=0.7,
             default_leftover_days=1,
-            start_date=date(2026, 2, 28),
         )
         iteration = plan.iterations.first()
         assert iteration is not None

@@ -1,5 +1,3 @@
-from datetime import date
-
 from django.contrib.auth import get_user_model
 
 import pytest
@@ -49,7 +47,6 @@ def _setup_defaults(**overrides):
         "servings": 2,
         "known_ratio": 0.7,
         "default_leftover_days": 1,
-        "start_date": date(2026, 3, 1),
     }
     defaults.update(overrides)
     return defaults

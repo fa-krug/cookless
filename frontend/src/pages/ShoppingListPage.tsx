@@ -54,22 +54,11 @@ function ShoppingListView({ shoppingList }: { shoppingList: ShoppingList }) {
     });
   }
 
-  function formatDate(dateStr: string): string {
-    const date = new Date(dateStr);
-    return date.toLocaleDateString(undefined, {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-      hour: "numeric",
-      minute: "2-digit",
-    });
-  }
-
   return (
     <div>
       <div className="mb-3 flex items-center justify-between">
-        <p className="text-sm text-gray-500">
-          {t("shopping.linkedToPlan")} &middot; {formatDate(shoppingList.created_at)}
+        <p className="text-sm text-gray-400">
+          {t("shopping.linkedToPlan")}
         </p>
         <button
           onClick={handleUncheckAll}

@@ -1,5 +1,7 @@
+import { Sparkles } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { ApiError } from "../api/client";
 import type { MealPlan } from "../api/types";
 import { useSetupPlan } from "../hooks/useMealPlan";
 import { useToast } from "../hooks/useToast";
@@ -8,10 +10,6 @@ interface GenerateDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   existingPlan?: MealPlan | null;
-}
-
-function todayISO(): string {
-  return new Date().toISOString().split("T")[0];
 }
 
 /** Check that all selected shopping days are at least 3 apart (mod 7). */
@@ -51,8 +49,9 @@ function DrawerForm({ existingPlan, onClose }: DrawerFormProps) {
   const [defaultLeftoverDays, setDefaultLeftoverDays] = useState(
     existingPlan?.default_leftover_days ?? 1,
   );
-  const [startDate, setStartDate] = useState(todayISO());
-  const [shoppingDayError, setShoppingDayError] = useState(false);
+  const [shoppingDayError, setShoppingDayError] = useState<
+    false | "required" | "tooClose"
+  >(false);
 
   function toggleShoppingDay(day: number) {
     setShoppingDays((prev) => {
@@ -64,14 +63,20 @@ function DrawerForm({ existingPlan, onClose }: DrawerFormProps) {
       } else {
         return prev;
       }
-      setShoppingDayError(!validateShoppingDayGap(next));
+      setShoppingDayError(
+        next.length === 0 ? "required" : !validateShoppingDayGap(next) ? "tooClose" : false,
+      );
       return next;
     });
   }
 
   function handleSubmit() {
+    if (shoppingDays.length === 0) {
+      setShoppingDayError("required");
+      return;
+    }
     if (!validateShoppingDayGap(shoppingDays)) {
-      setShoppingDayError(true);
+      setShoppingDayError("tooClose");
       return;
     }
 
@@ -82,11 +87,19 @@ function DrawerForm({ existingPlan, onClose }: DrawerFormProps) {
         servings,
         known_ratio: knownRatio,
         default_leftover_days: defaultLeftoverDays,
-        start_date: startDate,
       },
       {
         onSuccess: () => onClose(),
-        onError: () => addToast(t("errors.planGenerate"), "error"),
+        onError: (error) => {
+          const detail =
+            error instanceof ApiError &&
+            typeof error.body === "object" &&
+            error.body !== null &&
+            "detail" in error.body
+              ? String((error.body as { detail: unknown }).detail)
+              : undefined;
+          addToast(detail || t("errors.planGenerate"), "error");
+        },
       },
     );
   }
@@ -148,7 +161,9 @@ function DrawerForm({ existingPlan, onClose }: DrawerFormProps) {
         </div>
         {shoppingDayError && (
           <p className="mt-1 text-xs text-red-500">
-            {t("plan.shoppingDaysTooClose")}
+            {shoppingDayError === "required"
+              ? t("plan.shoppingDaysRequired")
+              : t("plan.shoppingDaysTooClose")}
           </p>
         )}
       </div>
@@ -203,24 +218,12 @@ function DrawerForm({ existingPlan, onClose }: DrawerFormProps) {
         />
       </div>
 
-      {/* Start date */}
-      <div className="mb-6">
-        <label className="mb-1 block text-sm font-medium text-gray-700">
-          {t("plan.startDate")}
-        </label>
-        <input
-          type="date"
-          value={startDate}
-          onChange={(e) => setStartDate(e.target.value)}
-          className="rounded-lg border border-gray-300 px-3 py-2 text-sm"
-        />
-      </div>
-
       <button
         onClick={handleSubmit}
         disabled={setupPlan.isPending}
-        className="w-full rounded-lg bg-orange-500 px-4 py-3 text-sm font-semibold text-white hover:bg-orange-600 disabled:opacity-50"
+        className="flex w-full items-center justify-center gap-2 rounded-lg bg-orange-500 px-4 py-3 text-sm font-semibold text-white hover:bg-orange-600 disabled:opacity-50"
       >
+        <Sparkles size={16} />
         {setupPlan.isPending
           ? t("common.loading")
           : isUpdate

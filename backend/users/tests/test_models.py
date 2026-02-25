@@ -19,7 +19,7 @@ def test_create_user():
 @pytest.mark.django_db
 def test_user_has_settings_defaults():
     user = User.objects.create_user(email="test@example.com")
-    assert user.settings == {"default_servings": 2, "known_new_ratio": 0.7, "plan_days": 7}
+    assert user.settings == {}
 
 
 @pytest.mark.django_db

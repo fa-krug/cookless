@@ -73,7 +73,6 @@ def auth_client():
 def _setup_payload(**overrides):
     """Return a default setup payload, with optional overrides."""
     payload = {
-        "start_date": "2026-03-01",
         "iteration_weeks": 1,
         "shopping_days": [5],
         "servings": 2,
@@ -146,13 +145,13 @@ def test_setup_plan_replaces_old(auth_client):
     _create_recipes(household)
     client.post(
         "/api/v1/meal-plans/setup/",
-        json.dumps(_setup_payload(start_date="2026-03-01")),
+        json.dumps(_setup_payload()),
         content_type="application/json",
     )
     assert MealPlan.objects.filter(household=household).count() == 1
     client.post(
         "/api/v1/meal-plans/setup/",
-        json.dumps(_setup_payload(start_date="2026-03-08")),
+        json.dumps(_setup_payload()),
         content_type="application/json",
     )
     assert MealPlan.objects.filter(household=household).count() == 1

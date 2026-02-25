@@ -1,3 +1,4 @@
+import { CalendarPlus, Settings, Sparkles } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import GenerateDrawer from "../components/GenerateDrawer";
@@ -10,7 +11,8 @@ import {
 import { useToast } from "../hooks/useToast";
 
 function getToday(): string {
-  return new Date().toISOString().split("T")[0];
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
 export default function MealPlanPage() {
@@ -67,18 +69,7 @@ export default function MealPlanPage() {
             className="rounded-lg p-2 text-gray-500 hover:bg-gray-100"
             aria-label={t("plan.updateConfig")}
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-              className="h-5 w-5"
-            >
-              <path
-                fillRule="evenodd"
-                d="M7.84 1.804A1 1 0 0 1 8.82 1h2.36a1 1 0 0 1 .98.804l.331 1.652a6.993 6.993 0 0 1 1.929 1.115l1.598-.54a1 1 0 0 1 1.186.447l1.18 2.044a1 1 0 0 1-.205 1.251l-1.267 1.113a7.047 7.047 0 0 1 0 2.228l1.267 1.113a1 1 0 0 1 .206 1.25l-1.18 2.045a1 1 0 0 1-1.187.447l-1.598-.54a6.993 6.993 0 0 1-1.929 1.115l-.33 1.652a1 1 0 0 1-.98.804H8.82a1 1 0 0 1-.98-.804l-.331-1.652a6.993 6.993 0 0 1-1.929-1.115l-1.598.54a1 1 0 0 1-1.186-.447l-1.18-2.044a1 1 0 0 1 .205-1.251l1.267-1.114a7.05 7.05 0 0 1 0-2.227L1.821 7.773a1 1 0 0 1-.206-1.25l1.18-2.045a1 1 0 0 1 1.187-.447l1.598.54A6.993 6.993 0 0 1 7.51 3.456l.33-1.652ZM10 13a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"
-                clipRule="evenodd"
-              />
-            </svg>
+            <Settings size={20} />
           </button>
         )}
       </div>
@@ -93,8 +84,9 @@ export default function MealPlanPage() {
           <p className="text-gray-500">{t("plan.noPlan")}</p>
           <button
             onClick={() => setDrawerOpen(true)}
-            className="mt-4 rounded-lg bg-orange-500 px-6 py-3 text-sm font-semibold text-white hover:bg-orange-600"
+            className="mt-4 inline-flex items-center gap-2 rounded-lg bg-orange-500 px-6 py-3 text-sm font-semibold text-white hover:bg-orange-600"
           >
+            <Sparkles size={16} />
             {t("plan.setup")}
           </button>
         </div>
@@ -111,8 +103,9 @@ export default function MealPlanPage() {
               <button
                 onClick={handleNextIteration}
                 disabled={nextIteration.isPending}
-                className="mt-3 rounded-lg bg-orange-500 px-5 py-2 text-sm font-semibold text-white hover:bg-orange-600 disabled:opacity-50"
+                className="mt-3 inline-flex items-center gap-2 rounded-lg bg-orange-500 px-5 py-2 text-sm font-semibold text-white hover:bg-orange-600 disabled:opacity-50"
               >
+                <CalendarPlus size={16} />
                 {nextIteration.isPending
                   ? t("common.loading")
                   : t("plan.generateNext")}

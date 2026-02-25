@@ -7,11 +7,7 @@ export type HouseholdRole = "OWNER" | "MEMBER";
 
 // ── Users & Households ───────────────────────────────────────────
 
-export interface UserSettings {
-  default_servings: number;
-  known_new_ratio: number;
-  plan_days: number;
-}
+export type UserSettings = Record<string, never>;
 
 export interface HouseholdSummary {
   id: string;
