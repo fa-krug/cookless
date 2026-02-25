@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useToast } from "../contexts/ToastContext";
 import { useAuth } from "../hooks/useAuth";
 import { useGeneratePlan } from "../hooks/useMealPlan";
 
@@ -14,6 +15,7 @@ function todayISO(): string {
 
 export default function GenerateDrawer({ isOpen, onClose }: GenerateDrawerProps) {
   const { t } = useTranslation();
+  const { addToast } = useToast();
   const { user } = useAuth();
   const generatePlan = useGeneratePlan();
 
@@ -32,7 +34,10 @@ export default function GenerateDrawer({ isOpen, onClose }: GenerateDrawerProps)
         known_ratio: knownRatio,
         default_leftover_days: defaultLeftoverDays,
       },
-      { onSuccess: () => onClose() },
+      {
+        onSuccess: () => onClose(),
+        onError: () => addToast(t("errors.planGenerate"), "error"),
+      },
     );
   }
 

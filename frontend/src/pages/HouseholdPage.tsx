@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { Household, Invite } from "../api/types";
+import { useToast } from "../contexts/ToastContext";
 import { useAuth } from "../hooks/useAuth";
 import {
   useAcceptInvite,
@@ -21,11 +22,17 @@ function MembersList({
   isOwner: boolean;
 }) {
   const { t } = useTranslation();
+  const { addToast } = useToast();
   const removeMember = useRemoveMember();
 
   function handleRemove(memberId: number) {
     if (!window.confirm(t("household.removeMemberConfirm"))) return;
-    removeMember.mutate({ householdId: household.id, memberId });
+    removeMember.mutate(
+      { householdId: household.id, memberId },
+      {
+        onError: () => addToast(t("errors.memberRemove"), "error"),
+      },
+    );
   }
 
   return (
@@ -64,6 +71,7 @@ function MembersList({
 
 function InviteSection({ householdId }: { householdId: string }) {
   const { t } = useTranslation();
+  const { addToast } = useToast();
   const createInvite = useCreateInvite();
   const [invite, setInvite] = useState<Invite | null>(null);
   const [copied, setCopied] = useState(false);
@@ -74,6 +82,7 @@ function InviteSection({ householdId }: { householdId: string }) {
         setInvite(data);
         setCopied(false);
       },
+      onError: () => addToast(t("common.error"), "error"),
     });
   }
 
@@ -121,6 +130,7 @@ function InviteSection({ householdId }: { householdId: string }) {
 
 function JoinHouseholdSection() {
   const { t } = useTranslation();
+  const { addToast } = useToast();
   const acceptInvite = useAcceptInvite();
   const { refreshUser } = useAuth();
   const [code, setCode] = useState("");
@@ -132,7 +142,9 @@ function JoinHouseholdSection() {
       onSuccess: async () => {
         setCode("");
         await refreshUser();
+        addToast(t("success.householdJoined"), "success");
       },
+      onError: () => addToast(t("errors.householdJoin"), "error"),
     });
   }
 
@@ -161,6 +173,7 @@ function JoinHouseholdSection() {
 
 function CreateHouseholdSection() {
   const { t } = useTranslation();
+  const { addToast } = useToast();
   const createHousehold = useCreateHousehold();
   const { refreshUser } = useAuth();
   const [name, setName] = useState("");
@@ -173,6 +186,7 @@ function CreateHouseholdSection() {
         setName("");
         await refreshUser();
       },
+      onError: () => addToast(t("errors.householdCreate"), "error"),
     });
   }
 
@@ -203,6 +217,7 @@ function CreateHouseholdSection() {
 
 export default function HouseholdPage() {
   const { t } = useTranslation();
+  const { addToast } = useToast();
   const { user, refreshUser } = useAuth();
   const { data: households, isLoading } = useHouseholds();
   const switchHousehold = useSwitchHousehold();
@@ -223,6 +238,7 @@ export default function HouseholdPage() {
       onSuccess: async () => {
         await refreshUser();
       },
+      onError: () => addToast(t("errors.householdSwitch"), "error"),
     });
   }
 
