@@ -6,7 +6,15 @@ from planner.models import MealPlan, MealPlanEntry
 from recipes.models import Recipe
 
 
-def generate_meal_plan(household, start_date, days=7, servings=2, known_ratio=0.7, meals_per_day=2):
+def generate_meal_plan(
+    household,
+    start_date,
+    days=7,
+    servings=2,
+    known_ratio=0.7,
+    meals_per_day=2,
+    default_leftover_days=1,
+):
     total_meal_slots = days * meals_per_day
     # Estimate ~2 meals per cooking session (cook + leftover)
     cooking_sessions = max(total_meal_slots // 2, 1)

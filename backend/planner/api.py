@@ -22,6 +22,7 @@ def generate_plan(request, payload: GeneratePlanIn):
         days=payload.days,
         servings=payload.servings,
         known_ratio=payload.known_ratio,
+        default_leftover_days=payload.default_leftover_days,
     )
     return plan
 

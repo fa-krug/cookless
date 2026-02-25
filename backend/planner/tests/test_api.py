@@ -389,6 +389,23 @@ def test_other_household_entry_not_updatable(auth_client):
 
 
 @pytest.mark.django_db
+def test_generate_plan_accepts_default_leftover_days(auth_client):
+    client, household = auth_client
+    _create_recipes(household)
+    response = client.post(
+        "/api/v1/meal-plans/generate/",
+        json.dumps({
+            "start_date": "2026-03-01",
+            "days": 7,
+            "servings": 2,
+            "default_leftover_days": 2,
+        }),
+        content_type="application/json",
+    )
+    assert response.status_code == 201
+
+
+@pytest.mark.django_db
 def test_unauthenticated_access():
     client = Client()
     response = client.get("/api/v1/meal-plans/")

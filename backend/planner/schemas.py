@@ -36,6 +36,7 @@ class GeneratePlanIn(Schema):
     days: int = 7
     servings: int = 2
     known_ratio: float = 0.7
+    default_leftover_days: int = 1
 
 
 class UpdateEntryIn(Schema):
