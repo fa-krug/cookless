@@ -458,3 +458,47 @@ class TestHouseholdLeave:
         api_client.force_login(other_user)
         resp = api_client.post(f"/api/v1/households/{household.pk}/leave/")
         assert resp.status_code == 404
+
+
+@pytest.mark.django_db
+class TestTransferOwnership:
+    def test_owner_transfers_to_member(self, api_client, user, household, other_user):
+        other_membership = HouseholdMember.objects.create(
+            household=household, user=other_user, role=HouseholdMember.Role.MEMBER
+        )
+        api_client.force_login(user)
+        resp = api_client.post(
+            f"/api/v1/households/{household.pk}/members/{other_membership.pk}/transfer-ownership/"
+        )
+        assert resp.status_code == 200
+        other_membership.refresh_from_db()
+        assert other_membership.role == HouseholdMember.Role.OWNER
+        owner_membership = HouseholdMember.objects.get(household=household, user=user)
+        assert owner_membership.role == HouseholdMember.Role.MEMBER
+
+    def test_member_cannot_transfer(self, api_client, user, household, other_user):
+        HouseholdMember.objects.create(
+            household=household, user=other_user, role=HouseholdMember.Role.MEMBER
+        )
+        owner_membership = HouseholdMember.objects.get(household=household, user=user)
+        api_client.force_login(other_user)
+        resp = api_client.post(
+            f"/api/v1/households/{household.pk}/members/{owner_membership.pk}/transfer-ownership/"
+        )
+        assert resp.status_code == 403
+
+    def test_cannot_transfer_to_self(self, api_client, user, household):
+        owner_membership = HouseholdMember.objects.get(household=household, user=user)
+        api_client.force_login(user)
+        resp = api_client.post(
+            f"/api/v1/households/{household.pk}/members/{owner_membership.pk}/transfer-ownership/"
+        )
+        assert resp.status_code == 400
+
+    def test_non_member_cannot_transfer(self, api_client, other_user, household):
+        owner_membership = HouseholdMember.objects.get(household=household)
+        api_client.force_login(other_user)
+        resp = api_client.post(
+            f"/api/v1/households/{household.pk}/members/{owner_membership.pk}/transfer-ownership/"
+        )
+        assert resp.status_code == 404

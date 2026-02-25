@@ -194,6 +194,28 @@ def leave_household(request, household_id: UUID):
     return {"detail": "Left household."}
 
 
+@router.post(
+    "/households/{household_id}/members/{member_pk}/transfer-ownership/",
+    response=MessageOut,
+    tags=["households"],
+)
+def transfer_ownership(request, household_id: UUID, member_pk: int):
+    household = get_object_or_404(
+        Household.objects.filter(members__user=request.user), pk=household_id
+    )
+    require_household_owner(request, household)
+    target_member = get_object_or_404(HouseholdMember, pk=member_pk, household=household)
+    if target_member.user == request.user:
+        raise HttpError(400, "Cannot transfer ownership to yourself.")
+    # Demote current owner, promote target
+    current_membership = HouseholdMember.objects.get(household=household, user=request.user)
+    current_membership.role = HouseholdMember.Role.MEMBER
+    current_membership.save()
+    target_member.role = HouseholdMember.Role.OWNER
+    target_member.save()
+    return {"detail": "Ownership transferred."}
+
+
 # ── Invites ──────────────────────────────────────────────────────────
 
 
