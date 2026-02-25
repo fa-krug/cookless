@@ -37,6 +37,12 @@ class UserManager(BaseUserManager["User"]):
 
 
 class User(AbstractBaseUser, PermissionsMixin):
+    class OnboardingStep(models.TextChoices):
+        CHANGE_PASSWORD = "CHANGE_PASSWORD", "Change Password"
+        ADD_PASSKEY = "ADD_PASSKEY", "Add Passkey"
+        CREATE_HOUSEHOLD = "CREATE_HOUSEHOLD", "Create Household"
+        COMPLETED = "COMPLETED", "Completed"
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     email = models.EmailField(unique=True)
     preferred_language = models.CharField(
@@ -52,6 +58,11 @@ class User(AbstractBaseUser, PermissionsMixin):
         related_name="active_users",
     )
     settings = models.JSONField(default=_default_user_settings)
+    onboarding_step = models.CharField(
+        max_length=20,
+        choices=OnboardingStep.choices,
+        default=OnboardingStep.CHANGE_PASSWORD,
+    )
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
