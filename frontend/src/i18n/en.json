@@ -229,6 +229,7 @@
     "deleteConfirmPlaceholder": "Household name",
     "transferOwnership": "Make Owner",
     "transferOwnershipConfirm": "Transfer ownership to {{email}}?",
+    "manage": "Manage Household",
     "role": {
       "owner": "Owner",
       "member": "Member"

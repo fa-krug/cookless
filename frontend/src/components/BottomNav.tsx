@@ -1,6 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { Link, NavLink } from "react-router-dom";
-import { useAuth } from "../hooks/useAuth";
+import { NavLink } from "react-router-dom";
 import AppLogo from "./AppLogo";
 
 const navItems = [
@@ -89,7 +88,6 @@ const navItems = [
 
 export default function BottomNav() {
   const { t } = useTranslation();
-  const { user } = useAuth();
 
   return (
     <>
@@ -118,14 +116,6 @@ export default function BottomNav() {
         <div className="px-5 py-6">
           <AppLogo className="text-2xl" />
         </div>
-        {user?.active_household && (
-          <Link
-            to="/household"
-            className="mx-3 mb-2 block truncate rounded-lg px-3 py-1.5 text-sm text-gray-500 hover:bg-gray-50 hover:text-gray-900"
-          >
-            {user.active_household.name}
-          </Link>
-        )}
         <div className="flex flex-1 flex-col gap-1 px-3">
           {navItems.map((item) => (
             <NavLink

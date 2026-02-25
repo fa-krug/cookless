@@ -229,6 +229,7 @@
     "deleteConfirmPlaceholder": "Haushaltsname",
     "transferOwnership": "Zum Eigentümer machen",
     "transferOwnershipConfirm": "Eigentümerschaft an {{email}} übertragen?",
+    "manage": "Haushalt verwalten",
     "role": {
       "owner": "Eigentümer",
       "member": "Mitglied"

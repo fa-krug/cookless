@@ -1,11 +1,13 @@
-import { KeyRound, LogOut, Plus, ShieldMinus, Trash2 } from "lucide-react";
+import { ChevronRight, Home, KeyRound, LogOut, Plus, ShieldMinus, Trash2 } from "lucide-react";
 import { Spinner } from "../components/ui/Spinner";
 import { useCallback, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { api } from "../api/client";
 import type { Passkey, User } from "../api/types";
 import { addPasskey } from "../api/webauthn";
 import { ConfirmDialog } from "../components/ui/ConfirmDialog";
+import ResponsiveOverlay from "../components/ui/ResponsiveOverlay";
 import { SettingsSkeleton } from "../components/ui/SettingsSkeleton";
 import { useAuth } from "../hooks/useAuth";
 import { useConfirm } from "../hooks/useConfirm";
@@ -16,8 +18,10 @@ export default function SettingsPage() {
   const { user, logout, refreshUser } = useAuth();
   const { addToast } = useToast();
   const { confirm, dialogProps } = useConfirm();
+  const navigate = useNavigate();
 
   const [language, setLanguage] = useState(i18n.language);
+  const [householdOpen, setHouseholdOpen] = useState(false);
 
   // Passkey state
   const [passkeys, setPasskeys] = useState<Passkey[]>([]);
@@ -177,6 +181,47 @@ export default function SettingsPage() {
   return (
     <div className="p-4">
       <h1 className="mb-4 text-2xl font-bold text-gray-900">{t("settings.title")}</h1>
+
+      {/* Household */}
+      {user?.active_household && (
+        <button
+          onClick={() => setHouseholdOpen(true)}
+          className="mb-4 flex w-full items-center rounded-lg border border-gray-200 bg-white p-4 shadow-sm"
+        >
+          <Home size={20} className="mr-3 text-gray-400" />
+          <div className="min-w-0 flex-1 text-left">
+            <p className="text-xs text-gray-500">{t("household.title")}</p>
+            <p className="truncate text-sm font-semibold text-gray-900">
+              {user.active_household.name}
+            </p>
+          </div>
+          <ChevronRight size={20} className="text-gray-400" />
+        </button>
+      )}
+
+      <ResponsiveOverlay
+        open={householdOpen}
+        onClose={() => setHouseholdOpen(false)}
+        title={t("household.title")}
+      >
+        <div className="p-4">
+          <div className="mb-4 rounded-lg border border-gray-200 p-4">
+            <p className="text-xs text-gray-500">{t("household.currentHousehold")}</p>
+            <p className="text-lg font-semibold text-gray-900">
+              {user?.active_household?.name}
+            </p>
+          </div>
+          <button
+            onClick={() => {
+              setHouseholdOpen(false);
+              navigate("/household");
+            }}
+            className="flex w-full items-center justify-center gap-2 rounded-md bg-orange-500 px-4 py-3 text-sm font-medium text-white hover:bg-orange-600"
+          >
+            {t("household.manage")}
+          </button>
+        </div>
+      </ResponsiveOverlay>
 
       {/* Language */}
       <div className="mb-4 rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
