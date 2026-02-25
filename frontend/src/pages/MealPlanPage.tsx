@@ -1,4 +1,5 @@
 import { CalendarPlus, Settings, Sparkles } from "lucide-react";
+import { MealPlanSkeleton } from "../components/ui/MealPlanSkeleton";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import GenerateDrawer from "../components/GenerateDrawer";
@@ -74,9 +75,7 @@ export default function MealPlanPage() {
         )}
       </div>
 
-      {isLoading && (
-        <p className="text-sm text-gray-500">{t("common.loading")}</p>
-      )}
+      {isLoading && <MealPlanSkeleton />}
 
       {/* Empty state */}
       {!isLoading && !currentPlan && (
