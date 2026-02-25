@@ -6,6 +6,7 @@ export function useIngredients() {
   return useQuery<Ingredient[]>({
     queryKey: ["ingredients"],
     queryFn: () => api.get<Ingredient[]>("/api/v1/ingredients/"),
+    staleTime: 5 * 60_000,
   });
 }
 

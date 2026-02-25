@@ -6,5 +6,6 @@ export function useUnits() {
   return useQuery<Unit[]>({
     queryKey: ["units"],
     queryFn: () => api.get<Unit[]>("/api/v1/units/"),
+    staleTime: Infinity,
   });
 }
