@@ -5,7 +5,9 @@ export interface AuthContextValue {
   user: User | null;
   isLoading: boolean;
   login: (email: string) => Promise<void>;
+  loginWithPassword: (email: string, password: string) => Promise<void>;
   register: (email: string, inviteCode: string) => Promise<void>;
+  registerWithPassword: (email: string, password: string, inviteCode: string) => Promise<void>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
 }

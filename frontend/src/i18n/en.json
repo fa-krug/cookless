@@ -28,7 +28,13 @@
     "signIn": "Sign in with Passkey",
     "emailPlaceholder": "Email address",
     "loginFailed": "Login failed. Please try again.",
-    "logoutConfirm": "Are you sure you want to log out?"
+    "logoutConfirm": "Are you sure you want to log out?",
+    "signInWithPassword": "Sign in with Password",
+    "signInWithPasskey": "Sign in with Passkey",
+    "password": "Password",
+    "passwordPlaceholder": "Enter password",
+    "passwordLoginFailed": "Invalid email or password.",
+    "orDivider": "or"
   },
   "invite": {
     "invalid": "This invite link is invalid or has expired.",
@@ -40,7 +46,10 @@
     "registerTitle": "Create Account",
     "registerPrompt": "Create an account to join {{household}}.",
     "createAccount": "Create Account & Set Up Passkey",
-    "registerFailed": "Registration failed. Please try again."
+    "registerFailed": "Registration failed. Please try again.",
+    "registerWithPasskey": "Create Account & Set Up Passkey",
+    "registerWithPassword": "Create Account with Password",
+    "passkeyRecommendation": "For better security, consider adding a passkey in Settings."
   },
   "passkeys": {
     "title": "Passkeys",
@@ -191,6 +200,21 @@
     "message": "Install Cookless for a better experience",
     "install": "Install",
     "dismiss": "Not now"
+  },
+  "password": {
+    "title": "Password",
+    "setPassword": "Set Password",
+    "changePassword": "Change Password",
+    "removePassword": "Remove Password",
+    "currentPassword": "Current password",
+    "newPassword": "New password",
+    "confirmPassword": "Confirm password",
+    "passwordMismatch": "Passwords do not match.",
+    "passwordSet": "Password set!",
+    "passwordChanged": "Password changed!",
+    "passwordRemoved": "Password removed.",
+    "removeConfirm": "Remove your password? You'll need a passkey to log in.",
+    "noPasswordSet": "No password set."
   },
   "settings": {
     "title": "Settings",

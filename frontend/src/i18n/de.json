@@ -28,7 +28,13 @@
     "signIn": "Mit Passkey anmelden",
     "emailPlaceholder": "E-Mail-Adresse",
     "loginFailed": "Anmeldung fehlgeschlagen. Bitte erneut versuchen.",
-    "logoutConfirm": "Möchtest du dich wirklich abmelden?"
+    "logoutConfirm": "Möchtest du dich wirklich abmelden?",
+    "signInWithPassword": "Mit Passwort anmelden",
+    "signInWithPasskey": "Mit Passkey anmelden",
+    "password": "Passwort",
+    "passwordPlaceholder": "Passwort eingeben",
+    "passwordLoginFailed": "Ungültige E-Mail oder Passwort.",
+    "orDivider": "oder"
   },
   "invite": {
     "invalid": "Dieser Einladungslink ist ungültig oder abgelaufen.",
@@ -40,7 +46,10 @@
     "registerTitle": "Konto erstellen",
     "registerPrompt": "Erstelle ein Konto, um {{household}} beizutreten.",
     "createAccount": "Konto erstellen & Passkey einrichten",
-    "registerFailed": "Registrierung fehlgeschlagen. Bitte erneut versuchen."
+    "registerFailed": "Registrierung fehlgeschlagen. Bitte erneut versuchen.",
+    "registerWithPasskey": "Konto erstellen & Passkey einrichten",
+    "registerWithPassword": "Konto mit Passwort erstellen",
+    "passkeyRecommendation": "Für mehr Sicherheit, füge einen Passkey in den Einstellungen hinzu."
   },
   "passkeys": {
     "title": "Passkeys",
@@ -191,6 +200,21 @@
     "message": "Installiere Cookless für ein besseres Erlebnis",
     "install": "Installieren",
     "dismiss": "Nicht jetzt"
+  },
+  "password": {
+    "title": "Passwort",
+    "setPassword": "Passwort festlegen",
+    "changePassword": "Passwort ändern",
+    "removePassword": "Passwort entfernen",
+    "currentPassword": "Aktuelles Passwort",
+    "newPassword": "Neues Passwort",
+    "confirmPassword": "Passwort bestätigen",
+    "passwordMismatch": "Passwörter stimmen nicht überein.",
+    "passwordSet": "Passwort festgelegt!",
+    "passwordChanged": "Passwort geändert!",
+    "passwordRemoved": "Passwort entfernt.",
+    "removeConfirm": "Passwort entfernen? Du benötigst dann einen Passkey zum Anmelden.",
+    "noPasswordSet": "Kein Passwort festgelegt."
   },
   "settings": {
     "title": "Einstellungen",

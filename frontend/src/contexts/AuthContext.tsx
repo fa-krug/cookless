@@ -30,10 +30,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(loggedInUser);
   }, []);
 
+  const loginWithPassword = useCallback(async (email: string, password: string) => {
+    const loggedInUser = await api.post<User>("/api/v1/auth/login/password/", {
+      email,
+      password,
+    });
+    setUser(loggedInUser);
+  }, []);
+
   const register = useCallback(async (email: string, inviteCode: string) => {
     const newUser = await registerPasskey(email, inviteCode, navigator.userAgent);
     setUser(newUser);
   }, []);
+
+  const registerWithPassword = useCallback(
+    async (email: string, password: string, inviteCode: string) => {
+      const newUser = await api.post<User>("/api/v1/auth/register/password/", {
+        email,
+        password,
+        invite_code: inviteCode,
+      });
+      setUser(newUser);
+    },
+    [],
+  );
 
   const logout = useCallback(async () => {
     try {
@@ -44,8 +64,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const value = useMemo(
-    () => ({ user, isLoading, login, register, logout, refreshUser: fetchUser }),
-    [user, isLoading, login, register, logout, fetchUser],
+    () => ({
+      user,
+      isLoading,
+      login,
+      loginWithPassword,
+      register,
+      registerWithPassword,
+      logout,
+      refreshUser: fetchUser,
+    }),
+    [user, isLoading, login, loginWithPassword, register, registerWithPassword, logout, fetchUser],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

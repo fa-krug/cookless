@@ -24,6 +24,8 @@ export interface User {
   preferred_language: string;
   settings: UserSettings;
   active_household: HouseholdSummary | null;
+  has_password: boolean;
+  has_passkey: boolean;
 }
 
 export interface HouseholdMember {
