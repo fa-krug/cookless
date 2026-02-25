@@ -1,14 +1,13 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import type { MealPlan, MealPlanEntry, MealType, Recipe } from "../api/types";
+import { useNavigate } from "react-router-dom";
+import type { MealPlan, MealPlanEntry, Recipe } from "../api/types";
 import { useRecipes } from "../hooks/useRecipes";
-import { useUpdateEntry } from "../hooks/useMealPlan";
+import { useShoppingLists } from "../hooks/useShoppingList";
 
 interface PlanGridProps {
   plan: MealPlan;
 }
-
-const MEAL_TYPES: MealType[] = ["LUNCH", "DINNER"];
 
 function formatDate(dateStr: string, locale: string): string {
   const date = new Date(dateStr + "T00:00:00");
@@ -27,11 +26,15 @@ function getDates(plan: MealPlan): string[] {
   return dates;
 }
 
+function isFirstDay(dateStr: string, plan: MealPlan): boolean {
+  return dateStr === plan.start_date;
+}
+
 export default function PlanGrid({ plan }: PlanGridProps) {
   const { t, i18n } = useTranslation();
+  const navigate = useNavigate();
   const { data: recipes } = useRecipes();
-  const updateEntry = useUpdateEntry();
-  const [swappingEntryId, setSwappingEntryId] = useState<string | null>(null);
+  const { data: shoppingLists } = useShoppingLists();
 
   const recipeMap = useMemo(() => {
     const map = new Map<string, Recipe>();
@@ -46,146 +49,94 @@ export default function PlanGrid({ plan }: PlanGridProps) {
   const entryMap = useMemo(() => {
     const map = new Map<string, MealPlanEntry>();
     for (const entry of plan.entries) {
-      map.set(`${entry.date}-${entry.meal_type}`, entry);
+      if (entry.meal_type === "LUNCH") {
+        map.set(entry.date, entry);
+      }
     }
     return map;
   }, [plan.entries]);
 
   const dates = useMemo(() => getDates(plan), [plan]);
 
-  function handleToggleLock(entry: MealPlanEntry) {
-    updateEntry.mutate({
-      entryId: entry.id,
-      data: { recipe: entry.recipe, is_locked: !entry.is_locked },
-    });
-  }
-
-  function handleSwapRecipe(entryId: string, recipeId: string) {
-    updateEntry.mutate(
-      { entryId, data: { recipe: recipeId } },
-      { onSuccess: () => setSwappingEntryId(null) },
-    );
-  }
-
-  const mealLabel: Record<string, string> = {
-    LUNCH: t("plan.lunch"),
-    DINNER: t("plan.dinner"),
-  };
+  const shoppingList = shoppingLists?.find((sl) => sl.meal_plan === plan.id);
+  const shoppingItemCount = shoppingList?.items.length ?? 0;
 
   return (
     <div className="space-y-3">
-      {dates.map((date) => (
-        <div key={date} className="rounded-lg border border-gray-200 bg-white shadow-sm">
-          <div className="border-b border-gray-100 px-4 py-2">
-            <h3 className="text-sm font-semibold text-gray-700">
-              {formatDate(date, i18n.language)}
-            </h3>
-          </div>
-          <div className="divide-y divide-gray-50">
-            {MEAL_TYPES.map((mealType) => {
-              const entry = entryMap.get(`${date}-${mealType}`);
-              if (!entry) return null;
+      {dates.map((date) => {
+        const entry = entryMap.get(date);
+        const recipe = entry ? recipeMap.get(entry.recipe) : null;
+        const recipeName = recipe?.title ?? "...";
+        const firstDay = isFirstDay(date, plan);
 
-              const recipe = recipeMap.get(entry.recipe);
-              const recipeName = recipe?.title ?? "...";
-              const isSwapping = swappingEntryId === entry.id;
+        return (
+          <div key={date} className="rounded-lg border border-gray-200 bg-white shadow-sm">
+            <div className="border-b border-gray-100 px-4 py-2">
+              <h3 className="text-sm font-semibold text-gray-700">
+                {formatDate(date, i18n.language)}
+              </h3>
+            </div>
 
-              return (
-                <div key={mealType} className="flex items-center gap-2 px-4 py-3">
-                  <span className="w-14 shrink-0 text-xs font-medium uppercase text-gray-400">
-                    {mealLabel[mealType] ?? mealType}
-                  </span>
-
-                  {isSwapping ? (
-                    <div className="flex min-w-0 flex-1 items-center gap-2">
-                      <select
-                        className="min-w-0 flex-1 rounded-md border border-gray-300 px-2 py-1 text-sm"
-                        defaultValue=""
-                        onChange={(e) => handleSwapRecipe(entry.id, e.target.value)}
-                      >
-                        <option value="" disabled>
-                          {t("plan.selectRecipe")}
-                        </option>
-                        {recipes?.map((r) => (
-                          <option key={r.id} value={r.id}>
-                            {r.title}
-                          </option>
-                        ))}
-                      </select>
-                      <button
-                        onClick={() => setSwappingEntryId(null)}
-                        className="shrink-0 text-xs text-gray-500 hover:text-gray-700"
-                      >
-                        {t("common.cancel")}
-                      </button>
-                    </div>
-                  ) : (
-                    <button
-                      onClick={() => setSwappingEntryId(entry.id)}
-                      className="min-w-0 flex-1 text-left"
-                      title={t("plan.swapRecipe")}
-                    >
-                      <span
-                        className={`truncate text-sm ${
-                          entry.is_leftover
-                            ? "italic text-gray-400"
-                            : "font-medium text-gray-900"
-                        }`}
-                      >
-                        {recipeName}
-                        {entry.is_leftover && (
-                          <span className="ml-1.5 text-xs font-normal not-italic text-gray-400">
-                            ({t("plan.leftover")})
-                          </span>
-                        )}
-                      </span>
-                    </button>
-                  )}
-
-                  <button
-                    onClick={() => handleToggleLock(entry)}
-                    className={`shrink-0 rounded p-1 text-xs ${
-                      entry.is_locked
-                        ? "text-orange-500 hover:text-orange-600"
-                        : "text-gray-300 hover:text-gray-500"
-                    }`}
-                    title={entry.is_locked ? t("plan.unlock") : t("plan.lock")}
-                    aria-label={entry.is_locked ? t("plan.unlock") : t("plan.lock")}
+            <div className="divide-y divide-gray-50">
+              {/* Shopping list preview on first day */}
+              {firstDay && shoppingList && (
+                <button
+                  onClick={() => navigate(`/shopping/${shoppingList.id}`)}
+                  className="flex w-full items-center gap-2 px-4 py-3 text-left hover:bg-orange-50"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                    className="h-4 w-4 text-orange-500"
                   >
-                    {entry.is_locked ? (
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 20 20"
-                        fill="currentColor"
-                        className="h-4 w-4"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M10 1a4.5 4.5 0 0 0-4.5 4.5V9H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2h-.5V5.5A4.5 4.5 0 0 0 10 1Zm3 8V5.5a3 3 0 1 0-6 0V9h6Z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                    ) : (
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 20 20"
-                        fill="currentColor"
-                        className="h-4 w-4"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M14.5 1A4.5 4.5 0 0 0 10 5.5V9H3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2h-1.5V5.5a3 3 0 1 1 6 0v2.75a.75.75 0 0 0 1.5 0V5.5A4.5 4.5 0 0 0 14.5 1Z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
+                    <path d="M1 1.75A.75.75 0 0 1 1.75 1h1.628a1.75 1.75 0 0 1 1.734 1.51L5.18 3h10.07A1.75 1.75 0 0 1 17 5.018l-1.14 7.584A1.75 1.75 0 0 1 14.128 14H6.872a1.75 1.75 0 0 1-1.732-1.398L3.395 2.253a.25.25 0 0 0-.248-.216H1.75A.75.75 0 0 1 1 1.75ZM6 17.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3ZM15.5 17.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3Z" />
+                  </svg>
+                  <span className="text-sm font-medium text-orange-500">
+                    {t("plan.shoppingPreview", { count: shoppingItemCount })}
+                  </span>
+                </button>
+              )}
+
+              {/* Lunch entry */}
+              {entry && (
+                <button
+                  onClick={() => recipe && navigate(`/recipes/${recipe.id}`)}
+                  className="flex w-full items-center gap-2 px-4 py-3 text-left hover:bg-gray-50"
+                >
+                  <span className="w-14 shrink-0 text-xs font-medium uppercase text-gray-400">
+                    {t("plan.lunch")}
+                  </span>
+                  <span
+                    className={`min-w-0 flex-1 truncate text-sm ${
+                      entry.is_leftover
+                        ? "italic text-gray-400"
+                        : "font-medium text-gray-900"
+                    }`}
+                  >
+                    {recipeName}
+                    {entry.is_leftover && (
+                      <span className="ml-1.5 text-xs font-normal not-italic text-gray-400">
+                        ({t("plan.leftover")})
+                      </span>
                     )}
-                  </button>
-                </div>
-              );
-            })}
+                  </span>
+                </button>
+              )}
+
+              {/* Static dinner label */}
+              <div className="flex items-center gap-2 px-4 py-3">
+                <span className="w-14 shrink-0 text-xs font-medium uppercase text-gray-400">
+                  {t("plan.dinner")}
+                </span>
+                <span className="text-sm text-gray-400">
+                  {t("plan.coldDish")}
+                </span>
+              </div>
+            </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
