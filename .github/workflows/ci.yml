@@ -208,6 +208,12 @@ jobs:
           echo "Fetching stack file content..."
           FILE_RESPONSE=$(curl -sf -H "X-API-Key: $API_KEY" "$PORTAINER_URL/api/stacks/$STACK_ID/file")
           STACK_FILE_CONTENT=$(echo "$FILE_RESPONSE" | jq -r '.StackFileContent')
+          echo "Debug: ENV_VARS=${ENV_VARS:-(empty)}"
+          echo "Debug: WEBHOOK=${WEBHOOK:-(empty)}"
+          echo "Debug: STACK_FILE_CONTENT length=$(echo -n "$STACK_FILE_CONTENT" | wc -c)"
+          # Default empty --argjson values to valid JSON
+          ENV_VARS="${ENV_VARS:-[]}"
+          WEBHOOK="${WEBHOOK:-null}"
           echo "Redeploying stack..."
           PAYLOAD=$(jq -n \
             --arg content "$STACK_FILE_CONTENT" \
