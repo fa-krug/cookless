@@ -21,6 +21,7 @@ from users.schemas import (
     InviteValidationOut,
     LoginBeginIn,
     LoginCompleteIn,
+    LoginPasswordIn,
     MessageOut,
     PasskeyOut,
     RegisterBeginIn,
@@ -242,6 +243,15 @@ def add_passkey_complete(request, payload: RegisterCompleteIn):
 
 
 # ── Auth ─────────────────────────────────────────────────────────────
+
+
+@router.post("/auth/login/password/", auth=None, response=UserOut, tags=["auth"])
+def login_password(request, payload: LoginPasswordIn):
+    user = User.objects.filter(email=payload.email).first()
+    if not user or not user.check_password(payload.password):
+        raise HttpError(401, "Invalid email or password.")
+    login(request, user, backend="django.contrib.auth.backends.ModelBackend")
+    return user
 
 
 @router.post("/auth/register/", auth=None, tags=["auth"])

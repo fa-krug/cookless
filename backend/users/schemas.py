@@ -93,6 +93,11 @@ class PasskeyOut(Schema):
     created_at: datetime
 
 
+class LoginPasswordIn(Schema):
+    email: str
+    password: str
+
+
 class LoginBeginIn(Schema):
     email: str
 
