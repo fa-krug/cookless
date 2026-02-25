@@ -8,6 +8,7 @@ import pytest
 
 from planner.models import MealPlan, MealPlanEntry
 from recipes.models import Ingredient, Recipe, RecipeIngredient, Unit
+from shopping.models import ShoppingList as ShoppingListModel
 from users.models import Household, HouseholdMember
 
 User = get_user_model()
@@ -372,6 +373,20 @@ def test_generate_plan_accepts_default_leftover_days(auth_client):
         content_type="application/json",
     )
     assert response.status_code == 201
+
+
+@pytest.mark.django_db
+def test_generate_plan_auto_creates_shopping_list(auth_client):
+    client, household = auth_client
+    _create_recipes(household)
+    response = client.post(
+        "/api/v1/meal-plans/generate/",
+        json.dumps({"start_date": "2026-03-01", "days": 7}),
+        content_type="application/json",
+    )
+    assert response.status_code == 201
+    plan_id = response.json()["id"]
+    assert ShoppingListModel.objects.filter(meal_plan_id=plan_id).count() == 1
 
 
 @pytest.mark.django_db

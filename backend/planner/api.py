@@ -8,6 +8,7 @@ from planner.models import MealPlan, MealPlanEntry
 from planner.schemas import GeneratePlanIn, MealPlanEntryOut, MealPlanOut, UpdateEntryIn
 from planner.services import generate_meal_plan, regenerate_meal_plan
 from recipes.models import Recipe
+from shopping.services import generate_shopping_list
 from users.permissions import require_household_member
 
 router = Router()
@@ -24,6 +25,7 @@ def generate_plan(request, payload: GeneratePlanIn):
         known_ratio=payload.known_ratio,
         default_leftover_days=payload.default_leftover_days,
     )
+    generate_shopping_list(plan)
     return plan
 
 
