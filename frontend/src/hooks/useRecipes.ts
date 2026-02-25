@@ -1,13 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "../api/client";
-import type { ListType, Recipe, RecipeUpdatePayload } from "../api/types";
+import type { ListType, Recipe, RecipeSummary, RecipeUpdatePayload } from "../api/types";
 
 export function useRecipes(listType?: ListType) {
-  return useQuery<Recipe[]>({
+  return useQuery<RecipeSummary[]>({
     queryKey: ["recipes", listType],
     queryFn: () => {
       const params = listType ? `?list_type=${listType}` : "";
-      return api.get<Recipe[]>(`/api/v1/recipes/${params}`);
+      return api.get<RecipeSummary[]>(`/api/v1/recipes/${params}`);
     },
   });
 }

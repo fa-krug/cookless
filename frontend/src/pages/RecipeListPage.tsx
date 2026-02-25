@@ -3,7 +3,7 @@ import { BookOpen, Plus, Search } from "lucide-react";
 import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import type { ListType, Recipe } from "../api/types";
+import type { ListType, RecipeSummary } from "../api/types";
 import RecipeCard from "../components/RecipeCard";
 import { EmptyState } from "../components/ui/EmptyState";
 import { RecipeListSkeleton } from "../components/ui/RecipeListSkeleton";
@@ -27,7 +27,7 @@ function getSavedSort(): SortOption {
   return "name-asc";
 }
 
-function sortRecipes(recipes: Recipe[], sort: SortOption, locale: string): Recipe[] {
+function sortRecipes(recipes: RecipeSummary[], sort: SortOption, locale: string): RecipeSummary[] {
   const sorted = [...recipes];
   switch (sort) {
     case "name-asc":

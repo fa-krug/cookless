@@ -2,8 +2,8 @@ import { ChevronDown, RefreshCw, ShoppingCart } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import type { MealPlanEntry, PlanIteration, Recipe } from "../api/types";
-import { useRecipes } from "../hooks/useRecipes";
+import type { MealPlanEntry, PlanIteration, RecipeSummary } from "../api/types";
+import { useRecipe, useRecipes } from "../hooks/useRecipes";
 import { useShoppingLists } from "../hooks/useShoppingList";
 import RecipePreviewModal from "./RecipePreviewModal";
 
@@ -61,12 +61,14 @@ export default function IterationCard({
   const today = useMemo(() => getToday(), []);
   const [collapsed, setCollapsed] = useState(isArchived);
   const [previewEntry, setPreviewEntry] = useState<{
-    recipe: Recipe;
+    recipeId: string;
     servings: number;
   } | null>(null);
 
+  const { data: previewRecipe } = useRecipe(previewEntry?.recipeId ?? "");
+
   const recipeMap = useMemo(() => {
-    const map = new Map<string, Recipe>();
+    const map = new Map<string, RecipeSummary>();
     if (recipes) {
       for (const recipe of recipes) {
         map.set(recipe.id, recipe);
@@ -209,7 +211,7 @@ export default function IterationCard({
                     <button
                       onClick={() =>
                         recipe &&
-                        setPreviewEntry({ recipe, servings: entry.servings })
+                        setPreviewEntry({ recipeId: recipe.id, servings: entry.servings })
                       }
                       className="flex w-full items-center gap-2 px-4 py-3 text-left hover:bg-gray-50"
                     >
@@ -249,10 +251,10 @@ export default function IterationCard({
         </div>
       )}
 
-      {previewEntry && (
+      {previewEntry && previewRecipe && (
         <RecipePreviewModal
           open
-          recipe={previewEntry.recipe}
+          recipe={previewRecipe}
           servings={previewEntry.servings}
           onClose={() => setPreviewEntry(null)}
         />

@@ -74,6 +74,18 @@ export interface CookingStep {
   instruction: string;
 }
 
+export interface RecipeSummary {
+  id: string;
+  title: string;
+  list_type: ListType;
+  default_servings: number;
+  prep_time_minutes: number | null;
+  cook_time_minutes: number | null;
+  leftover_days: number | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface Recipe {
   id: string;
   title: string;

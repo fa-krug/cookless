@@ -1,10 +1,10 @@
 import { Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
-import type { Recipe } from "../api/types";
+import type { RecipeSummary } from "../api/types";
 
 interface RecipeCardProps {
-  recipe: Recipe;
+  recipe: RecipeSummary;
   onDelete: (id: string) => void;
 }
 
