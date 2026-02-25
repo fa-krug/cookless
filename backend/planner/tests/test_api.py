@@ -105,24 +105,36 @@ def test_generate_meal_plan_default_days(auth_client):
 def test_list_meal_plans(auth_client):
     client, household = auth_client
     _create_recipes(household)
-    # Generate two plans
     client.post(
         "/api/v1/meal-plans/generate/",
         json.dumps({"start_date": "2026-03-01", "days": 7}),
         content_type="application/json",
     )
+    response = client.get("/api/v1/meal-plans/")
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data) == 1
+    assert data[0]["start_date"] == "2026-03-01"
+
+
+@pytest.mark.django_db
+def test_generate_plan_replaces_old(auth_client):
+    client, household = auth_client
+    _create_recipes(household)
+    client.post(
+        "/api/v1/meal-plans/generate/",
+        json.dumps({"start_date": "2026-03-01", "days": 7}),
+        content_type="application/json",
+    )
+    assert MealPlan.objects.filter(household=household).count() == 1
     client.post(
         "/api/v1/meal-plans/generate/",
         json.dumps({"start_date": "2026-03-08", "days": 7}),
         content_type="application/json",
     )
-    response = client.get("/api/v1/meal-plans/")
-    assert response.status_code == 200
-    data = response.json()
-    assert len(data) == 2
-    # Ordered by -start_date, so newest first
-    assert data[0]["start_date"] == "2026-03-08"
-    assert data[1]["start_date"] == "2026-03-01"
+    assert MealPlan.objects.filter(household=household).count() == 1
+    plan = MealPlan.objects.get(household=household)
+    assert str(plan.start_date) == "2026-03-08"
 
 
 @pytest.mark.django_db

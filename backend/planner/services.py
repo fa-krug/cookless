@@ -22,6 +22,7 @@ def generate_meal_plan(
 
     best_set = _select_recipes_with_overlap(known_recipes, try_recipes, known_count, try_count)
 
+    MealPlan.objects.filter(household=household).delete()
     plan = MealPlan.objects.create(
         household=household,
         start_date=start_date,
