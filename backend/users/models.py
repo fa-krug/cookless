@@ -62,6 +62,10 @@ class User(AbstractBaseUser, PermissionsMixin):
     def __str__(self) -> str:
         return self.email
 
+    @property
+    def has_passkey(self) -> bool:
+        return self.passkey_credentials.exists()
+
 
 class Household(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)

@@ -40,6 +40,16 @@ class UserOut(Schema):
     preferred_language: str
     settings: dict
     active_household: HouseholdSummaryOut | None
+    has_password: bool
+    has_passkey: bool
+
+    @staticmethod
+    def resolve_has_password(obj):
+        return obj.has_usable_password()
+
+    @staticmethod
+    def resolve_has_passkey(obj):
+        return obj.has_passkey
 
 
 class UserUpdateIn(Schema):

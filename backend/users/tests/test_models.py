@@ -2,6 +2,8 @@ from django.contrib.auth import get_user_model
 
 import pytest
 
+from users.models import PasskeyCredential
+
 User = get_user_model()
 
 
@@ -50,3 +52,22 @@ def test_create_superuser_rejects_is_staff_false():
 def test_create_superuser_rejects_is_superuser_false():
     with pytest.raises(ValueError, match="is_superuser=True"):
         User.objects.create_superuser(email="bad@example.com", is_superuser=False)
+
+
+@pytest.mark.django_db
+def test_user_has_passkey_false_by_default():
+    user = User.objects.create_user(email="passkey-test@example.com")
+    assert user.has_passkey is False
+
+
+@pytest.mark.django_db
+def test_user_has_passkey_true_with_credential():
+    user = User.objects.create_user(email="passkey-test2@example.com")
+    PasskeyCredential.objects.create(
+        user=user,
+        credential_id=b"test-credential-id",
+        public_key=b"test-public-key",
+        sign_count=0,
+        device_name="Test Device",
+    )
+    assert user.has_passkey is True

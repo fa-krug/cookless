@@ -10,7 +10,6 @@ api = NinjaAPI(
 )
 
 
-
 @api.get("/health/", auth=None)
 def health(request):
     return {"status": "ok"}
