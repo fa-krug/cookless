@@ -60,6 +60,10 @@ if DEBUG:
         f"http://{host.strip()}"
         for host in env("ALLOWED_HOSTS").split(",")
         if host.strip() not in ("*", "")
+    ] + [
+        origin.strip()
+        for origin in env("CORS_ALLOWED_ORIGINS").split(",")
+        if origin.strip()
     ]
 else:
     CSRF_TRUSTED_ORIGINS = [
@@ -218,9 +222,18 @@ CORS_ALLOW_CREDENTIALS = True
 
 
 # WebAuthn / Passkey configuration
-WEBAUTHN_RP_ID = env("WEBAUTHN_RP_ID", default="localhost")
+# Comma-separated lists to support multiple origins (e.g. localhost + LAN IP)
+WEBAUTHN_RP_ID = [
+    rp_id.strip()
+    for rp_id in env("WEBAUTHN_RP_ID", default="localhost").split(",")
+    if rp_id.strip()
+]
 WEBAUTHN_RP_NAME = env("WEBAUTHN_RP_NAME", default="Cook Less")
-WEBAUTHN_ORIGIN = env("WEBAUTHN_ORIGIN", default="http://localhost:5173")
+WEBAUTHN_ORIGIN = [
+    origin.strip()
+    for origin in env("WEBAUTHN_ORIGIN", default="http://localhost:5173").split(",")
+    if origin.strip()
+]
 
 
 # Logging Configuration

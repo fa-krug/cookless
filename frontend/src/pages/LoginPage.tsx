@@ -1,11 +1,13 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import AppLogo from "../components/AppLogo";
 
 export default function LoginPage() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const { login, loginWithPassword } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -19,6 +21,7 @@ export default function LoginPage() {
     setIsLoading(true);
     try {
       await login(email);
+      navigate("/", { replace: true });
     } catch {
       setError(t("auth.loginFailed"));
     } finally {
@@ -32,6 +35,7 @@ export default function LoginPage() {
     setIsLoading(true);
     try {
       await loginWithPassword(email, password);
+      navigate("/", { replace: true });
     } catch {
       setError(t("auth.passwordLoginFailed"));
     } finally {

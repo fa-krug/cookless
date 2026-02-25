@@ -36,6 +36,7 @@ from users.schemas import (
 from users.webauthn import (
     get_authentication_options,
     get_registration_options,
+    get_rp_id_for_request,
     verify_authentication,
     verify_registration,
 )
@@ -249,6 +250,7 @@ def add_passkey_begin(request):
         user_id=str(request.user.id),
         user_email=request.user.email,
         existing_credentials=existing,
+        rp_id=get_rp_id_for_request(request),
     )
     request.session["webauthn_add_challenge"] = bytes_to_base64url(options.challenge)
     return json.loads(options_to_json(options))
@@ -262,7 +264,9 @@ def add_passkey_complete(request, payload: RegisterCompleteIn):
 
     challenge = base64url_to_bytes(challenge_b64)
     try:
-        verification = verify_registration(payload.credential, challenge)
+        verification = verify_registration(
+            payload.credential, challenge, rp_id=get_rp_id_for_request(request)
+        )
     except Exception as e:
         raise HttpError(400, f"Verification failed: {e}") from None
 
@@ -342,6 +346,7 @@ def register_begin(request, payload: RegisterBeginIn):
         user_id=temp_user_id,
         user_email=payload.email,
         existing_credentials=[],
+        rp_id=get_rp_id_for_request(request),
     )
 
     # Serialize options to JSON
@@ -374,6 +379,7 @@ def register_complete(request, payload: RegisterCompleteIn):
         verification = verify_registration(
             credential_json=payload.credential,
             challenge=challenge,
+            rp_id=get_rp_id_for_request(request),
         )
     except Exception as e:
         raise HttpError(400, f"WebAuthn verification failed: {e}") from None
@@ -444,7 +450,7 @@ def login_begin(request, payload: LoginBeginIn):
         raise HttpError(400, "No passkeys registered for this account.")
 
     credential_ids = [bytes(c.credential_id) for c in credentials]
-    options = get_authentication_options(credential_ids)
+    options = get_authentication_options(credential_ids, rp_id=get_rp_id_for_request(request))
 
     options_json = options_to_json(options)
 
@@ -490,6 +496,7 @@ def login_complete(request, payload: LoginCompleteIn):
             challenge=challenge,
             credential_public_key=bytes(stored_credential.public_key),
             credential_current_sign_count=stored_credential.sign_count,
+            rp_id=get_rp_id_for_request(request),
         )
     except Exception as e:
         raise HttpError(400, f"WebAuthn verification failed: {e}") from None

@@ -9,7 +9,7 @@ export default function SettingsPage() {
   const { t, i18n } = useTranslation();
   const { user, logout, refreshUser } = useAuth();
 
-  const [language, setLanguage] = useState(user?.preferred_language ?? i18n.language);
+  const [language, setLanguage] = useState(i18n.language);
   const [defaultServings, setDefaultServings] = useState(user?.settings.default_servings ?? 2);
   const [knownNewRatio, setKnownNewRatio] = useState(user?.settings.known_new_ratio ?? 0.7);
   const [planDays, setPlanDays] = useState(user?.settings.plan_days ?? 7);
