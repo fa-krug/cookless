@@ -131,28 +131,3 @@ def _assign_schedule_lunch_only(plan, recipes, start_date, days, servings, defau
                     servings=servings,
                     is_leftover=False,
                 )
-
-
-def regenerate_meal_plan(plan, servings=None, known_ratio=0.7, default_leftover_days=1):
-    """Regenerate a meal plan: delete all entries, recreate with lunch-only."""
-    if servings is None:
-        entries = plan.entries.all()
-        servings = entries.order_by("-servings").first().servings if entries.exists() else 2
-
-    days = (plan.end_date - plan.start_date).days + 1
-    plan.entries.all().delete()
-
-    known_recipes = list(Recipe.objects.filter(household=plan.household, list_type="KNOWN"))
-    try_recipes = list(Recipe.objects.filter(household=plan.household, list_type="TO_TRY"))
-
-    avg_leftover = default_leftover_days
-    slots_per_recipe = 1 + avg_leftover
-    cooking_sessions = max(days // slots_per_recipe, 1)
-    known_count = round(cooking_sessions * known_ratio)
-    try_count = cooking_sessions - known_count
-
-    recipes = _select_recipes_with_overlap(known_recipes, try_recipes, known_count, try_count)
-    _assign_schedule_lunch_only(
-        plan, recipes, plan.start_date, days, servings, default_leftover_days
-    )
-    return plan

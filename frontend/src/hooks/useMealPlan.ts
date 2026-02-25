@@ -33,6 +33,7 @@ export function useGeneratePlan() {
       api.post<MealPlan>("/api/v1/meal-plans/generate/", data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["meal-plans"] });
+      queryClient.invalidateQueries({ queryKey: ["shopping-lists"] });
     },
   });
 }

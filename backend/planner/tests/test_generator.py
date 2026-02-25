@@ -82,7 +82,7 @@ def test_recipe_leftover_days_default():
     recipe = Recipe.objects.create(
         household=household, title="Test", list_type="KNOWN", default_servings=2
     )
-    assert recipe.leftover_days == 1
+    assert recipe.leftover_days is None
 
 
 @pytest.mark.django_db
