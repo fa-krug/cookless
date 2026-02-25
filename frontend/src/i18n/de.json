@@ -200,6 +200,14 @@
     "removeMemberConfirm": "Möchtest du dieses Mitglied wirklich entfernen?",
     "leaveHousehold": "Haushalt verlassen",
     "leaveConfirm": "Möchtest du diesen Haushalt wirklich verlassen?",
+    "editName": "Umbenennen",
+    "deleteHousehold": "Haushalt löschen",
+    "deleteConfirm": "Gib \"{{name}}\" ein, um das Löschen zu bestätigen:",
+    "deleteConfirmPlaceholder": "Haushaltsname",
+    "transferOwnership": "Zum Eigentümer machen",
+    "transferOwnershipConfirm": "Eigentümerschaft an {{email}} übertragen?",
+    "cannotDeleteHasMembers": "Entferne zuerst alle anderen Mitglieder.",
+    "cannotLeaveAsOwner": "Übertrage zuerst die Eigentümerschaft.",
     "role": {
       "owner": "Eigentümer",
       "member": "Mitglied"
@@ -253,10 +261,16 @@
     "memberRemove": "Mitglied konnte nicht entfernt werden.",
     "inviteCreate": "Einladung konnte nicht erstellt werden.",
     "passkeyAdd": "Passkey konnte nicht hinzugefügt werden.",
-    "passkeyDelete": "Passkey konnte nicht entfernt werden."
+    "passkeyDelete": "Passkey konnte nicht entfernt werden.",
+    "householdDelete": "Haushalt konnte nicht gelöscht werden.",
+    "householdLeave": "Haushalt konnte nicht verlassen werden.",
+    "ownershipTransfer": "Eigentümerschaft konnte nicht übertragen werden."
   },
   "success": {
     "recipeSaved": "Rezept gespeichert!",
-    "householdJoined": "Haushalt beigetreten!"
+    "householdJoined": "Haushalt beigetreten!",
+    "householdDeleted": "Haushalt gelöscht.",
+    "householdLeft": "Du hast den Haushalt verlassen.",
+    "ownershipTransferred": "Eigentümerschaft übertragen!"
   }
 }

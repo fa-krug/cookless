@@ -63,3 +63,58 @@ export function useRemoveMember() {
     },
   });
 }
+
+export function useUpdateHousehold() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, name }: { id: string; name: string }) =>
+      api.patch<Household>(`/api/v1/households/${id}/`, { name }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["households"] });
+    },
+  });
+}
+
+export function useDeleteHousehold() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => api.delete(`/api/v1/households/${id}/`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["households"] });
+    },
+  });
+}
+
+export function useLeaveHousehold() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) =>
+      api.post<MessageOut>(`/api/v1/households/${id}/leave/`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["households"] });
+    },
+  });
+}
+
+export function useTransferOwnership() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      householdId,
+      memberId,
+    }: {
+      householdId: string;
+      memberId: number;
+    }) =>
+      api.post<MessageOut>(
+        `/api/v1/households/${householdId}/members/${memberId}/transfer-ownership/`,
+      ),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["households"] });
+    },
+  });
+}
