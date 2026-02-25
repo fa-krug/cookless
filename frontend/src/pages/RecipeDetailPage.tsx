@@ -3,7 +3,7 @@ import { ArrowLeftRight, ArrowLeft, Save, Trash2 } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
-import type { Ingredient, Recipe, RecipeUpdatePayload } from "../api/types";
+import type { Ingredient, Recipe, RecipeSummary, RecipeUpdatePayload } from "../api/types";
 import IngredientForm, { type IngredientRow } from "../components/IngredientForm";
 import StepEditor, { type StepRow } from "../components/StepEditor";
 import { RecipeDetailSkeleton } from "../components/ui/RecipeDetailSkeleton";
@@ -155,8 +155,8 @@ function RecipeForm({ recipe, recipeId, allIngredients, allUnits }: RecipeFormPr
   function handleDelete() {
     // Optimistically remove from list cache
     const listQueryKey = ["recipes", recipe.list_type];
-    const previousRecipes = queryClient.getQueryData<Recipe[]>(listQueryKey);
-    queryClient.setQueryData<Recipe[]>(listQueryKey, (old) =>
+    const previousRecipes = queryClient.getQueryData<RecipeSummary[]>(listQueryKey);
+    queryClient.setQueryData<RecipeSummary[]>(listQueryKey, (old) =>
       old?.filter((r) => r.id !== recipeId),
     );
 
@@ -177,7 +177,7 @@ function RecipeForm({ recipe, recipeId, allIngredients, allUnits }: RecipeFormPr
             pendingDeleteRef.current = null;
           }
           // Restore cache and navigate back
-          queryClient.setQueryData<Recipe[]>(listQueryKey, previousRecipes);
+          queryClient.setQueryData<RecipeSummary[]>(listQueryKey, previousRecipes);
           navigate(`/recipes/${recipeId}`);
         },
       },
@@ -189,7 +189,7 @@ function RecipeForm({ recipe, recipeId, allIngredients, allUnits }: RecipeFormPr
       if (!undone) {
         deleteRecipe.mutate(recipeId, {
           onError: () => {
-            queryClient.setQueryData<Recipe[]>(listQueryKey, previousRecipes);
+            queryClient.setQueryData<RecipeSummary[]>(listQueryKey, previousRecipes);
             addToast(t("errors.recipeDelete"), "error");
           },
         });
