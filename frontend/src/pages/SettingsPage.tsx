@@ -21,6 +21,14 @@ export default function SettingsPage() {
   const [passkeysLoading, setPasskeysLoading] = useState(true);
   const [addingPasskey, setAddingPasskey] = useState(false);
 
+  // Password state
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmNewPassword, setConfirmNewPassword] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [passwordSuccess, setPasswordSuccess] = useState("");
+  const [savingPassword, setSavingPassword] = useState(false);
+
   const fetchPasskeys = useCallback(async () => {
     try {
       const data = await api.get<Passkey[]>("/api/v1/users/me/passkeys/");
@@ -83,8 +91,67 @@ export default function SettingsPage() {
     try {
       await api.delete(`/api/v1/users/me/passkeys/${id}/`);
       await fetchPasskeys();
+      await refreshUser();
     } catch {
       // silently fail
+    }
+  }
+
+  async function handlePasswordSubmit() {
+    setPasswordError("");
+    setPasswordSuccess("");
+
+    if (newPassword !== confirmNewPassword) {
+      setPasswordError(t("password.passwordMismatch"));
+      return;
+    }
+
+    setSavingPassword(true);
+    try {
+      const body: Record<string, string> = { new_password: newPassword };
+      if (user?.has_password) {
+        body.current_password = currentPassword;
+      }
+      await api.post("/api/v1/users/me/password/", body);
+      await refreshUser();
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmNewPassword("");
+      const msg = user?.has_password
+        ? t("password.passwordChanged")
+        : t("password.passwordSet");
+      setPasswordSuccess(msg);
+      setTimeout(() => setPasswordSuccess(""), 2000);
+    } catch (err) {
+      if (err instanceof Error && "body" in err) {
+        const apiErr = err as { body: unknown };
+        const body = apiErr.body as Record<string, string> | undefined;
+        setPasswordError(body?.detail ?? t("common.error"));
+      } else {
+        setPasswordError(t("common.error"));
+      }
+    } finally {
+      setSavingPassword(false);
+    }
+  }
+
+  async function handleRemovePassword() {
+    if (!window.confirm(t("password.removeConfirm"))) return;
+    setPasswordError("");
+    setPasswordSuccess("");
+    try {
+      await api.delete("/api/v1/users/me/password/");
+      await refreshUser();
+      setPasswordSuccess(t("password.passwordRemoved"));
+      setTimeout(() => setPasswordSuccess(""), 2000);
+    } catch (err) {
+      if (err instanceof Error && "body" in err) {
+        const apiErr = err as { body: unknown };
+        const body = apiErr.body as Record<string, string> | undefined;
+        setPasswordError(body?.detail ?? t("common.error"));
+      } else {
+        setPasswordError(t("common.error"));
+      }
     }
   }
 
@@ -209,8 +276,12 @@ export default function SettingsPage() {
                 </div>
                 <button
                   onClick={() => handleDeletePasskey(passkey.id)}
-                  disabled={passkeys.length <= 1}
-                  title={passkeys.length <= 1 ? t("passkeys.cannotDeleteLast") : ""}
+                  disabled={passkeys.length <= 1 && !user?.has_password}
+                  title={
+                    passkeys.length <= 1 && !user?.has_password
+                      ? t("passkeys.cannotDeleteLast")
+                      : ""
+                  }
                   className="rounded-md px-3 py-1 text-xs font-medium text-red-500 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-30"
                 >
                   {t("passkeys.deletePasskey")}
@@ -227,6 +298,75 @@ export default function SettingsPage() {
         >
           {addingPasskey ? t("common.loading") : t("passkeys.addPasskey")}
         </button>
+      </div>
+
+      {/* Password */}
+      <div className="mb-4 rounded-lg bg-white p-4 shadow-sm">
+        <h2 className="mb-3 text-lg font-semibold text-gray-900">{t("password.title")}</h2>
+
+        {!user?.has_password && (
+          <p className="mb-3 text-sm text-gray-500">{t("password.noPasswordSet")}</p>
+        )}
+
+        {passwordError && (
+          <p className="mb-3 text-sm text-red-500">{passwordError}</p>
+        )}
+        {passwordSuccess && (
+          <p className="mb-3 text-sm text-green-600">{passwordSuccess}</p>
+        )}
+
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            handlePasswordSubmit();
+          }}
+        >
+          {user?.has_password && (
+            <input
+              type="password"
+              placeholder={t("password.currentPassword")}
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+              className="mb-3 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
+            />
+          )}
+          <input
+            type="password"
+            placeholder={t("password.newPassword")}
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            className="mb-3 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
+          />
+          <input
+            type="password"
+            placeholder={t("password.confirmPassword")}
+            value={confirmNewPassword}
+            onChange={(e) => setConfirmNewPassword(e.target.value)}
+            className="mb-3 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
+          />
+          <button
+            type="submit"
+            disabled={savingPassword || !newPassword || !confirmNewPassword}
+            className="w-full rounded-md bg-orange-500 px-4 py-2 text-sm font-medium text-white hover:bg-orange-600 disabled:opacity-50"
+          >
+            {savingPassword
+              ? t("common.loading")
+              : user?.has_password
+                ? t("password.changePassword")
+                : t("password.setPassword")}
+          </button>
+        </form>
+
+        {user?.has_password && (
+          <button
+            onClick={handleRemovePassword}
+            disabled={!user?.has_passkey}
+            title={!user?.has_passkey ? t("passkeys.cannotDeleteLast") : ""}
+            className="mt-3 w-full rounded-md border border-red-500 px-4 py-2 text-sm font-medium text-red-500 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {t("password.removePassword")}
+          </button>
+        )}
       </div>
 
       {/* Account / Logout */}
