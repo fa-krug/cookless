@@ -10,6 +10,7 @@ import { createIngredient, useIngredients } from "../hooks/useIngredients";
 import { useDeleteRecipe, useMoveRecipe, useRecipe, useUpdateRecipe } from "../hooks/useRecipes";
 import { useToast } from "../hooks/useToast";
 import { useUnits } from "../hooks/useUnits";
+import { RecipeDetailSkeleton } from "../components/ui/RecipeDetailSkeleton";
 
 export default function RecipeDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -20,11 +21,7 @@ export default function RecipeDetailPage() {
   const { data: allUnits = [] } = useUnits();
 
   if (recipeLoading) {
-    return (
-      <div className="p-4">
-        <p className="text-center text-sm text-gray-500">{t("common.loading")}</p>
-      </div>
-    );
+    return <RecipeDetailSkeleton />;
   }
 
   if (!recipe || !id) {
