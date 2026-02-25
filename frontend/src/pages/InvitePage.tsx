@@ -13,7 +13,7 @@ interface InviteInfo {
 export default function InvitePage() {
   const { t } = useTranslation();
   const { code } = useParams<{ code: string }>();
-  const { user, register } = useAuth();
+  const { user, register, registerWithPassword } = useAuth();
   const navigate = useNavigate();
 
   const [invite, setInvite] = useState<InviteInfo | null>(null);
@@ -22,6 +22,10 @@ export default function InvitePage() {
   const [email, setEmail] = useState("");
   const [actionLoading, setActionLoading] = useState(false);
   const [actionError, setActionError] = useState("");
+  const [showPasswordForm, setShowPasswordForm] = useState(false);
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPasskeyNudge, setShowPasskeyNudge] = useState(false);
 
   useEffect(() => {
     if (!code) return;
@@ -51,7 +55,7 @@ export default function InvitePage() {
     navigate("/recipes", { replace: true });
   }
 
-  async function handleRegister(e: FormEvent) {
+  async function handleRegister(e: { preventDefault: () => void }) {
     e.preventDefault();
     if (!code) return;
     setActionLoading(true);
@@ -64,6 +68,36 @@ export default function InvitePage() {
     } finally {
       setActionLoading(false);
     }
+  }
+
+  async function handlePasswordRegister(e: FormEvent) {
+    e.preventDefault();
+    if (!code) return;
+    if (password !== confirmPassword) {
+      setActionError(t("password.passwordMismatch"));
+      return;
+    }
+    setActionLoading(true);
+    setActionError("");
+    try {
+      await registerWithPassword(email, password, code);
+      setShowPasskeyNudge(true);
+      setTimeout(() => {
+        navigate("/recipes", { replace: true });
+      }, 3000);
+    } catch {
+      setActionError(t("invite.registerFailed"));
+    } finally {
+      setActionLoading(false);
+    }
+  }
+
+  if (showPasskeyNudge) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center bg-white px-4">
+        <p className="text-center text-gray-600">{t("invite.passkeyRecommendation")}</p>
+      </div>
+    );
   }
 
   if (loading) {
@@ -121,7 +155,7 @@ export default function InvitePage() {
         {t("invite.registerPrompt", { household: invite.household_name })}
       </p>
 
-      <form onSubmit={handleRegister} className="w-full max-w-xs">
+      <div className="w-full max-w-xs">
         <input
           type="email"
           required
@@ -134,13 +168,58 @@ export default function InvitePage() {
         {actionError && <p className="mb-4 text-center text-sm text-red-500">{actionError}</p>}
 
         <button
-          type="submit"
+          type="button"
+          onClick={(e) => handleRegister(e)}
           disabled={actionLoading}
-          className="w-full rounded-lg bg-orange-500 px-6 py-3 text-base font-medium text-white transition-colors hover:bg-orange-600 disabled:opacity-50"
+          className="mb-4 w-full rounded-lg bg-orange-500 px-6 py-3 text-base font-medium text-white transition-colors hover:bg-orange-600 disabled:opacity-50"
         >
-          {actionLoading ? t("common.loading") : t("invite.createAccount")}
+          {actionLoading && !showPasswordForm
+            ? t("common.loading")
+            : t("invite.registerWithPasskey")}
         </button>
-      </form>
+
+        <div className="mb-4 flex items-center gap-3">
+          <div className="h-px flex-1 bg-gray-300" />
+          <span className="text-sm text-gray-500">{t("auth.orDivider")}</span>
+          <div className="h-px flex-1 bg-gray-300" />
+        </div>
+
+        {!showPasswordForm ? (
+          <button
+            type="button"
+            onClick={() => setShowPasswordForm(true)}
+            className="w-full rounded-lg border border-orange-500 px-6 py-3 text-base font-medium text-orange-500 transition-colors hover:bg-orange-50"
+          >
+            {t("invite.registerWithPassword")}
+          </button>
+        ) : (
+          <form onSubmit={handlePasswordRegister}>
+            <input
+              type="password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder={t("auth.passwordPlaceholder")}
+              className="mb-3 w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
+            />
+            <input
+              type="password"
+              required
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              placeholder={t("password.confirmPassword")}
+              className="mb-4 w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
+            />
+            <button
+              type="submit"
+              disabled={actionLoading}
+              className="w-full rounded-lg bg-orange-500 px-6 py-3 text-base font-medium text-white transition-colors hover:bg-orange-600 disabled:opacity-50"
+            >
+              {actionLoading ? t("common.loading") : t("invite.registerWithPassword")}
+            </button>
+          </form>
+        )}
+      </div>
     </div>
   );
 }
