@@ -1,4 +1,5 @@
 import { ChevronDown, RefreshCw, ShoppingCart } from "lucide-react";
+import { Spinner } from "./ui/Spinner";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
@@ -12,6 +13,7 @@ interface IterationCardProps {
   shoppingDays: number[];
   isArchived: boolean;
   onRenew?: () => void;
+  isRenewing?: boolean;
 }
 
 function formatDate(dateStr: string, locale: string): string {
@@ -52,6 +54,7 @@ export default function IterationCard({
   shoppingDays,
   isArchived,
   onRenew,
+  isRenewing,
 }: IterationCardProps) {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
@@ -134,9 +137,10 @@ export default function IterationCard({
         {!isArchived && onRenew && (
           <button
             onClick={onRenew}
-            className="flex items-center gap-1.5 rounded-lg border border-orange-300 px-3 py-1 text-xs font-medium text-orange-500 hover:bg-orange-50"
+            disabled={isRenewing}
+            className="flex items-center gap-1.5 rounded-lg border border-orange-300 px-3 py-1 text-xs font-medium text-orange-500 hover:bg-orange-50 disabled:opacity-50"
           >
-            <RefreshCw size={14} />
+            {isRenewing ? <Spinner size={14} /> : <RefreshCw size={14} />}
             {t("plan.renew")}
           </button>
         )}

@@ -1,5 +1,6 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { ArrowLeftRight, ArrowLeft, Save, Trash2 } from "lucide-react";
+import { Spinner } from "../components/ui/Spinner";
 import { useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
@@ -292,7 +293,7 @@ function RecipeForm({ recipe, recipeId, allIngredients, allUnits }: RecipeFormPr
             disabled={moveRecipe.isPending}
             className="flex w-full items-center justify-center gap-2 rounded-lg border border-orange-500 px-4 py-2 text-sm font-medium text-orange-500 hover:bg-orange-50 disabled:opacity-50"
           >
-            <ArrowLeftRight size={16} />
+            {moveRecipe.isPending ? <Spinner /> : <ArrowLeftRight size={16} />}
             {recipe.list_type === "KNOWN" ? t("recipes.moveToTry") : t("recipes.moveToKnown")}
           </button>
 
@@ -303,7 +304,7 @@ function RecipeForm({ recipe, recipeId, allIngredients, allUnits }: RecipeFormPr
               disabled={updateRecipe.isPending}
               className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-orange-500 px-4 py-2 text-sm font-medium text-white hover:bg-orange-600 disabled:opacity-50"
             >
-              <Save size={16} />
+              {updateRecipe.isPending ? <Spinner /> : <Save size={16} />}
               {t("common.save")}
             </button>
             <button
@@ -312,7 +313,7 @@ function RecipeForm({ recipe, recipeId, allIngredients, allUnits }: RecipeFormPr
               disabled={deleteRecipe.isPending}
               className="flex items-center gap-2 rounded-lg border border-red-300 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 disabled:opacity-50"
             >
-              <Trash2 size={16} />
+              {deleteRecipe.isPending ? <Spinner /> : <Trash2 size={16} />}
               {t("common.delete")}
             </button>
           </div>

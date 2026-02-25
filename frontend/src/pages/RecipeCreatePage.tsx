@@ -1,5 +1,6 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Save } from "lucide-react";
+import { Spinner } from "../components/ui/Spinner";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -169,7 +170,7 @@ export default function RecipeCreatePage() {
           disabled={createRecipe.isPending || !title.trim()}
           className="flex w-full items-center justify-center gap-2 rounded-lg bg-orange-500 px-4 py-2 text-sm font-medium text-white hover:bg-orange-600 disabled:opacity-50"
         >
-          <Save size={16} />
+          {createRecipe.isPending ? <Spinner /> : <Save size={16} />}
           {t("common.save")}
         </button>
       </form>

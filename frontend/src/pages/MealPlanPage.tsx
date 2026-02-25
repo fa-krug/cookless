@@ -1,4 +1,5 @@
 import { Calendar, CalendarPlus, Settings, Sparkles } from "lucide-react";
+import { Spinner } from "../components/ui/Spinner";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import GenerateDrawer from "../components/GenerateDrawer";
@@ -105,7 +106,7 @@ export default function MealPlanPage() {
                 disabled={nextIteration.isPending}
                 className="mt-3 inline-flex items-center gap-2 rounded-lg bg-orange-500 px-5 py-2 text-sm font-semibold text-white hover:bg-orange-600 disabled:opacity-50"
               >
-                <CalendarPlus size={16} />
+                {nextIteration.isPending ? <Spinner /> : <CalendarPlus size={16} />}
                 {nextIteration.isPending
                   ? t("common.loading")
                   : t("plan.generateNext")}
@@ -120,6 +121,7 @@ export default function MealPlanPage() {
               shoppingDays={currentPlan.shopping_days}
               isArchived={false}
               onRenew={handleRenew}
+              isRenewing={renewIteration.isPending}
             />
           )}
 

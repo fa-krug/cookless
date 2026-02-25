@@ -1,4 +1,5 @@
 import { KeyRound, LogOut, Plus, Save, ShieldMinus, Trash2 } from "lucide-react";
+import { Spinner } from "../components/ui/Spinner";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { api } from "../api/client";
@@ -214,7 +215,7 @@ export default function SettingsPage() {
         disabled={isSaving}
         className="mb-4 flex w-full items-center justify-center gap-2 rounded-md bg-orange-500 px-4 py-3 text-sm font-medium text-white hover:bg-orange-600 disabled:opacity-50"
       >
-        <Save size={16} />
+        {isSaving ? <Spinner /> : <Save size={16} />}
         {isSaving ? t("common.loading") : saved ? t("settings.saved") : t("settings.save")}
       </button>
 
@@ -264,7 +265,7 @@ export default function SettingsPage() {
           disabled={addingPasskey}
           className="mt-3 flex w-full items-center justify-center gap-2 rounded-md border border-orange-500 px-4 py-2 text-sm font-medium text-orange-500 hover:bg-orange-50 disabled:opacity-50"
         >
-          <Plus size={16} />
+          {addingPasskey ? <Spinner /> : <Plus size={16} />}
           {addingPasskey ? t("common.loading") : t("passkeys.addPasskey")}
         </button>
       </div>
@@ -318,7 +319,7 @@ export default function SettingsPage() {
             disabled={savingPassword || !newPassword || !confirmNewPassword}
             className="flex w-full items-center justify-center gap-2 rounded-md bg-orange-500 px-4 py-2 text-sm font-medium text-white hover:bg-orange-600 disabled:opacity-50"
           >
-            <KeyRound size={16} />
+            {savingPassword ? <Spinner /> : <KeyRound size={16} />}
             {savingPassword
               ? t("common.loading")
               : user?.has_password

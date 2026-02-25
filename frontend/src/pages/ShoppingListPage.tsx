@@ -1,4 +1,5 @@
 import { CheckCircle, ListRestart, ShoppingCart } from "lucide-react";
+import { Spinner } from "../components/ui/Spinner";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import type { IngredientCategory, ShoppingList } from "../api/types";
@@ -68,7 +69,7 @@ function ShoppingListView({ shoppingList }: { shoppingList: ShoppingList }) {
           disabled={!hasCheckedItems || bulkToggle.isPending}
           className="flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium text-orange-500 hover:bg-orange-50 disabled:opacity-50"
         >
-          <ListRestart size={16} />
+          {bulkToggle.isPending ? <Spinner /> : <ListRestart size={16} />}
           {t("shopping.uncheckAll")}
         </button>
       </div>

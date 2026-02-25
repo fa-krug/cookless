@@ -1,4 +1,5 @@
 import { Sparkles } from "lucide-react";
+import { Spinner } from "./ui/Spinner";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ApiError } from "../api/client";
@@ -216,7 +217,7 @@ function DrawerForm({ existingPlan, onClose }: DrawerFormProps) {
         disabled={setupPlan.isPending}
         className="flex w-full items-center justify-center gap-2 rounded-lg bg-orange-500 px-4 py-3 text-sm font-semibold text-white hover:bg-orange-600 disabled:opacity-50"
       >
-        <Sparkles size={16} />
+        {setupPlan.isPending ? <Spinner /> : <Sparkles size={16} />}
         {setupPlan.isPending
           ? t("common.loading")
           : isUpdate
