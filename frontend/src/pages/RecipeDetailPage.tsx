@@ -7,7 +7,7 @@ import IngredientForm, { type IngredientRow } from "../components/IngredientForm
 import StepEditor, { type StepRow } from "../components/StepEditor";
 import { createIngredient, useIngredients } from "../hooks/useIngredients";
 import { useDeleteRecipe, useMoveRecipe, useRecipe, useUpdateRecipe } from "../hooks/useRecipes";
-import { useToast } from "../contexts/ToastContext";
+import { useToast } from "../hooks/useToast";
 import { useUnits } from "../hooks/useUnits";
 
 export default function RecipeDetailPage() {

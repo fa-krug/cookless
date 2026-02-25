@@ -4,7 +4,7 @@ import { api } from "../api/client";
 import type { Passkey, User } from "../api/types";
 import { addPasskey } from "../api/webauthn";
 import { useAuth } from "../hooks/useAuth";
-import { useToast } from "../contexts/ToastContext";
+import { useToast } from "../hooks/useToast";
 
 export default function SettingsPage() {
   const { t, i18n } = useTranslation();

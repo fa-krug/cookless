@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import type { IngredientCategory, ShoppingListItem } from "../api/types";
 import ShoppingCategory from "../components/ShoppingCategory";
 import { useBulkToggle, useShoppingList, useToggleItem } from "../hooks/useShoppingList";
-import { useToast } from "../contexts/ToastContext";
+import { useToast } from "../hooks/useToast";
 
 export default function ShoppingListDetailPage() {
   const { id } = useParams();

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useToast } from "../contexts/ToastContext";
+import { useToast } from "../hooks/useToast";
 import { useAuth } from "../hooks/useAuth";
 import { useGeneratePlan } from "../hooks/useMealPlan";
 

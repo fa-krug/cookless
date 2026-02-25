@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import type { IngredientCategory, ShoppingList } from "../api/types";
 import ShoppingCategory from "../components/ShoppingCategory";
 import { useBulkToggle, useShoppingLists, useToggleItem } from "../hooks/useShoppingList";
-import { useToast } from "../contexts/ToastContext";
+import { useToast } from "../hooks/useToast";
 
 function ShoppingListView({ shoppingList }: { shoppingList: ShoppingList }) {
   const { t } = useTranslation();

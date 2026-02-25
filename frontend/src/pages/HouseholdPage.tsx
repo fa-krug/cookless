@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { Household, Invite } from "../api/types";
-import { useToast } from "../contexts/ToastContext";
+import { useToast } from "../hooks/useToast";
 import { useAuth } from "../hooks/useAuth";
 import {
   useAcceptInvite,

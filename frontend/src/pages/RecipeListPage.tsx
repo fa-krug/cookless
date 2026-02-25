@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import type { ListType } from "../api/types";
 import RecipeCard from "../components/RecipeCard";
 import { useCreateRecipe, useDeleteRecipe, useRecipes } from "../hooks/useRecipes";
-import { useToast } from "../contexts/ToastContext";
+import { useToast } from "../hooks/useToast";
 
 const TABS: { key: ListType; labelKey: string }[] = [
   { key: "KNOWN", labelKey: "recipes.known" },

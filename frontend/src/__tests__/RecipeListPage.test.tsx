@@ -4,6 +4,7 @@ import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Recipe } from "../api/types";
+import { ToastProvider } from "../contexts/ToastContext";
 import RecipeListPage from "../pages/RecipeListPage";
 
 // Mock i18n — return the key as-is
@@ -86,11 +87,13 @@ function createQueryClient() {
 function renderPage() {
   const queryClient = createQueryClient();
   return render(
-    <QueryClientProvider client={queryClient}>
-      <MemoryRouter>
-        <RecipeListPage />
-      </MemoryRouter>
-    </QueryClientProvider>,
+    <ToastProvider>
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter>
+          <RecipeListPage />
+        </MemoryRouter>
+      </QueryClientProvider>
+    </ToastProvider>,
   );
 }
 
