@@ -266,16 +266,16 @@ class TestFullMealPlanFlow:
         # Verify all recipes exist
         resp = client.get("/api/v1/recipes/")
         assert resp.status_code == 200
-        assert len(resp.json()) == 5
+        assert len(resp.json()["items"]) == 5
 
         # Verify filtering by list_type
         resp = client.get("/api/v1/recipes/?list_type=KNOWN")
         assert resp.status_code == 200
-        assert len(resp.json()) == 3
+        assert len(resp.json()["items"]) == 3
 
         resp = client.get("/api/v1/recipes/?list_type=TO_TRY")
         assert resp.status_code == 200
-        assert len(resp.json()) == 2
+        assert len(resp.json()["items"]) == 2
 
         # ── Step 3: Setup meal plan ───────────────────────────────────
         resp = client.post(
