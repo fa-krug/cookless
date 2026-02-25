@@ -53,3 +53,8 @@ def generate_shopping_list(meal_plan: MealPlan) -> ShoppingList:
     ShoppingListItem.objects.bulk_create(items)
 
     return shopping_list
+
+
+def generate_shopping_lists_for_iteration(iteration, shopping_days):
+    """Stub — will be implemented in Task 6."""
+    pass
