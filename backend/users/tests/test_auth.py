@@ -219,3 +219,82 @@ def test_password_register_consumes_invite():
     )
     invite.refresh_from_db()
     assert invite.used_by is not None
+
+
+# ── Set/Change Password ─────────────────────────────────────────────
+
+
+@pytest.mark.django_db
+def test_set_password_when_none_exists():
+    client = Client()
+    user = User.objects.create_user(email="setpw@example.com")
+    client.force_login(user)
+    response = client.post(
+        "/api/v1/users/me/password/",
+        json.dumps({"new_password": "mynewpassword1"}),
+        content_type="application/json",
+    )
+    assert response.status_code == 200
+    user.refresh_from_db()
+    assert user.has_usable_password()
+    assert user.check_password("mynewpassword1")
+
+
+@pytest.mark.django_db
+def test_change_password_requires_current():
+    client = Client()
+    user = User.objects.create_user(email="changepw@example.com")
+    user.set_password("oldpassword123")
+    user.save()
+    client.force_login(user)
+    response = client.post(
+        "/api/v1/users/me/password/",
+        json.dumps({"new_password": "newpassword123"}),
+        content_type="application/json",
+    )
+    assert response.status_code == 400
+
+
+@pytest.mark.django_db
+def test_change_password_wrong_current():
+    client = Client()
+    user = User.objects.create_user(email="wrongcurrent@example.com")
+    user.set_password("oldpassword123")
+    user.save()
+    client.force_login(user)
+    response = client.post(
+        "/api/v1/users/me/password/",
+        json.dumps({"current_password": "wrongpassword", "new_password": "newpassword123"}),
+        content_type="application/json",
+    )
+    assert response.status_code == 400
+
+
+@pytest.mark.django_db
+def test_change_password_success():
+    client = Client()
+    user = User.objects.create_user(email="changeok@example.com")
+    user.set_password("oldpassword123")
+    user.save()
+    client.force_login(user)
+    response = client.post(
+        "/api/v1/users/me/password/",
+        json.dumps({"current_password": "oldpassword123", "new_password": "newpassword123"}),
+        content_type="application/json",
+    )
+    assert response.status_code == 200
+    user.refresh_from_db()
+    assert user.check_password("newpassword123")
+
+
+@pytest.mark.django_db
+def test_set_password_weak_rejected():
+    client = Client()
+    user = User.objects.create_user(email="weakset@example.com")
+    client.force_login(user)
+    response = client.post(
+        "/api/v1/users/me/password/",
+        json.dumps({"new_password": "123"}),
+        content_type="application/json",
+    )
+    assert response.status_code == 400

@@ -72,6 +72,11 @@ class MessageOut(Schema):
     detail: str
 
 
+class SetPasswordIn(Schema):
+    current_password: str | None = None
+    new_password: str
+
+
 class RegisterBeginIn(Schema):
     email: str
     invite_code: str

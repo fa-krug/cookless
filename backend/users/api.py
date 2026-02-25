@@ -25,6 +25,7 @@ from users.schemas import (
     LoginCompleteIn,
     LoginPasswordIn,
     RegisterPasswordIn,
+    SetPasswordIn,
     MessageOut,
     PasskeyOut,
     RegisterBeginIn,
@@ -75,6 +76,24 @@ def update_me(request, payload: UserUpdateIn):
             pass
     user.save()
     return user
+
+
+@router.post("/users/me/password/", response=MessageOut, tags=["users"])
+def set_password(request, payload: SetPasswordIn):
+    user = request.user
+    if user.has_usable_password():
+        if not payload.current_password:
+            raise HttpError(400, "Current password is required.")
+        if not user.check_password(payload.current_password):
+            raise HttpError(400, "Current password is incorrect.")
+    try:
+        validate_password(payload.new_password, user=user)
+    except ValidationError as e:
+        raise HttpError(400, " ".join(e.messages)) from None
+    user.set_password(payload.new_password)
+    user.save()
+    login(request, user, backend="django.contrib.auth.backends.ModelBackend")
+    return {"detail": "Password updated."}
 
 
 # ── Households ───────────────────────────────────────────────────────
