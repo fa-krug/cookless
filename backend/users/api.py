@@ -177,6 +177,23 @@ def delete_household(request, household_id: UUID):
     return None
 
 
+@router.post("/households/{household_id}/leave/", response=MessageOut, tags=["households"])
+def leave_household(request, household_id: UUID):
+    household = get_object_or_404(
+        Household.objects.filter(members__user=request.user), pk=household_id
+    )
+    membership = HouseholdMember.objects.get(household=household, user=request.user)
+    if membership.role == HouseholdMember.Role.OWNER and household.members.count() > 1:
+        raise HttpError(409, "Transfer ownership before leaving.")
+    membership.delete()
+    # Auto-switch active household
+    if request.user.active_household_id == household_id:
+        next_membership = request.user.household_memberships.select_related("household").first()
+        request.user.active_household = next_membership.household if next_membership else None
+        request.user.save()
+    return {"detail": "Left household."}
+
+
 # ── Invites ──────────────────────────────────────────────────────────
 
 

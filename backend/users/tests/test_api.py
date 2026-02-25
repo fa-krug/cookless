@@ -407,3 +407,54 @@ class TestHouseholdDelete:
         api_client.force_login(other_user)
         resp = api_client.delete(f"/api/v1/households/{household.pk}/")
         assert resp.status_code == 404
+
+
+@pytest.mark.django_db
+class TestHouseholdLeave:
+    def test_member_leaves_household(self, api_client, user, household, other_user):
+        HouseholdMember.objects.create(
+            household=household, user=other_user, role=HouseholdMember.Role.MEMBER
+        )
+        other_user.active_household = household
+        other_user.save()
+        api_client.force_login(other_user)
+        resp = api_client.post(f"/api/v1/households/{household.pk}/leave/")
+        assert resp.status_code == 200
+        assert not HouseholdMember.objects.filter(household=household, user=other_user).exists()
+        other_user.refresh_from_db()
+        assert other_user.active_household is None
+
+    def test_member_leaves_switches_to_next(self, api_client, user, household, other_user):
+        HouseholdMember.objects.create(
+            household=household, user=other_user, role=HouseholdMember.Role.MEMBER
+        )
+        h2 = Household.objects.create(name="Other Home")
+        HouseholdMember.objects.create(
+            household=h2, user=other_user, role=HouseholdMember.Role.OWNER
+        )
+        other_user.active_household = household
+        other_user.save()
+        api_client.force_login(other_user)
+        resp = api_client.post(f"/api/v1/households/{household.pk}/leave/")
+        assert resp.status_code == 200
+        other_user.refresh_from_db()
+        assert other_user.active_household == h2
+
+    def test_owner_cannot_leave_with_other_members(self, api_client, user, household, other_user):
+        HouseholdMember.objects.create(
+            household=household, user=other_user, role=HouseholdMember.Role.MEMBER
+        )
+        api_client.force_login(user)
+        resp = api_client.post(f"/api/v1/households/{household.pk}/leave/")
+        assert resp.status_code == 409
+
+    def test_owner_can_leave_sole_member(self, api_client, user, household):
+        api_client.force_login(user)
+        resp = api_client.post(f"/api/v1/households/{household.pk}/leave/")
+        assert resp.status_code == 200
+        assert not HouseholdMember.objects.filter(household=household, user=user).exists()
+
+    def test_non_member_cannot_leave(self, api_client, other_user, household):
+        api_client.force_login(other_user)
+        resp = api_client.post(f"/api/v1/households/{household.pk}/leave/")
+        assert resp.status_code == 404
