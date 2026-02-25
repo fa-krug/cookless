@@ -190,3 +190,27 @@ def test_create_ingredient(auth_client):
     assert data["name_de"] == "Kichererbsen"
     assert data["category"] == "PANTRY"
     assert "id" in data
+
+
+@pytest.mark.django_db
+def test_list_recipes_excludes_nested_data(auth_client):
+    """The recipe list endpoint should NOT include ingredients or steps."""
+    client, household = auth_client
+    ingredient = Ingredient.objects.create(name_en="Flour", name_de="Mehl", category="PANTRY")
+    unit = Unit.objects.create(name_en="gram", name_de="Gramm", abbreviation="g")
+    recipe = Recipe.objects.create(
+        household=household, title="Pancakes", list_type="KNOWN", default_servings=2
+    )
+    RecipeIngredient.objects.create(
+        recipe=recipe, ingredient=ingredient, quantity=100, unit=unit, order=1
+    )
+    CookingStep.objects.create(recipe=recipe, method="MANUAL", step_number=1, instruction="Mix")
+
+    response = client.get("/api/v1/recipes/")
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data) == 1
+    assert "ingredients" not in data[0]
+    assert "manual_steps" not in data[0]
+    assert "machine_steps" not in data[0]
+    assert data[0]["title"] == "Pancakes"
