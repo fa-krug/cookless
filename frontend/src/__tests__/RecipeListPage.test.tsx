@@ -154,7 +154,7 @@ describe("RecipeListPage", () => {
     renderPage();
 
     await waitFor(() => {
-      expect(screen.getByText("recipes.noRecipes")).toBeInTheDocument();
+      expect(screen.getByText("recipes.noRecipesTitle")).toBeInTheDocument();
     });
   });
 
