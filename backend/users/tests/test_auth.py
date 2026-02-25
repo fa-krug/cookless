@@ -298,3 +298,48 @@ def test_set_password_weak_rejected():
         content_type="application/json",
     )
     assert response.status_code == 400
+
+
+# ── Remove Password ─────────────────────────────────────────────────
+
+from users.models import PasskeyCredential
+
+
+@pytest.mark.django_db
+def test_remove_password_with_passkey():
+    client = Client()
+    user = User.objects.create_user(email="removepw@example.com")
+    user.set_password("mypassword123")
+    user.save()
+    PasskeyCredential.objects.create(
+        user=user,
+        credential_id=b"cred-remove-test",
+        public_key=b"key-remove-test",
+        sign_count=0,
+        device_name="Test",
+    )
+    client.force_login(user)
+    response = client.delete("/api/v1/users/me/password/")
+    assert response.status_code == 200
+    user.refresh_from_db()
+    assert not user.has_usable_password()
+
+
+@pytest.mark.django_db
+def test_remove_password_without_passkey_fails():
+    client = Client()
+    user = User.objects.create_user(email="removepw-fail@example.com")
+    user.set_password("mypassword123")
+    user.save()
+    client.force_login(user)
+    response = client.delete("/api/v1/users/me/password/")
+    assert response.status_code == 400
+
+
+@pytest.mark.django_db
+def test_remove_password_when_no_password():
+    client = Client()
+    user = User.objects.create_user(email="removepw-none@example.com")
+    client.force_login(user)
+    response = client.delete("/api/v1/users/me/password/")
+    assert response.status_code == 400

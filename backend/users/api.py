@@ -96,6 +96,18 @@ def set_password(request, payload: SetPasswordIn):
     return {"detail": "Password updated."}
 
 
+@router.delete("/users/me/password/", response=MessageOut, tags=["users"])
+def remove_password(request):
+    user = request.user
+    if not user.has_usable_password():
+        raise HttpError(400, "No password is set.")
+    if not user.has_passkey:
+        raise HttpError(400, "Cannot remove password without at least one passkey.")
+    user.set_unusable_password()
+    user.save()
+    return {"detail": "Password removed."}
+
+
 # ── Households ───────────────────────────────────────────────────────
 
 
