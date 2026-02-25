@@ -226,5 +226,21 @@
     "logout": "Log out",
     "logoutConfirm": "Are you sure you want to log out?",
     "account": "Account"
+  },
+  "errors": {
+    "recipeSave": "Could not save recipe.",
+    "recipeDelete": "Could not delete recipe.",
+    "recipeMove": "Could not move recipe.",
+    "planGenerate": "Could not generate meal plan.",
+    "shoppingUpdate": "Could not update shopping list.",
+    "settingsSave": "Could not save settings.",
+    "householdCreate": "Could not create household.",
+    "householdJoin": "Could not join household.",
+    "householdSwitch": "Could not switch household.",
+    "memberRemove": "Could not remove member."
+  },
+  "success": {
+    "recipeSaved": "Recipe saved!",
+    "householdJoined": "Joined household!"
   }
 }

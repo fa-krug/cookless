@@ -226,5 +226,21 @@
     "logout": "Abmelden",
     "logoutConfirm": "Möchtest du dich wirklich abmelden?",
     "account": "Konto"
+  },
+  "errors": {
+    "recipeSave": "Rezept konnte nicht gespeichert werden.",
+    "recipeDelete": "Rezept konnte nicht gelöscht werden.",
+    "recipeMove": "Rezept konnte nicht verschoben werden.",
+    "planGenerate": "Essensplan konnte nicht erstellt werden.",
+    "shoppingUpdate": "Einkaufsliste konnte nicht aktualisiert werden.",
+    "settingsSave": "Einstellungen konnten nicht gespeichert werden.",
+    "householdCreate": "Haushalt konnte nicht erstellt werden.",
+    "householdJoin": "Beitritt zum Haushalt fehlgeschlagen.",
+    "householdSwitch": "Haushalt konnte nicht gewechselt werden.",
+    "memberRemove": "Mitglied konnte nicht entfernt werden."
+  },
+  "success": {
+    "recipeSaved": "Rezept gespeichert!",
+    "householdJoined": "Haushalt beigetreten!"
   }
 }
