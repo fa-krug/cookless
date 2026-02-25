@@ -26,25 +26,33 @@ router = Router()
 
 def _save_ingredients(recipe: Recipe, ingredients_data: list) -> None:
     recipe.ingredients.all().delete()
-    for item in ingredients_data:
-        RecipeIngredient.objects.create(
-            recipe=recipe,
-            ingredient_id=item.ingredient,
-            quantity=item.quantity,
-            unit_id=item.unit,
-            order=item.order,
-        )
+    RecipeIngredient.objects.bulk_create(
+        [
+            RecipeIngredient(
+                recipe=recipe,
+                ingredient_id=item.ingredient,
+                quantity=item.quantity,
+                unit_id=item.unit,
+                order=item.order,
+            )
+            for item in ingredients_data
+        ]
+    )
 
 
 def _save_steps(recipe: Recipe, steps_data: list, method: str) -> None:
     recipe.steps.filter(method=method).delete()
-    for item in steps_data:
-        CookingStep.objects.create(
-            recipe=recipe,
-            method=method,
-            step_number=item.step_number,
-            instruction=item.instruction,
-        )
+    CookingStep.objects.bulk_create(
+        [
+            CookingStep(
+                recipe=recipe,
+                method=method,
+                step_number=item.step_number,
+                instruction=item.instruction,
+            )
+            for item in steps_data
+        ]
+    )
 
 
 # ── Recipes ──────────────────────────────────────────────────────────
