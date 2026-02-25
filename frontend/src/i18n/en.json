@@ -116,7 +116,20 @@
     "coldDish": "Cold dish",
     "shoppingPreview": "{{count}} items",
     "defaultLeftoverDays": "Default leftover days",
-    "today": "Today"
+    "today": "Today",
+    "iterationWeeks": "Iteration length",
+    "weeks_one": "{{count}} week",
+    "weeks_other": "{{count}} weeks",
+    "shoppingDays": "Shopping days",
+    "weekdays": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+    "shoppingDaysTooClose": "Shopping days must be at least 3 days apart",
+    "startDate": "Start date",
+    "setup": "Set up plan",
+    "updateConfig": "Update plan",
+    "iterationEnded": "Your current plan has ended.",
+    "generateNext": "Generate next iteration",
+    "pastIterations": "Past iterations",
+    "renew": "Renew"
   },
   "shopping": {
     "title": "Shopping List",

@@ -1,13 +1,14 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "../api/client";
-import type { MealPlan } from "../api/types";
+import type { MealPlan, PlanIteration } from "../api/types";
 
-interface GeneratePlanPayload {
-  start_date: string;
-  days: number;
+interface SetupPlanPayload {
+  iteration_weeks: number;
+  shopping_days: number[];
   servings: number;
   known_ratio: number;
   default_leftover_days: number;
+  start_date: string;
 }
 
 export function useMealPlans() {
@@ -25,12 +26,34 @@ export function useMealPlan(id: string | undefined) {
   });
 }
 
-export function useGeneratePlan() {
+export function useSetupPlan() {
   const queryClient = useQueryClient();
-
   return useMutation({
-    mutationFn: (data: GeneratePlanPayload) =>
-      api.post<MealPlan>("/api/v1/meal-plans/generate/", data),
+    mutationFn: (data: SetupPlanPayload) =>
+      api.post<MealPlan>("/api/v1/meal-plans/setup/", data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["meal-plans"] });
+      queryClient.invalidateQueries({ queryKey: ["shopping-lists"] });
+    },
+  });
+}
+
+export function useRenewIteration() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (iterationId: string) =>
+      api.post<PlanIteration>(`/api/v1/meal-plans/iterations/${iterationId}/renew/`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["meal-plans"] });
+      queryClient.invalidateQueries({ queryKey: ["shopping-lists"] });
+    },
+  });
+}
+
+export function useNextIteration() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => api.post<PlanIteration>("/api/v1/meal-plans/iterations/next/"),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["meal-plans"] });
       queryClient.invalidateQueries({ queryKey: ["shopping-lists"] });

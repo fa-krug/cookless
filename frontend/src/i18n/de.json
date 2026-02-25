@@ -116,7 +116,20 @@
     "coldDish": "Kaltes Essen",
     "shoppingPreview": "{{count}} Artikel",
     "defaultLeftoverDays": "Standard-Reste (Tage)",
-    "today": "Heute"
+    "today": "Heute",
+    "iterationWeeks": "Iterationslänge",
+    "weeks_one": "{{count}} Woche",
+    "weeks_other": "{{count}} Wochen",
+    "shoppingDays": "Einkaufstage",
+    "weekdays": ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"],
+    "shoppingDaysTooClose": "Einkaufstage müssen mindestens 3 Tage auseinander liegen",
+    "startDate": "Startdatum",
+    "setup": "Plan einrichten",
+    "updateConfig": "Plan aktualisieren",
+    "iterationEnded": "Dein aktueller Plan ist abgelaufen.",
+    "generateNext": "Nächste Iteration erstellen",
+    "pastIterations": "Vergangene Iterationen",
+    "renew": "Erneuern"
   },
   "shopping": {
     "title": "Einkaufsliste",

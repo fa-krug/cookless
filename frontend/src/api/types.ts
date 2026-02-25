@@ -118,6 +118,8 @@ export interface RecipeUpdatePayload {
 
 // ── Meal Plans ───────────────────────────────────────────────────
 
+export type IterationStatus = "ACTIVE" | "ARCHIVED";
+
 export interface MealPlanEntry {
   id: string;
   date: string;
@@ -129,11 +131,23 @@ export interface MealPlanEntry {
   is_locked: boolean;
 }
 
-export interface MealPlan {
+export interface PlanIteration {
   id: string;
   start_date: string;
   end_date: string;
+  status: IterationStatus;
   entries: MealPlanEntry[];
+  created_at: string;
+}
+
+export interface MealPlan {
+  id: string;
+  iteration_weeks: number;
+  shopping_days: number[];
+  servings: number;
+  known_ratio: number;
+  default_leftover_days: number;
+  iterations: PlanIteration[];
   created_at: string;
 }
 
@@ -150,7 +164,8 @@ export interface ShoppingListItem {
 
 export interface ShoppingList {
   id: string;
-  meal_plan: string;
+  iteration: string;
+  shopping_date: string | null;
   items: ShoppingListItem[];
   created_at: string;
 }

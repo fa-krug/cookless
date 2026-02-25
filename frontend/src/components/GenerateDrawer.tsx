@@ -1,38 +1,88 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import type { MealPlan } from "../api/types";
+import { useSetupPlan } from "../hooks/useMealPlan";
 import { useToast } from "../hooks/useToast";
-import { useAuth } from "../hooks/useAuth";
-import { useGeneratePlan } from "../hooks/useMealPlan";
 
 interface GenerateDrawerProps {
   isOpen: boolean;
   onClose: () => void;
+  existingPlan?: MealPlan | null;
 }
 
 function todayISO(): string {
   return new Date().toISOString().split("T")[0];
 }
 
-export default function GenerateDrawer({ isOpen, onClose }: GenerateDrawerProps) {
+/** Check that all selected shopping days are at least 3 apart (mod 7). */
+function validateShoppingDayGap(days: number[]): boolean {
+  if (days.length < 2) return true;
+  const sorted = [...days].sort((a, b) => a - b);
+  for (let i = 0; i < sorted.length; i++) {
+    for (let j = i + 1; j < sorted.length; j++) {
+      const diff = sorted[j] - sorted[i];
+      const circularDiff = Math.min(diff, 7 - diff);
+      if (circularDiff < 3) return false;
+    }
+  }
+  return true;
+}
+
+interface DrawerFormProps {
+  existingPlan?: MealPlan | null;
+  onClose: () => void;
+}
+
+function DrawerForm({ existingPlan, onClose }: DrawerFormProps) {
   const { t } = useTranslation();
   const { addToast } = useToast();
-  const { user } = useAuth();
-  const generatePlan = useGeneratePlan();
+  const setupPlan = useSetupPlan();
 
-  const defaults = user?.settings;
-  const [days, setDays] = useState(defaults?.plan_days ?? 7);
-  const [servings, setServings] = useState(defaults?.default_servings ?? 2);
-  const [knownRatio, setKnownRatio] = useState(defaults?.known_new_ratio ?? 0.7);
-  const [defaultLeftoverDays, setDefaultLeftoverDays] = useState(1);
+  const [iterationWeeks, setIterationWeeks] = useState(
+    existingPlan?.iteration_weeks ?? 1,
+  );
+  const [shoppingDays, setShoppingDays] = useState<number[]>(
+    existingPlan?.shopping_days ?? [],
+  );
+  const [servings, setServings] = useState(existingPlan?.servings ?? 2);
+  const [knownRatio, setKnownRatio] = useState(
+    existingPlan?.known_ratio ?? 0.7,
+  );
+  const [defaultLeftoverDays, setDefaultLeftoverDays] = useState(
+    existingPlan?.default_leftover_days ?? 1,
+  );
+  const [startDate, setStartDate] = useState(todayISO());
+  const [shoppingDayError, setShoppingDayError] = useState(false);
 
-  function handleGenerate() {
-    generatePlan.mutate(
+  function toggleShoppingDay(day: number) {
+    setShoppingDays((prev) => {
+      let next: number[];
+      if (prev.includes(day)) {
+        next = prev.filter((d) => d !== day);
+      } else if (prev.length < 2) {
+        next = [...prev, day];
+      } else {
+        return prev;
+      }
+      setShoppingDayError(!validateShoppingDayGap(next));
+      return next;
+    });
+  }
+
+  function handleSubmit() {
+    if (!validateShoppingDayGap(shoppingDays)) {
+      setShoppingDayError(true);
+      return;
+    }
+
+    setupPlan.mutate(
       {
-        start_date: todayISO(),
-        days,
+        iteration_weeks: iterationWeeks,
+        shopping_days: shoppingDays,
         servings,
         known_ratio: knownRatio,
         default_leftover_days: defaultLeftoverDays,
+        start_date: startDate,
       },
       {
         onSuccess: () => onClose(),
@@ -41,10 +91,171 @@ export default function GenerateDrawer({ isOpen, onClose }: GenerateDrawerProps)
     );
   }
 
+  const weekdays = t("plan.weekdays", { returnObjects: true }) as string[];
+  const isUpdate = !!existingPlan;
+
+  return (
+    <div className="mx-auto max-h-[85vh] max-w-lg overflow-y-auto px-6 pb-8 pt-4">
+      <div className="mb-4 flex justify-center">
+        <div className="h-1 w-10 rounded-full bg-gray-300" />
+      </div>
+
+      <h2 className="mb-6 text-lg font-semibold text-gray-900">
+        {isUpdate ? t("plan.updateConfig") : t("plan.setup")}
+      </h2>
+
+      {/* Iteration length */}
+      <div className="mb-4">
+        <label className="mb-1 block text-sm font-medium text-gray-700">
+          {t("plan.iterationWeeks")}
+        </label>
+        <div className="flex gap-2">
+          {[1, 2, 3].map((w) => (
+            <button
+              key={w}
+              onClick={() => setIterationWeeks(w)}
+              className={`rounded-lg px-4 py-2 text-sm font-medium ${
+                iterationWeeks === w
+                  ? "bg-orange-500 text-white"
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+              }`}
+            >
+              {t("plan.weeks", { count: w })}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Shopping days */}
+      <div className="mb-4">
+        <label className="mb-1 block text-sm font-medium text-gray-700">
+          {t("plan.shoppingDays")}
+        </label>
+        <div className="flex gap-1">
+          {weekdays.map((day, idx) => (
+            <button
+              key={idx}
+              onClick={() => toggleShoppingDay(idx)}
+              className={`flex-1 rounded-lg px-1 py-2 text-xs font-medium ${
+                shoppingDays.includes(idx)
+                  ? "bg-orange-500 text-white"
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+              }`}
+            >
+              {day}
+            </button>
+          ))}
+        </div>
+        {shoppingDayError && (
+          <p className="mt-1 text-xs text-red-500">
+            {t("plan.shoppingDaysTooClose")}
+          </p>
+        )}
+      </div>
+
+      {/* Servings */}
+      <div className="mb-4">
+        <label className="mb-1 block text-sm font-medium text-gray-700">
+          {t("plan.servings")}
+        </label>
+        <input
+          type="number"
+          min={1}
+          max={12}
+          value={servings}
+          onChange={(e) => setServings(Number(e.target.value))}
+          className="w-20 rounded-lg border border-gray-300 px-3 py-2 text-sm"
+        />
+      </div>
+
+      {/* Known/New Ratio */}
+      <div className="mb-4">
+        <label className="mb-1 block text-sm font-medium text-gray-700">
+          {t("plan.knownRatio")} — {Math.round(knownRatio * 100)}%
+        </label>
+        <input
+          type="range"
+          min={0}
+          max={1}
+          step={0.1}
+          value={knownRatio}
+          onChange={(e) => setKnownRatio(Number(e.target.value))}
+          className="w-full accent-orange-500"
+        />
+        <div className="mt-1 flex justify-between text-xs text-gray-400">
+          <span>{t("recipes.toTry")}</span>
+          <span>{t("recipes.known")}</span>
+        </div>
+      </div>
+
+      {/* Default Leftover Days */}
+      <div className="mb-4">
+        <label className="mb-1 block text-sm font-medium text-gray-700">
+          {t("plan.defaultLeftoverDays")}
+        </label>
+        <input
+          type="number"
+          min={0}
+          max={3}
+          value={defaultLeftoverDays}
+          onChange={(e) => setDefaultLeftoverDays(Number(e.target.value))}
+          className="w-20 rounded-lg border border-gray-300 px-3 py-2 text-sm"
+        />
+      </div>
+
+      {/* Start date */}
+      <div className="mb-6">
+        <label className="mb-1 block text-sm font-medium text-gray-700">
+          {t("plan.startDate")}
+        </label>
+        <input
+          type="date"
+          value={startDate}
+          onChange={(e) => setStartDate(e.target.value)}
+          className="rounded-lg border border-gray-300 px-3 py-2 text-sm"
+        />
+      </div>
+
+      <button
+        onClick={handleSubmit}
+        disabled={setupPlan.isPending}
+        className="w-full rounded-lg bg-orange-500 px-4 py-3 text-sm font-semibold text-white hover:bg-orange-600 disabled:opacity-50"
+      >
+        {setupPlan.isPending
+          ? t("common.loading")
+          : isUpdate
+            ? t("plan.updateConfig")
+            : t("plan.setup")}
+      </button>
+    </div>
+  );
+}
+
+export default function GenerateDrawer({
+  isOpen,
+  onClose,
+  existingPlan,
+}: GenerateDrawerProps) {
+  // Use a key to remount DrawerForm each time the drawer opens,
+  // which resets form state from props without useEffect+setState.
+  const [openCount, setOpenCount] = useState(0);
+  const [wasOpen, setWasOpen] = useState(false);
+
+  if (isOpen && !wasOpen) {
+    setOpenCount((c) => c + 1);
+    setWasOpen(true);
+  } else if (!isOpen && wasOpen) {
+    setWasOpen(false);
+  }
+
   return (
     <>
       {isOpen && (
-        <div className="fixed inset-0 z-40 bg-black/30" onClick={onClose} aria-hidden="true" />
+        <div
+          className="fixed inset-0 z-40 bg-black/30"
+          onClick={onClose}
+          aria-hidden="true"
+        />
       )}
 
       <div
@@ -52,93 +263,11 @@ export default function GenerateDrawer({ isOpen, onClose }: GenerateDrawerProps)
           isOpen ? "translate-y-0" : "translate-y-full"
         }`}
       >
-        <div className="mx-auto max-w-lg px-6 pb-8 pt-4">
-          <div className="mb-4 flex justify-center">
-            <div className="h-1 w-10 rounded-full bg-gray-300" />
-          </div>
-
-          <h2 className="mb-6 text-lg font-semibold text-gray-900">{t("plan.newPlan")}</h2>
-
-          {/* Days */}
-          <div className="mb-4">
-            <label className="mb-1 block text-sm font-medium text-gray-700">
-              {t("plan.days")}
-            </label>
-            <div className="flex gap-2">
-              {[7, 14].map((d) => (
-                <button
-                  key={d}
-                  onClick={() => setDays(d)}
-                  className={`rounded-lg px-4 py-2 text-sm font-medium ${
-                    days === d
-                      ? "bg-orange-500 text-white"
-                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                  }`}
-                >
-                  {d}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Servings */}
-          <div className="mb-4">
-            <label className="mb-1 block text-sm font-medium text-gray-700">
-              {t("plan.servings")}
-            </label>
-            <input
-              type="number"
-              min={1}
-              max={12}
-              value={servings}
-              onChange={(e) => setServings(Number(e.target.value))}
-              className="w-20 rounded-lg border border-gray-300 px-3 py-2 text-sm"
-            />
-          </div>
-
-          {/* Known/New Ratio */}
-          <div className="mb-4">
-            <label className="mb-1 block text-sm font-medium text-gray-700">
-              {t("plan.knownRatio")} — {Math.round(knownRatio * 100)}%
-            </label>
-            <input
-              type="range"
-              min={0}
-              max={1}
-              step={0.1}
-              value={knownRatio}
-              onChange={(e) => setKnownRatio(Number(e.target.value))}
-              className="w-full accent-orange-500"
-            />
-            <div className="mt-1 flex justify-between text-xs text-gray-400">
-              <span>{t("recipes.toTry")}</span>
-              <span>{t("recipes.known")}</span>
-            </div>
-          </div>
-
-          {/* Default Leftover Days */}
-          <div className="mb-6">
-            <label className="mb-1 block text-sm font-medium text-gray-700">
-              {t("plan.defaultLeftoverDays")}
-            </label>
-            <input
-              type="number"
-              min={0}
-              max={3}
-              value={defaultLeftoverDays}
-              onChange={(e) => setDefaultLeftoverDays(Number(e.target.value))}
-              className="w-20 rounded-lg border border-gray-300 px-3 py-2 text-sm"
-            />
-          </div>
-
-          <button
-            onClick={handleGenerate}
-            disabled={generatePlan.isPending}
-            className="w-full rounded-lg bg-orange-500 px-4 py-3 text-sm font-semibold text-white hover:bg-orange-600 disabled:opacity-50"
-          >
-            {generatePlan.isPending ? t("common.loading") : t("plan.newPlan")}
-          </button>
-        </div>
+        <DrawerForm
+          key={openCount}
+          existingPlan={existingPlan}
+          onClose={onClose}
+        />
       </div>
     </>
   );
