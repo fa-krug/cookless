@@ -1,7 +1,8 @@
 import { ArrowLeft } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
+import { useCookingProgress } from "../hooks/useCookingProgress";
 import { useRecipe } from "../hooks/useRecipes";
 import { useWakeLock } from "../hooks/useWakeLock";
 
@@ -14,7 +15,18 @@ export default function CookingViewPage() {
   const { data: recipe, isLoading } = useRecipe(id ?? "");
   const { isActive: wakeLockActive } = useWakeLock();
   const [method, setMethod] = useState<Method>("MANUAL");
-  const [currentStep, setCurrentStep] = useState(0);
+
+  const sortedSteps = useMemo(() => {
+    if (!recipe) return [];
+    const steps = method === "MANUAL" ? recipe.manual_steps : recipe.machine_steps;
+    return [...steps].sort((a, b) => a.step_number - b.step_number);
+  }, [recipe, method]);
+
+  const { currentStep, setStep: setCurrentStep, clearProgress } = useCookingProgress(
+    id ?? "",
+    method,
+    sortedSteps.length,
+  );
 
   if (isLoading) {
     return (
@@ -32,12 +44,8 @@ export default function CookingViewPage() {
     );
   }
 
-  const steps = method === "MANUAL" ? recipe.manual_steps : recipe.machine_steps;
-  const sortedSteps = [...steps].sort((a, b) => a.step_number - b.step_number);
-
   function handleMethodChange(newMethod: Method) {
     setMethod(newMethod);
-    setCurrentStep(0);
   }
 
   return (
@@ -89,11 +97,23 @@ export default function CookingViewPage() {
         </button>
       </div>
 
-      {/* Step counter */}
+      {/* Progress bar */}
       {sortedSteps.length > 0 && (
-        <p className="mt-4 text-center text-sm text-gray-500">
-          {t("cooking.stepOf", { current: currentStep + 1, total: sortedSteps.length })}
-        </p>
+        <div className="mt-4 mb-4">
+          <p className="mb-2 text-center text-sm font-medium text-gray-600">
+            {t("cooking.stepOf", { current: currentStep + 1, total: sortedSteps.length })}
+          </p>
+          <div className="flex gap-1">
+            {sortedSteps.map((_, index) => (
+              <div
+                key={index}
+                className={`h-1.5 flex-1 rounded-full transition-colors ${
+                  index <= currentStep ? "bg-orange-500" : "bg-gray-200"
+                }`}
+              />
+            ))}
+          </div>
+        </div>
       )}
 
       {/* Steps list */}
@@ -126,6 +146,20 @@ export default function CookingViewPage() {
             );
           })}
         </div>
+      )}
+
+      {/* Done button on last step */}
+      {currentStep >= sortedSteps.length - 1 && sortedSteps.length > 0 && (
+        <button
+          type="button"
+          onClick={() => {
+            clearProgress();
+            navigate(`/recipes/${id}`);
+          }}
+          className="mt-4 w-full rounded-lg border border-gray-200 px-4 py-2 text-sm text-gray-500 hover:bg-gray-50"
+        >
+          {t("cooking.done")}
+        </button>
       )}
     </div>
   );
