@@ -206,8 +206,6 @@
     "deleteConfirmPlaceholder": "Household name",
     "transferOwnership": "Make Owner",
     "transferOwnershipConfirm": "Transfer ownership to {{email}}?",
-    "cannotDeleteHasMembers": "Remove all other members first.",
-    "cannotLeaveAsOwner": "Transfer ownership before leaving.",
     "role": {
       "owner": "Owner",
       "member": "Member"
@@ -262,6 +260,7 @@
     "inviteCreate": "Could not create invite.",
     "passkeyAdd": "Could not add passkey.",
     "passkeyDelete": "Could not remove passkey.",
+    "householdUpdate": "Couldn't update the household.",
     "householdDelete": "Couldn't delete the household.",
     "householdLeave": "Couldn't leave the household.",
     "ownershipTransfer": "Couldn't transfer ownership."

@@ -6,6 +6,7 @@ from uuid import UUID
 from django.contrib.auth import get_user_model, login, logout
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
+from django.db import transaction
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 
@@ -168,12 +169,16 @@ def delete_household(request, household_id: UUID):
     member_count = household.members.count()
     if member_count > 1:
         raise HttpError(409, "Remove all other members before deleting.")
-    household.delete()
-    # Auto-switch active household
+    # Switch active household BEFORE deleting (avoids stale state from CASCADE SET_NULL)
     if request.user.active_household_id == household_id:
-        next_membership = request.user.household_memberships.select_related("household").first()
+        next_membership = (
+            request.user.household_memberships.exclude(household=household)
+            .select_related("household")
+            .first()
+        )
         request.user.active_household = next_membership.household if next_membership else None
         request.user.save()
+    household.delete()
     return None
 
 
@@ -185,12 +190,16 @@ def leave_household(request, household_id: UUID):
     membership = HouseholdMember.objects.get(household=household, user=request.user)
     if membership.role == HouseholdMember.Role.OWNER and household.members.count() > 1:
         raise HttpError(409, "Transfer ownership before leaving.")
-    membership.delete()
-    # Auto-switch active household
+    # Switch active household BEFORE deleting membership
     if request.user.active_household_id == household_id:
-        next_membership = request.user.household_memberships.select_related("household").first()
+        next_membership = (
+            request.user.household_memberships.exclude(household=household)
+            .select_related("household")
+            .first()
+        )
         request.user.active_household = next_membership.household if next_membership else None
         request.user.save()
+    membership.delete()
     return {"detail": "Left household."}
 
 
@@ -207,12 +216,13 @@ def transfer_ownership(request, household_id: UUID, member_pk: int):
     target_member = get_object_or_404(HouseholdMember, pk=member_pk, household=household)
     if target_member.user == request.user:
         raise HttpError(400, "Cannot transfer ownership to yourself.")
-    # Demote current owner, promote target
+    # Demote current owner, promote target (atomic to prevent inconsistency)
     current_membership = HouseholdMember.objects.get(household=household, user=request.user)
-    current_membership.role = HouseholdMember.Role.MEMBER
-    current_membership.save()
-    target_member.role = HouseholdMember.Role.OWNER
-    target_member.save()
+    with transaction.atomic():
+        current_membership.role = HouseholdMember.Role.MEMBER
+        current_membership.save()
+        target_member.role = HouseholdMember.Role.OWNER
+        target_member.save()
     return {"detail": "Ownership transferred."}
 
 

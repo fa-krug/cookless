@@ -206,8 +206,6 @@
     "deleteConfirmPlaceholder": "Haushaltsname",
     "transferOwnership": "Zum Eigentümer machen",
     "transferOwnershipConfirm": "Eigentümerschaft an {{email}} übertragen?",
-    "cannotDeleteHasMembers": "Entferne zuerst alle anderen Mitglieder.",
-    "cannotLeaveAsOwner": "Übertrage zuerst die Eigentümerschaft.",
     "role": {
       "owner": "Eigentümer",
       "member": "Mitglied"
@@ -262,6 +260,7 @@
     "inviteCreate": "Einladung konnte nicht erstellt werden.",
     "passkeyAdd": "Passkey konnte nicht hinzugefügt werden.",
     "passkeyDelete": "Passkey konnte nicht entfernt werden.",
+    "householdUpdate": "Haushalt konnte nicht aktualisiert werden.",
     "householdDelete": "Haushalt konnte nicht gelöscht werden.",
     "householdLeave": "Haushalt konnte nicht verlassen werden.",
     "ownershipTransfer": "Eigentümerschaft konnte nicht übertragen werden."

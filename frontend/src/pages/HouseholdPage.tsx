@@ -21,10 +21,12 @@ function MembersList({
   household,
   currentUserEmail,
   isOwner,
+  onOwnershipTransferred,
 }: {
   household: Household;
   currentUserEmail: string;
   isOwner: boolean;
+  onOwnershipTransferred: () => Promise<void>;
 }) {
   const { t } = useTranslation();
   const { addToast } = useToast();
@@ -73,8 +75,10 @@ function MembersList({
                       transferOwnership.mutate(
                         { householdId: household.id, memberId: member.id },
                         {
-                          onSuccess: () =>
-                            addToast(t("success.ownershipTransferred"), "success"),
+                          onSuccess: async () => {
+                            await onOwnershipTransferred();
+                            addToast(t("success.ownershipTransferred"), "success");
+                          },
                           onError: () => addToast(t("errors.ownershipTransfer"), "error"),
                         },
                       );
@@ -269,6 +273,7 @@ export default function HouseholdPage() {
   const [deleteConfirmName, setDeleteConfirmName] = useState("");
 
   const activeHouseholdId = user?.active_household?.id ?? null;
+
   const activeHousehold = households?.find((h) => h.id === activeHouseholdId) ?? null;
   const currentUserEmail = user?.email ?? "";
 
@@ -282,6 +287,9 @@ export default function HouseholdPage() {
     if (!id || id === activeHouseholdId) return;
     switchHousehold.mutate(id, {
       onSuccess: async () => {
+        setIsEditing(false);
+        setShowDeleteConfirm(false);
+        setDeleteConfirmName("");
         await refreshUser();
       },
       onError: () => addToast(t("errors.householdSwitch"), "error"),
@@ -339,7 +347,7 @@ export default function HouseholdPage() {
                       setIsEditing(false);
                       await refreshUser();
                     },
-                    onError: () => addToast(t("errors.settingsSave"), "error"),
+                    onError: () => addToast(t("errors.householdUpdate"), "error"),
                   },
                 );
               }}
@@ -397,6 +405,7 @@ export default function HouseholdPage() {
             household={activeHousehold}
             currentUserEmail={currentUserEmail}
             isOwner={isOwner}
+            onOwnershipTransferred={refreshUser}
           />
         </div>
       )}
