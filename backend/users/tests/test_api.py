@@ -572,3 +572,33 @@ class TestOnboardingAdvancement:
         assert resp.status_code == 201
         user.refresh_from_db()
         assert user.onboarding_step == "COMPLETED"
+
+
+@pytest.mark.django_db
+class TestInviteRegistrationOnboarding:
+    def test_password_register_sets_completed(self, api_client, user, household):
+        api_client.force_login(user)
+        resp = api_client.post(
+            f"/api/v1/households/{household.id}/invites/",
+            content_type="application/json",
+        )
+        assert resp.status_code == 201
+        invite_code = resp.json()["code"]
+
+        new_client = Client()
+        resp = new_client.post(
+            "/api/v1/auth/register/password/",
+            json.dumps(
+                {
+                    "email": "newuser@example.com",
+                    "password": "SecurePass123!",
+                    "invite_code": invite_code,
+                }
+            ),
+            content_type="application/json",
+        )
+        assert resp.status_code == 200
+        from users.models import User
+
+        new_user = User.objects.get(email="newuser@example.com")
+        assert new_user.onboarding_step == "COMPLETED"

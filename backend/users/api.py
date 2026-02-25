@@ -403,6 +403,7 @@ def register_password(request, payload: RegisterPasswordIn):
         role = HouseholdMember.Role.OWNER
     HouseholdMember.objects.create(household=invite.household, user=user, role=role)
     user.active_household = invite.household
+    user.onboarding_step = "COMPLETED"
     user.save()
     invite.used_by = user
     invite.save()
@@ -505,6 +506,7 @@ def register_complete(request, payload: RegisterCompleteIn):
 
     # Set active household
     user.active_household = invite.household
+    user.onboarding_step = "COMPLETED"
     user.save()
 
     # Consume invite
