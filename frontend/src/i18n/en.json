@@ -267,5 +267,43 @@
     "householdDeleted": "Household deleted.",
     "householdLeft": "You left the household.",
     "ownershipTransferred": "Ownership transferred!"
+  },
+  "setup": {
+    "title": "Set Up Your Account",
+    "step": "Step {{current}} of {{total}}",
+    "changePassword": {
+      "title": "Change Your Password",
+      "description": "For security, please change the default password.",
+      "currentPassword": "Current password",
+      "newPassword": "New password",
+      "confirmPassword": "Confirm new password",
+      "submit": "Change Password",
+      "mismatch": "Passwords don't match.",
+      "success": "Password changed!"
+    },
+    "addPasskey": {
+      "title": "Add a Passkey",
+      "description": "Passkeys let you sign in quickly and securely using your fingerprint, face, or device PIN. No passwords to remember.",
+      "add": "Add Passkey",
+      "skip": "Skip for now"
+    },
+    "createHousehold": {
+      "title": "Create Your Home",
+      "description": "A home is where your recipes, meal plans, and shopping lists live. You can invite family members later.",
+      "name": "Home name",
+      "namePlaceholder": "e.g. Our Kitchen",
+      "submit": "Create Home"
+    }
+  },
+  "welcome": {
+    "title": "Welcome to Cookless!",
+    "subtitle": "Your home is all set up. Here's what you can do:",
+    "addRecipe": "Add your first recipe",
+    "addRecipeDescription": "Start building your collection",
+    "createPlan": "Create a meal plan",
+    "createPlanDescription": "Plan your meals for the week",
+    "inviteMember": "Invite a family member",
+    "inviteMemberDescription": "Cook together",
+    "getStarted": "Get started"
   }
 }
