@@ -5,6 +5,10 @@ import { describe, expect, it, vi } from "vitest";
 
 import { ToastProvider } from "../contexts/ToastContext";
 
+vi.mock("../hooks/useAuth", () => ({
+  useAuth: () => ({ user: { active_household: { ai_enabled: false, gemini_api_key: "" } } }),
+}));
+
 vi.mock("react-i18next", () => ({
   useTranslation: () => ({ t: (key: string) => key, i18n: { language: "en" } }),
 }));

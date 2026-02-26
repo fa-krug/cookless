@@ -1,14 +1,17 @@
 import { useQueryClient } from "@tanstack/react-query";
-import { BookOpen, Plus, Search } from "lucide-react";
+import { BookOpen, Plus, Search, Sparkles } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router-dom";
-import { TAG_CATEGORIES, type ListType, type RecipeSummary } from "../api/types";
+import { TAG_CATEGORIES, type GenerateRecipesPayload, type ListType, type RecipeSummary } from "../api/types";
+import GenerateRecipesDrawer from "../components/GenerateRecipesDrawer";
+import { GenerateRecipesPreview } from "../components/GenerateRecipesPreview";
 import RecipeCard from "../components/RecipeCard";
 import { EmptyState } from "../components/ui/EmptyState";
 import { RecipeListSkeleton } from "../components/ui/RecipeListSkeleton";
 import { SortSelect } from "../components/ui/SortSelect";
 import { Spinner } from "../components/ui/Spinner";
+import { useAuth } from "../hooks/useAuth";
 import { useDeleteRecipe, useRecipes } from "../hooks/useRecipes";
 import { useTags } from "../hooks/useTags";
 import { useToast } from "../hooks/useToast";
@@ -51,6 +54,9 @@ const TABS: { key: ListType; labelKey: string }[] = [
 export default function RecipeListPage() {
   const { t, i18n } = useTranslation();
   const { addToast } = useToast();
+  const { user } = useAuth();
+  const aiEnabled = user?.active_household?.ai_enabled ?? false;
+  const aiConfigured = aiEnabled && (user?.active_household?.gemini_api_key ?? "") !== "";
   const navigate = useNavigate();
   const location = useLocation();
   const queryClient = useQueryClient();
@@ -60,6 +66,8 @@ export default function RecipeListPage() {
   const [sort, setSort] = useState<SortOption>(getSavedSort);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [pendingDeletes, setPendingDeletes] = useState<Set<string>>(new Set());
+  const [showGenerateDrawer, setShowGenerateDrawer] = useState(false);
+  const [generateConfig, setGenerateConfig] = useState<GenerateRecipesPayload | null>(null);
   const timersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
   const loadMoreRef = useRef<HTMLDivElement>(null);
 
@@ -170,6 +178,29 @@ export default function RecipeListPage() {
     timersRef.current.set(id, timer);
   }
 
+  function handleGenerate(config: {
+    count: number;
+    tagIds: string[];
+    freeText: string;
+    generateImages: boolean;
+  }) {
+    setShowGenerateDrawer(false);
+    setGenerateConfig({
+      count: config.count,
+      tag_ids: config.tagIds,
+      free_text: config.freeText,
+      generate_images: config.generateImages,
+    });
+  }
+
+  function handleGenerateClick() {
+    if (!aiConfigured) {
+      navigate("/settings");
+      return;
+    }
+    setShowGenerateDrawer(true);
+  }
+
   return (
     <div className="p-4">
       <h1 className="text-2xl font-bold">{t("recipes.title")}</h1>
@@ -214,6 +245,16 @@ export default function RecipeListPage() {
           <Plus size={16} />
           {t("recipes.newRecipe")}
         </button>
+        {aiEnabled && (
+          <button
+            type="button"
+            onClick={handleGenerateClick}
+            className="flex shrink-0 items-center gap-1.5 rounded-lg bg-orange-500 px-4 py-2 text-sm font-medium text-white hover:bg-orange-600"
+          >
+            <Sparkles size={16} />
+            {t("generateRecipes.button")}
+          </button>
+        )}
       </div>
 
       {/* Tag filters */}
@@ -306,6 +347,19 @@ export default function RecipeListPage() {
           </div>
         )}
       </div>
+
+      <GenerateRecipesDrawer
+        isOpen={showGenerateDrawer}
+        onClose={() => setShowGenerateDrawer(false)}
+        onGenerate={handleGenerate}
+      />
+
+      {generateConfig && (
+        <GenerateRecipesPreview
+          config={generateConfig}
+          onClose={() => setGenerateConfig(null)}
+        />
+      )}
     </div>
   );
 }

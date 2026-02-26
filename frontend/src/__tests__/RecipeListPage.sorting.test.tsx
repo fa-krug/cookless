@@ -7,6 +7,10 @@ import type { Recipe } from "../api/types";
 import { ToastProvider } from "../contexts/ToastContext";
 import RecipeListPage from "../pages/RecipeListPage";
 
+vi.mock("../hooks/useAuth", () => ({
+  useAuth: () => ({ user: { active_household: { ai_enabled: false, gemini_api_key: "" } } }),
+}));
+
 vi.mock("react-i18next", () => ({
   useTranslation: () => ({
     t: (key: string) => key,
