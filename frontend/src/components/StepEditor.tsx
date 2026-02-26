@@ -3,20 +3,19 @@ import { SortableContext, arrayMove, verticalListSortingStrategy } from "@dnd-ki
 import { Plus } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
+import type { CookingStepPayload } from "../api/types";
 import SortableStep from "./SortableStep";
 
-export interface StepRow {
-  step_number: number;
-  instruction: string;
-}
+export type StepRow = CookingStepPayload;
 
 interface StepEditorProps {
   steps: StepRow[];
   onChange: (steps: StepRow[]) => void;
   label: string;
+  isMachine?: boolean;
 }
 
-export default function StepEditor({ steps, onChange, label }: StepEditorProps) {
+export default function StepEditor({ steps, onChange, label, isMachine }: StepEditorProps) {
   const { t } = useTranslation();
 
   const stepIds = steps.map((_, i) => `step-${i}`);
@@ -30,11 +29,10 @@ export default function StepEditor({ steps, onChange, label }: StepEditorProps) 
     onChange(updated.map((step, i) => ({ ...step, step_number: i + 1 })));
   }
 
-  function updateInstruction(index: number, instruction: string) {
-    const updated = steps.map((step, i) =>
-      i === index ? { ...step, instruction } : step,
+  function updateStep(index: number, updated: StepRow) {
+    onChange(
+      steps.map((step, i) => (i === index ? { ...updated, step_number: step.step_number } : step)),
     );
-    onChange(updated);
   }
 
   function handleDragEnd(event: DragEndEvent) {
@@ -72,10 +70,10 @@ export default function StepEditor({ steps, onChange, label }: StepEditorProps) 
               <SortableStep
                 key={stepIds[index]}
                 id={stepIds[index]}
-                stepNumber={step.step_number}
-                instruction={step.instruction}
-                onInstructionChange={(instruction) => updateInstruction(index, instruction)}
+                step={step}
+                onStepChange={(updated) => updateStep(index, updated)}
                 onRemove={() => removeStep(index)}
+                isMachine={isMachine}
               />
             ))}
           </div>

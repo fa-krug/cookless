@@ -57,7 +57,7 @@ export default function RecipeCreatePage() {
     const payload: RecipeUpdatePayload = {
       title,
       list_type: listType,
-      default_servings: defaultServings,
+      default_servings: defaultServings || 1,
       prep_time_minutes: prepTime ? Number(prepTime) : null,
       cook_time_minutes: cookTime ? Number(cookTime) : null,
       leftover_days: null,
@@ -73,8 +73,20 @@ export default function RecipeCreatePage() {
         .filter((s) => s.instruction.trim())
         .map((s, i) => ({ step_number: i + 1, instruction: s.instruction })),
       machine_steps: machineSteps
-        .filter((s) => s.instruction.trim())
-        .map((s, i) => ({ step_number: i + 1, instruction: s.instruction })),
+        .filter((s) => s.instruction.trim() || s.program_type)
+        .map((s, i) => ({
+          step_number: i + 1,
+          instruction: s.instruction || "",
+          ...(s.program_type && {
+            program_type: s.program_type,
+            temperature: s.temperature ?? null,
+            duration_seconds: s.duration_seconds ?? null,
+            speed: s.speed ?? null,
+            turbo: s.turbo ?? false,
+            direction: s.direction ?? null,
+            weight_grams: s.weight_grams ?? null,
+          }),
+        })),
       tag_ids: tagIds,
     };
 
@@ -124,7 +136,8 @@ export default function RecipeCreatePage() {
               type="number"
               min={1}
               value={defaultServings}
-              onChange={(e) => setDefaultServings(Number(e.target.value) || 1)}
+              onChange={(e) => setDefaultServings(e.target.valueAsNumber || 0)}
+              onBlur={() => setDefaultServings((v) => Math.max(1, v))}
               className="w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
             />
           </div>
@@ -172,6 +185,7 @@ export default function RecipeCreatePage() {
           steps={machineSteps}
           onChange={setMachineSteps}
           label={t("steps.machineSteps")}
+          isMachine
         />
 
         {/* Tags Section */}

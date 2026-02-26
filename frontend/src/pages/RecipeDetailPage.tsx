@@ -122,7 +122,21 @@ function RecipeForm({ recipe, recipeId, allIngredients, allUnits }: RecipeFormPr
   const [cookTime, setCookTime] = useState(recipe.cook_time_minutes?.toString() ?? "");
   const [ingredients, setIngredients] = useState<IngredientRow[]>(initialIngredients);
   const [manualSteps, setManualSteps] = useState<StepRow[]>(buildStepRows(recipe.manual_steps));
-  const [machineSteps, setMachineSteps] = useState<StepRow[]>(buildStepRows(recipe.machine_steps));
+  const [machineSteps, setMachineSteps] = useState<StepRow[]>(
+    recipe.machine_steps.map((s) => ({
+      step_number: s.step_number,
+      instruction: s.instruction,
+      ...(s.program_type && {
+        program_type: s.program_type,
+        temperature: s.temperature,
+        duration_seconds: s.duration_seconds,
+        speed: s.speed,
+        turbo: s.turbo,
+        direction: s.direction,
+        weight_grams: s.weight_grams,
+      }),
+    })),
+  );
   const [tagIds, setTagIds] = useState<string[]>(recipe.tags.map((tag) => tag.id));
   const [addingCategory, setAddingCategory] = useState<TagCategory | null>(null);
   const [newTagEn, setNewTagEn] = useState("");
@@ -143,7 +157,7 @@ function RecipeForm({ recipe, recipeId, allIngredients, allUnits }: RecipeFormPr
     const payload: RecipeUpdatePayload = {
       title,
       list_type: recipe.list_type,
-      default_servings: defaultServings,
+      default_servings: defaultServings || 1,
       prep_time_minutes: prepTime ? Number(prepTime) : null,
       cook_time_minutes: cookTime ? Number(cookTime) : null,
       leftover_days: recipe.leftover_days,
@@ -159,8 +173,20 @@ function RecipeForm({ recipe, recipeId, allIngredients, allUnits }: RecipeFormPr
         .filter((s) => s.instruction.trim())
         .map((s, i) => ({ step_number: i + 1, instruction: s.instruction })),
       machine_steps: machineSteps
-        .filter((s) => s.instruction.trim())
-        .map((s, i) => ({ step_number: i + 1, instruction: s.instruction })),
+        .filter((s) => s.instruction.trim() || s.program_type)
+        .map((s, i) => ({
+          step_number: i + 1,
+          instruction: s.instruction || "",
+          ...(s.program_type && {
+            program_type: s.program_type,
+            temperature: s.temperature ?? null,
+            duration_seconds: s.duration_seconds ?? null,
+            speed: s.speed ?? null,
+            turbo: s.turbo ?? false,
+            direction: s.direction ?? null,
+            weight_grams: s.weight_grams ?? null,
+          }),
+        })),
       tag_ids: tagIds,
     };
 
@@ -359,7 +385,8 @@ function RecipeForm({ recipe, recipeId, allIngredients, allUnits }: RecipeFormPr
               type="number"
               min={1}
               value={defaultServings}
-              onChange={(e) => setDefaultServings(Number(e.target.value) || 1)}
+              onChange={(e) => setDefaultServings(e.target.valueAsNumber || 0)}
+              onBlur={() => setDefaultServings((v) => Math.max(1, v))}
               className="w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
             />
           </div>
@@ -407,6 +434,7 @@ function RecipeForm({ recipe, recipeId, allIngredients, allUnits }: RecipeFormPr
           steps={machineSteps}
           onChange={setMachineSteps}
           label={t("steps.machineSteps")}
+          isMachine
         />
 
         {/* Tags Section */}
