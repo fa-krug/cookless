@@ -70,15 +70,13 @@ export default function IterationCard({
 
   const { data: previewRecipe } = useRecipe(previewEntry?.recipeId ?? "");
 
-  const allRecipes = recipesData?.items ?? [];
-
   const recipeMap = useMemo(() => {
     const map = new Map<string, RecipeSummary>();
-    for (const recipe of allRecipes) {
+    for (const recipe of recipesData?.items ?? []) {
       map.set(recipe.id, recipe);
     }
     return map;
-  }, [allRecipes]);
+  }, [recipesData]);
 
   const entryMap = useMemo(() => {
     const map = new Map<string, MealPlanEntry>();
