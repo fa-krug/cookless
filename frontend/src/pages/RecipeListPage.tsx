@@ -224,96 +224,101 @@ export default function RecipeListPage() {
         ))}
       </div>
 
-      {/* Search */}
-      <input
-        type="text"
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        placeholder={t("common.search")}
-        className="mt-4 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
-      />
+      {/* Search + actions */}
+      <div className="mt-4 flex items-center gap-2">
+        <div className="relative flex-1">
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder={t("common.search")}
+            className="w-full rounded-lg border border-gray-300 py-2 pl-9 pr-3 text-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
+          />
+        </div>
+        <button
+          type="button"
+          onClick={() => navigate(`/recipes/new?list=${activeTab}`)}
+          className="flex shrink-0 items-center gap-1.5 rounded-lg bg-orange-500 px-3 py-2 text-sm font-medium text-white hover:bg-orange-600"
+          aria-label={t("recipes.newRecipe")}
+        >
+          <Plus size={18} />
+          <span className="hidden sm:inline">{t("recipes.newRecipe")}</span>
+        </button>
+        {aiEnabled && (
+          <button
+            type="button"
+            onClick={handleGenerateClick}
+            className="flex shrink-0 items-center gap-1.5 rounded-lg bg-orange-500 px-3 py-2 text-sm font-medium text-white hover:bg-orange-600"
+            aria-label={t("generateRecipes.button")}
+          >
+            <Sparkles size={18} />
+            <span className="hidden sm:inline">{t("generateRecipes.button")}</span>
+          </button>
+        )}
+      </div>
 
-      {/* Sort + Add recipe buttons */}
-      <div className="mt-2 flex gap-2">
+      {/* Sort + Tag filters */}
+      <div className="mt-2 flex items-center gap-2">
         <SortSelect
           value={sort}
           onChange={handleSortChange}
           options={sortOptions}
           ariaLabel={t("recipes.sortLabel")}
         />
-        <button
-          type="button"
-          onClick={() => navigate(`/recipes/new?list=${activeTab}`)}
-          className="flex shrink-0 items-center gap-1.5 rounded-lg bg-orange-500 px-4 py-2 text-sm font-medium text-white hover:bg-orange-600"
-        >
-          <Plus size={16} />
-          {t("recipes.newRecipe")}
-        </button>
-        {aiEnabled && (
-          <button
-            type="button"
-            onClick={handleGenerateClick}
-            className="flex shrink-0 items-center gap-1.5 rounded-lg bg-orange-500 px-4 py-2 text-sm font-medium text-white hover:bg-orange-600"
-          >
-            <Sparkles size={16} />
-            {t("generateRecipes.button")}
-          </button>
+        {groupedTags && (
+          <div ref={tagFilterRef} className="flex flex-wrap items-center gap-1.5">
+            {TAG_CATEGORIES.map((category) => {
+              const tags = groupedTags[category] || [];
+              const selectedInCategory = tags.filter((t) => selectedTags.includes(t.id));
+              return (
+                <details key={category} className="relative">
+                  <summary className="flex cursor-pointer select-none items-center gap-1 rounded-full border border-gray-300 bg-white px-3 py-1 text-xs font-medium text-gray-600 hover:border-gray-400">
+                    {t(`tags.${category}`)}
+                    {selectedInCategory.length > 0 && (
+                      <span className="ml-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-orange-500 text-[10px] font-semibold text-white">
+                        {selectedInCategory.length}
+                      </span>
+                    )}
+                  </summary>
+                  <div className="absolute z-10 mt-1 max-h-60 min-w-48 overflow-y-auto rounded-lg border border-gray-200 bg-white p-2 shadow-lg">
+                    {tags.map((tag) => (
+                      <label
+                        key={tag.id}
+                        className="flex cursor-pointer items-center gap-2 rounded px-2 py-1 hover:bg-gray-50"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={selectedTags.includes(tag.id)}
+                          onChange={(e) => {
+                            setSelectedTags((prev) =>
+                              e.target.checked
+                                ? [...prev, tag.id]
+                                : prev.filter((id) => id !== tag.id),
+                            );
+                          }}
+                          className="rounded accent-orange-500"
+                        />
+                        <span className="text-sm">
+                          {i18n.language === "de" ? tag.name_de : tag.name_en}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                </details>
+              );
+            })}
+            {selectedTags.length > 0 && (
+              <button
+                onClick={() => setSelectedTags([])}
+                className="px-1.5 text-xs text-orange-600 hover:text-orange-700"
+              >
+                {t("tags.clearFilters")}
+              </button>
+            )}
+          </div>
         )}
       </div>
-
-      {/* Tag filters */}
-      {groupedTags && (
-        <div ref={tagFilterRef} className="mt-3 flex flex-wrap gap-2">
-          {TAG_CATEGORIES.map((category) => {
-            const tags = groupedTags[category] || [];
-            const selectedInCategory = tags.filter((t) => selectedTags.includes(t.id));
-            return (
-              <details key={category} className="relative">
-                <summary className="flex cursor-pointer select-none items-center gap-1 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm">
-                  {t(`tags.${category}`)}
-                  {selectedInCategory.length > 0 && (
-                    <span className="ml-1 rounded-full bg-orange-500 px-1.5 text-xs text-white">
-                      {selectedInCategory.length}
-                    </span>
-                  )}
-                </summary>
-                <div className="absolute z-10 mt-1 max-h-60 min-w-48 overflow-y-auto rounded-lg border border-gray-200 bg-white p-2 shadow-lg">
-                  {tags.map((tag) => (
-                    <label
-                      key={tag.id}
-                      className="flex cursor-pointer items-center gap-2 rounded px-2 py-1 hover:bg-gray-50"
-                    >
-                      <input
-                        type="checkbox"
-                        checked={selectedTags.includes(tag.id)}
-                        onChange={(e) => {
-                          setSelectedTags((prev) =>
-                            e.target.checked
-                              ? [...prev, tag.id]
-                              : prev.filter((id) => id !== tag.id),
-                          );
-                        }}
-                        className="rounded accent-orange-500"
-                      />
-                      <span className="text-sm">
-                        {i18n.language === "de" ? tag.name_de : tag.name_en}
-                      </span>
-                    </label>
-                  ))}
-                </div>
-              </details>
-            );
-          })}
-          {selectedTags.length > 0 && (
-            <button
-              onClick={() => setSelectedTags([])}
-              className="px-2 text-sm text-orange-600 hover:text-orange-700"
-            >
-              {t("tags.clearFilters")}
-            </button>
-          )}
-        </div>
-      )}
 
       {/* Recipe list */}
       <div className="mt-4 space-y-3">
