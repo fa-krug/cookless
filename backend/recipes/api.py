@@ -1,4 +1,8 @@
+import base64
+import json as json_lib
 import time
+import urllib.error
+import urllib.request
 from io import BytesIO
 from pathlib import Path
 from uuid import UUID
@@ -30,6 +34,18 @@ router = Router()
 
 MAX_IMAGE_SIZE = 5 * 1024 * 1024  # 5MB
 ALLOWED_IMAGE_TYPES = {"image/jpeg", "image/png", "image/webp"}
+GEMINI_IMAGEN_URL = (
+    "https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict"
+)
+
+IMAGE_PROMPT_TEMPLATE = """You are a professional food photographer. Generate a photorealistic, \
+appetizing overhead shot of the following dish on a clean, modern table setting with natural lighting.
+
+Dish: {title}
+Key ingredients: {ingredients}
+
+Style: Top-down food photography, shallow depth of field, warm natural light, minimalist plating \
+on a white or neutral ceramic plate. No text, no watermarks, no people."""
 
 
 # ── Helpers ──────────────────────────────────────────────────────────
@@ -242,6 +258,85 @@ def delete_recipe_image(request, recipe_id: UUID):
             old_path.unlink()
         recipe.image = ""
         recipe.save(update_fields=["image"])
+
+    return recipe
+
+
+@router.post("/recipes/{recipe_id}/image/generate/", response=RecipeOut, tags=["recipes"])
+def generate_recipe_image(request, recipe_id: UUID):
+    require_household_member(request)
+    household = request.user.active_household
+
+    if not household.ai_enabled:
+        raise HttpError(403, "AI features are disabled")
+
+    if not household.gemini_api_key:
+        raise HttpError(400, "Gemini API key not configured")
+
+    recipe = get_object_or_404(
+        Recipe.objects.prefetch_related("ingredients__ingredient"),
+        pk=recipe_id,
+        household=household,
+    )
+
+    # Build prompt with ingredient names
+    ingredient_names = [ri.ingredient.name_en for ri in recipe.ingredients.all()[:10]]
+    prompt = IMAGE_PROMPT_TEMPLATE.format(
+        title=recipe.title,
+        ingredients=", ".join(ingredient_names) if ingredient_names else "various",
+    )
+
+    # Call Gemini
+    req_body = json_lib.dumps(
+        {
+            "instances": [{"prompt": prompt}],
+            "parameters": {"sampleCount": 1},
+        }
+    ).encode()
+
+    api_url = f"{GEMINI_IMAGEN_URL}?key={household.gemini_api_key}"
+    req = urllib.request.Request(
+        api_url,
+        data=req_body,
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+
+    try:
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            resp_data = json_lib.loads(resp.read())
+    except urllib.error.URLError:
+        raise HttpError(502, "Image generation failed") from None
+    except TimeoutError:
+        raise HttpError(504, "Image generation timed out") from None
+
+    # Decode the base64 image
+    try:
+        b64_image = resp_data["predictions"][0]["bytesBase64Encoded"]
+        image_bytes = base64.b64decode(b64_image)
+    except (KeyError, IndexError):
+        raise HttpError(502, "Image generation failed") from None
+
+    # Process and save
+    img = PILImage.open(BytesIO(image_bytes))
+    if img.mode in ("RGBA", "P"):
+        img = img.convert("RGB")  # type: ignore[assignment]
+    max_size = 1024
+    if max(img.size) > max_size:
+        img.thumbnail((max_size, max_size), PILImage.Resampling.LANCZOS)
+
+    buf = BytesIO()
+    img.save(buf, format="WEBP", quality=85)
+    buf.seek(0)
+
+    # Delete old image
+    if recipe.image:
+        old_path = Path(settings.MEDIA_ROOT) / recipe.image.name
+        if old_path.exists():
+            old_path.unlink()
+
+    filename = f"recipes/{recipe.id}_{int(time.time())}.webp"
+    recipe.image.save(filename, ContentFile(buf.read()), save=True)
 
     return recipe
 

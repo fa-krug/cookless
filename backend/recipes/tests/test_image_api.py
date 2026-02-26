@@ -1,4 +1,7 @@
+import base64
+import json
 from io import BytesIO
+from unittest.mock import MagicMock, patch
 
 from django.contrib.auth import get_user_model
 from django.test import Client
@@ -144,3 +147,55 @@ def test_delete_image_when_none(auth_client, recipe):
     assert response.status_code == 200
     data = response.json()
     assert data["image"] is None
+
+
+def _mock_gemini_response():
+    """Create a fake Gemini imagen response with a small image."""
+    img = PILImage.new("RGB", (64, 64), color="green")
+    buf = BytesIO()
+    img.save(buf, format="PNG")
+    b64 = base64.b64encode(buf.getvalue()).decode()
+    return json.dumps({"predictions": [{"bytesBase64Encoded": b64}]}).encode()
+
+
+@pytest.mark.django_db
+def test_generate_image_success(auth_client, recipe):
+    client, household, _ = auth_client
+    household.ai_enabled = True
+    household.gemini_api_key = "test-key-123"
+    household.save()
+
+    mock_response = MagicMock()
+    mock_response.status = 200
+    mock_response.read.return_value = _mock_gemini_response()
+    mock_response.__enter__ = MagicMock(return_value=mock_response)
+    mock_response.__exit__ = MagicMock(return_value=False)
+
+    with patch("recipes.api.urllib.request.urlopen", return_value=mock_response):
+        response = client.post(f"/api/v1/recipes/{recipe.id}/image/generate/")
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["image"] is not None
+    assert data["image"].endswith(".webp")
+
+
+@pytest.mark.django_db
+def test_generate_image_ai_disabled(auth_client, recipe):
+    client, household, _ = auth_client
+    household.ai_enabled = False
+    household.save()
+
+    response = client.post(f"/api/v1/recipes/{recipe.id}/image/generate/")
+    assert response.status_code == 403
+
+
+@pytest.mark.django_db
+def test_generate_image_no_api_key(auth_client, recipe):
+    client, household, _ = auth_client
+    household.ai_enabled = True
+    household.gemini_api_key = ""
+    household.save()
+
+    response = client.post(f"/api/v1/recipes/{recipe.id}/image/generate/")
+    assert response.status_code == 400
