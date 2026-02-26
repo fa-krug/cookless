@@ -540,8 +540,8 @@ export default function HouseholdPage() {
         <JoinHouseholdSection />
       </div>
 
-      {/* AI Settings (owner only) */}
-      {activeHousehold && isOwner && (
+      {/* AI Settings */}
+      {activeHousehold && (
         <div className="mb-4 rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
           <div className="mb-3 flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -552,9 +552,10 @@ export default function HouseholdPage() {
               onClick={handleAiToggle}
               role="switch"
               aria-checked={aiEnabled}
-              className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full transition-colors ${
+              disabled={!isOwner}
+              className={`relative inline-flex h-6 w-11 shrink-0 rounded-full transition-colors ${
                 aiEnabled ? "bg-orange-500" : "bg-gray-200"
-              }`}
+              } ${isOwner ? "cursor-pointer" : "cursor-not-allowed opacity-60"}`}
             >
               <span
                 className={`inline-block h-5 w-5 translate-y-0.5 rounded-full bg-white shadow transition-transform ${
@@ -581,11 +582,12 @@ export default function HouseholdPage() {
                     setKeyStatus("idle");
                   }}
                   onBlur={handleGeminiKeyBlur}
-                  className="min-w-0 flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
+                  disabled={!isOwner}
+                  className={`min-w-0 flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500 ${!isOwner ? "cursor-not-allowed bg-gray-50 opacity-60" : ""}`}
                 />
                 <button
                   onClick={handleVerifyKey}
-                  disabled={!geminiKey || verifyingKey}
+                  disabled={!geminiKey || verifyingKey || !isOwner}
                   className={`flex shrink-0 items-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium disabled:opacity-50 ${
                     keyStatus === "valid"
                       ? "bg-green-100 text-green-700"
@@ -623,27 +625,29 @@ export default function HouseholdPage() {
               <Tags size={20} className="text-gray-400" />
               <h2 className="text-lg font-semibold text-gray-900">{t("tags.manageTags")}</h2>
             </div>
-            <button
-              onClick={async () => {
-                const confirmed = await confirm({
-                  title: t("tags.resetToDefaults"),
-                  message: t("tags.resetConfirm"),
-                  confirmVariant: "danger",
-                  cancelLabel: t("common.cancel"),
-                });
-                if (confirmed) {
-                  resetTags.mutate(undefined, {
-                    onSuccess: () => addToast(t("tags.resetSuccess"), "success"),
-                    onError: () => addToast(t("errors.tagsReset"), "error"),
+            {isOwner && (
+              <button
+                onClick={async () => {
+                  const confirmed = await confirm({
+                    title: t("tags.resetToDefaults"),
+                    message: t("tags.resetConfirm"),
+                    confirmVariant: "danger",
+                    cancelLabel: t("common.cancel"),
                   });
-                }
-              }}
-              disabled={resetTags.isPending}
-              className="flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-100 disabled:opacity-50"
-            >
-              {resetTags.isPending ? <Spinner /> : <RotateCcw size={14} />}
-              {t("tags.resetToDefaults")}
-            </button>
+                  if (confirmed) {
+                    resetTags.mutate(undefined, {
+                      onSuccess: () => addToast(t("tags.resetSuccess"), "success"),
+                      onError: () => addToast(t("errors.tagsReset"), "error"),
+                    });
+                  }
+                }}
+                disabled={resetTags.isPending}
+                className="flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-100 disabled:opacity-50"
+              >
+                {resetTags.isPending ? <Spinner /> : <RotateCcw size={14} />}
+                {t("tags.resetToDefaults")}
+              </button>
+            )}
           </div>
           <div className="space-y-3">
             {groupedTags &&
@@ -664,7 +668,7 @@ export default function HouseholdPage() {
                           key={tag.id}
                           className="flex items-center justify-between rounded px-2 py-1 hover:bg-gray-50"
                         >
-                          {editingTag === tag.id ? (
+                          {isOwner && editingTag === tag.id ? (
                             <div className="flex flex-1 items-center justify-between gap-2">
                               <div className="flex min-w-0 flex-1 items-center gap-2">
                                 <input
@@ -717,43 +721,45 @@ export default function HouseholdPage() {
                                   </span>
                                 )}
                               </div>
-                              <div className="flex gap-1">
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    setEditingTag(tag.id);
-                                    setEditNameEn(tag.name_en);
-                                    setEditNameDe(tag.name_de);
-                                  }}
-                                  className="rounded-md p-1.5 text-gray-400 hover:bg-gray-100 hover:text-orange-600"
-                                  aria-label={t("tags.editTag")}
-                                >
-                                  <Pencil size={14} />
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={async () => {
-                                    const confirmed = await confirm({
-                                      title: t("tags.deleteTag"),
-                                      message: t("tags.deleteConfirm", { count: 0 }),
-                                      confirmVariant: "danger",
-                                      cancelLabel: t("common.cancel"),
-                                    });
-                                    if (confirmed) {
-                                      deleteTag.mutate(tag.id);
-                                    }
-                                  }}
-                                  className="rounded-md p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-600"
-                                  aria-label={t("tags.deleteTag")}
-                                >
-                                  <Trash2 size={14} />
-                                </button>
-                              </div>
+                              {isOwner && (
+                                <div className="flex gap-1">
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setEditingTag(tag.id);
+                                      setEditNameEn(tag.name_en);
+                                      setEditNameDe(tag.name_de);
+                                    }}
+                                    className="rounded-md p-1.5 text-gray-400 hover:bg-gray-100 hover:text-orange-600"
+                                    aria-label={t("tags.editTag")}
+                                  >
+                                    <Pencil size={14} />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={async () => {
+                                      const confirmed = await confirm({
+                                        title: t("tags.deleteTag"),
+                                        message: t("tags.deleteConfirm", { count: 0 }),
+                                        confirmVariant: "danger",
+                                        cancelLabel: t("common.cancel"),
+                                      });
+                                      if (confirmed) {
+                                        deleteTag.mutate(tag.id);
+                                      }
+                                    }}
+                                    className="rounded-md p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-600"
+                                    aria-label={t("tags.deleteTag")}
+                                  >
+                                    <Trash2 size={14} />
+                                  </button>
+                                </div>
+                              )}
                             </>
                           )}
                         </div>
                       ))}
-                      {addingCategory === category ? (
+                      {isOwner && (addingCategory === category ? (
                         <div className="mt-2 flex items-center justify-between gap-2 border-t pt-2">
                           <div className="flex min-w-0 flex-1 items-center gap-2">
                             <input
@@ -811,7 +817,7 @@ export default function HouseholdPage() {
                         >
                           + {t("tags.addTag")}
                         </button>
-                      )}
+                      ))}
                     </div>
                   </details>
                 );
