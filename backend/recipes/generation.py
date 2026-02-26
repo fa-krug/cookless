@@ -46,8 +46,10 @@ def build_generation_prompt(
         f"- ingredients (array of objects with: name_en, name_de, category "
         f"[PRODUCE/DAIRY/MEAT/PANTRY/FROZEN/OTHER], quantity (number), "
         f"unit_abbreviation (string), order (integer starting at 0))\n"
-        f"- manual_steps (array of strings, instructions in {lang_note})\n"
-        f"- machine_steps (array of strings, instructions in {lang_note}, "
+        f"- manual_steps (array of objects with step_number (integer) and "
+        f"instruction (string in {lang_note}))\n"
+        f"- machine_steps (array of objects with step_number (integer) and "
+        f"instruction (string in {lang_note}), "
         f"for Thermomix or similar kitchen machines; can be empty)\n"
         f"- tag_names_en (array of strings, English tag names that apply)"
     )

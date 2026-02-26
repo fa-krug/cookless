@@ -3,6 +3,7 @@ from decimal import Decimal
 from uuid import UUID
 
 from ninja import Schema
+from pydantic import Field
 
 from recipes.tag_schemas import TagOut
 
@@ -134,3 +135,10 @@ class RecipeCreateIn(Schema):
     manual_steps: list[CookingStepIn] = []
     machine_steps: list[CookingStepIn] = []
     tag_ids: list[UUID] = []
+
+
+class GenerateRecipesIn(Schema):
+    count: int = Field(default=10, ge=1, le=20)
+    tag_ids: list[UUID] = []
+    free_text: str = ""
+    generate_images: bool = True
