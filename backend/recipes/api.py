@@ -42,7 +42,7 @@ router = Router()
 MAX_IMAGE_SIZE = 5 * 1024 * 1024  # 5MB
 ALLOWED_IMAGE_TYPES = {"image/jpeg", "image/png", "image/webp"}
 GEMINI_IMAGEN_URL = (
-    "https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict"
+    "https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict"
 )
 
 IMAGE_PROMPT_TEMPLATE = """You are a professional food photographer. Generate a photorealistic, \
@@ -106,18 +106,47 @@ def _process_and_save_image(recipe: Recipe, uploaded_file: UploadedFile) -> None
 
 
 def _save_steps(recipe: Recipe, steps_data: list, method: str) -> None:
+    from recipes.programs import validate_program_step
+
     recipe.steps.filter(method=method).delete()
-    CookingStep.objects.bulk_create(
-        [
+    step_objects = []
+    for item in steps_data:
+        program_type = item.program_type
+
+        if method == "MANUAL" and program_type:
+            raise HttpError(422, "program_type is not allowed on manual steps")
+
+        if program_type:
+            errors = validate_program_step(
+                program_type,
+                temperature=item.temperature,
+                duration_seconds=item.duration_seconds,
+                speed=item.speed,
+                direction=item.direction,
+                turbo=item.turbo,
+                weight_grams=item.weight_grams,
+            )
+            if errors:
+                raise HttpError(422, "; ".join(errors))
+        elif not item.instruction.strip():
+            raise HttpError(422, "Free text steps must have a non-empty instruction")
+
+        step_objects.append(
             CookingStep(
                 recipe=recipe,
                 method=method,
                 step_number=item.step_number,
-                instruction=item.instruction,
+                instruction=item.instruction if not program_type else "",
+                program_type=program_type or "",
+                temperature=item.temperature,
+                duration_seconds=item.duration_seconds,
+                speed=item.speed,
+                turbo=item.turbo,
+                direction=item.direction or "",
+                weight_grams=item.weight_grams,
             )
-            for item in steps_data
-        ]
-    )
+        )
+    CookingStep.objects.bulk_create(step_objects)
 
 
 # ── Recipes ──────────────────────────────────────────────────────────
@@ -316,11 +345,13 @@ def generate_recipes(request, payload: GenerateRecipesIn):
                             "parameters": {"sampleCount": 1},
                         }
                     ).encode()
-                    api_url = f"{GEMINI_IMAGEN_URL}?key={api_key}"
                     img_req = urllib.request.Request(
-                        api_url,
+                        GEMINI_IMAGEN_URL,
                         data=req_body,
-                        headers={"Content-Type": "application/json"},
+                        headers={
+                            "Content-Type": "application/json",
+                            "x-goog-api-key": api_key,
+                        },
                         method="POST",
                     )
                     with urllib.request.urlopen(img_req, timeout=30) as resp:
@@ -491,19 +522,24 @@ def generate_recipe_image(request, recipe_id: UUID):
         }
     ).encode()
 
-    api_url = f"{GEMINI_IMAGEN_URL}?key={household.gemini_api_key}"
     req = urllib.request.Request(
-        api_url,
+        GEMINI_IMAGEN_URL,
         data=req_body,
-        headers={"Content-Type": "application/json"},
+        headers={
+            "Content-Type": "application/json",
+            "x-goog-api-key": household.gemini_api_key,
+        },
         method="POST",
     )
 
     try:
         with urllib.request.urlopen(req, timeout=30) as resp:
             resp_data = json_lib.loads(resp.read())
-    except urllib.error.URLError:
-        raise HttpError(502, "Image generation failed") from None
+    except urllib.error.HTTPError as exc:
+        body = exc.read().decode(errors="replace")[:200]
+        raise HttpError(502, f"Image generation failed: {exc.code} {body}") from None
+    except urllib.error.URLError as exc:
+        raise HttpError(502, f"Image generation failed: {exc.reason}") from None
     except TimeoutError:
         raise HttpError(504, "Image generation timed out") from None
 

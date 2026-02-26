@@ -2,6 +2,7 @@ import { ArrowLeft } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
+import ProgramStepDisplay from "../components/ProgramStepDisplay";
 import { useCookingProgress } from "../hooks/useCookingProgress";
 import { useRecipe } from "../hooks/useRecipes";
 import { useWakeLock } from "../hooks/useWakeLock";
@@ -134,14 +135,29 @@ export default function CookingViewPage() {
                     : "border-gray-200 bg-white"
                 }`}
               >
-                <span
-                  className={`font-semibold ${isCurrent ? "text-lg text-orange-600" : "text-sm text-gray-500"}`}
-                >
-                  {step.step_number}.
-                </span>
-                <span className={`ml-2 ${isCurrent ? "text-lg text-gray-900" : "text-sm text-gray-700"}`}>
-                  {step.instruction}
-                </span>
+                {step.program_type ? (
+                  <div className="flex items-start gap-2">
+                    <span
+                      className={`shrink-0 font-semibold ${isCurrent ? "text-lg text-orange-600" : "text-sm text-gray-500"}`}
+                    >
+                      {step.step_number}.
+                    </span>
+                    <ProgramStepDisplay step={step} isCurrent={isCurrent} />
+                  </div>
+                ) : (
+                  <>
+                    <span
+                      className={`font-semibold ${isCurrent ? "text-lg text-orange-600" : "text-sm text-gray-500"}`}
+                    >
+                      {step.step_number}.
+                    </span>
+                    <span
+                      className={`ml-2 ${isCurrent ? "text-lg text-gray-900" : "text-sm text-gray-700"}`}
+                    >
+                      {step.instruction}
+                    </span>
+                  </>
+                )}
               </button>
             );
           })}

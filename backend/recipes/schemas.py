@@ -73,6 +73,21 @@ class CookingStepOut(Schema):
     id: int
     step_number: int
     instruction: str
+    program_type: str | None = None
+    temperature: int | None = None
+    duration_seconds: int | None = None
+    speed: int | None = None
+    turbo: bool = False
+    direction: str | None = None
+    weight_grams: int | None = None
+
+    @staticmethod
+    def resolve_program_type(obj):
+        return obj.program_type or None
+
+    @staticmethod
+    def resolve_direction(obj):
+        return obj.direction or None
 
 
 class RecipeOut(Schema):
@@ -112,7 +127,14 @@ class RecipeOut(Schema):
 
 class CookingStepIn(Schema):
     step_number: int
-    instruction: str
+    instruction: str = ""
+    program_type: str | None = None
+    temperature: int | None = None
+    duration_seconds: int | None = None
+    speed: int | None = None
+    turbo: bool = False
+    direction: str | None = None
+    weight_grams: int | None = None
 
 
 class RecipeIngredientIn(Schema):
