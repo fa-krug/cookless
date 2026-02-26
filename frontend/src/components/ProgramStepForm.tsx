@@ -121,7 +121,7 @@ export default function ProgramStepForm({ step, onChange, onSelectFreeText }: Pr
                       temperature: e.target.value === "" ? null : Number(e.target.value),
                     })
                   }
-                  className="w-16 rounded border border-gray-300 px-1.5 py-1 text-sm"
+                  className="w-16 rounded border border-gray-300 px-1.5 py-1"
                 />
                 <span className="text-gray-400">°C</span>
               </label>
@@ -139,7 +139,7 @@ export default function ProgramStepForm({ step, onChange, onSelectFreeText }: Pr
                   onChange={(e) =>
                     setDuration(e.target.value === "" ? 0 : Number(e.target.value), durationSecs)
                   }
-                  className="w-14 rounded border border-gray-300 px-1.5 py-1 text-sm"
+                  className="w-14 rounded border border-gray-300 px-1.5 py-1"
                   placeholder="min"
                 />
                 <span className="text-gray-400">:</span>
@@ -151,7 +151,7 @@ export default function ProgramStepForm({ step, onChange, onSelectFreeText }: Pr
                   onChange={(e) =>
                     setDuration(durationMinutes, e.target.value === "" ? 0 : Number(e.target.value))
                   }
-                  className="w-14 rounded border border-gray-300 px-1.5 py-1 text-sm"
+                  className="w-14 rounded border border-gray-300 px-1.5 py-1"
                   placeholder="sec"
                 />
               </div>
@@ -173,7 +173,7 @@ export default function ProgramStepForm({ step, onChange, onSelectFreeText }: Pr
                       speed: e.target.value === "" ? null : Number(e.target.value),
                     })
                   }
-                  className="w-14 rounded border border-gray-300 px-1.5 py-1 text-sm"
+                  className="w-14 rounded border border-gray-300 px-1.5 py-1"
                 />
               </label>
             );
@@ -232,7 +232,7 @@ export default function ProgramStepForm({ step, onChange, onSelectFreeText }: Pr
                       weight_grams: e.target.value === "" ? null : Number(e.target.value),
                     })
                   }
-                  className="w-20 rounded border border-gray-300 px-1.5 py-1 text-sm"
+                  className="w-20 rounded border border-gray-300 px-1.5 py-1"
                 />
                 <span className="text-gray-400">g</span>
               </label>

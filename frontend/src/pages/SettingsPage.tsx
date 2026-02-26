@@ -425,7 +425,7 @@ export default function SettingsPage() {
               placeholder={t("password.currentPassword")}
               value={currentPassword}
               onChange={(e) => setCurrentPassword(e.target.value)}
-              className="mb-3 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
+              className="mb-3 w-full rounded-md border border-gray-300 px-3 py-2 focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
             />
           )}
           <input
@@ -433,14 +433,14 @@ export default function SettingsPage() {
             placeholder={t("password.newPassword")}
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
-            className="mb-3 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
+            className="mb-3 w-full rounded-md border border-gray-300 px-3 py-2 focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
           />
           <input
             type="password"
             placeholder={t("password.confirmPassword")}
             value={confirmNewPassword}
             onChange={(e) => setConfirmNewPassword(e.target.value)}
-            className="mb-3 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
+            className="mb-3 w-full rounded-md border border-gray-300 px-3 py-2 focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
           />
           <button
             type="submit"
@@ -571,7 +571,7 @@ export default function SettingsPage() {
               value={newTokenName}
               onChange={(e) => setNewTokenName(e.target.value)}
               placeholder={t("tokens.namePlaceholder")}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
             />
 
             <div>
@@ -629,7 +629,7 @@ export default function SettingsPage() {
                   value={newTokenCustomDate}
                   onChange={(e) => setNewTokenCustomDate(e.target.value)}
                   min={new Date().toISOString().split("T")[0]}
-                  className="mt-2 rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
+                  className="mt-2 rounded-md border border-gray-300 px-3 py-2 focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
                 />
               )}
             </div>
