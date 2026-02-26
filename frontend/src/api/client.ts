@@ -31,12 +31,13 @@ type RequestOptions = Omit<RequestInit, "body"> & {
 
 async function request<T>(url: string, options: RequestOptions = {}): Promise<T> {
   const { body, headers: extraHeaders, ...rest } = options;
+  const isFormData = body instanceof FormData;
 
   const headers: Record<string, string> = {
     ...(extraHeaders as Record<string, string>),
   };
 
-  if (body !== undefined) {
+  if (body !== undefined && !isFormData) {
     headers["Content-Type"] = "application/json";
   }
 
@@ -49,7 +50,7 @@ async function request<T>(url: string, options: RequestOptions = {}): Promise<T>
     credentials: "include",
     ...rest,
     headers,
-    body: body !== undefined ? JSON.stringify(body) : undefined,
+    body: isFormData ? (body as FormData) : body !== undefined ? JSON.stringify(body) : undefined,
   });
 
   if (!response.ok) {
@@ -88,5 +89,11 @@ export const api = {
 
   delete<T = void>(url: string, body?: unknown, options?: RequestOptions) {
     return request<T>(url, { ...options, method: "DELETE", body });
+  },
+
+  uploadFile<T>(url: string, file: File, fieldName = "image") {
+    const formData = new FormData();
+    formData.append(fieldName, file);
+    return request<T>(url, { method: "POST", body: formData as unknown });
   },
 };
