@@ -21,3 +21,15 @@ def require_household_owner(request, household):
         household=household, user=request.user, role=HouseholdMember.Role.OWNER
     ).exists():
         raise HttpError(403, "Owner access required")
+
+
+def require_scope(request, scope: str) -> None:
+    """Raises HttpError if the request was made via PAT and lacks the required scope.
+
+    Session-authenticated requests are always allowed (no scope restriction).
+    """
+    scopes = getattr(request, "auth_scopes", None)
+    if scopes is None:
+        return  # Session auth — no scope restriction
+    if scope not in scopes:
+        raise HttpError(403, f"Token missing required scope: {scope}")
