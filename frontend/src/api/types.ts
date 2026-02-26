@@ -7,7 +7,10 @@ export type HouseholdRole = "OWNER" | "MEMBER";
 
 // ── Users & Households ───────────────────────────────────────────
 
-export type UserSettings = Record<string, never>;
+export interface UserSettings {
+  ai_enabled?: boolean;
+  gemini_api_key?: string;
+}
 
 export interface HouseholdSummary {
   id: string;

@@ -115,6 +115,10 @@ class RegisterPasswordIn(Schema):
     invite_code: str
 
 
+class VerifyGeminiKeyIn(Schema):
+    api_key: str
+
+
 class LoginBeginIn(Schema):
     email: str
 

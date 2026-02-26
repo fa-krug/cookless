@@ -240,6 +240,15 @@
     "install": "Installieren",
     "dismiss": "Vielleicht später"
   },
+  "ai": {
+    "title": "KI-Unterstützung",
+    "description": "Nutze KI für Rezeptvorschläge, Essensplanung und mehr.",
+    "apiKey": "Gemini API-Schlüssel",
+    "apiKeyPlaceholder": "API-Schlüssel einfügen",
+    "verify": "Prüfen",
+    "keyValid": "Gültig",
+    "keyInvalid": "Ungültig"
+  },
   "password": {
     "title": "Passwort",
     "setPassword": "Passwort festlegen",

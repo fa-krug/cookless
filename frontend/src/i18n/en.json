@@ -240,6 +240,15 @@
     "install": "Install",
     "dismiss": "Maybe later"
   },
+  "ai": {
+    "title": "AI Support",
+    "description": "Use AI to help with recipe suggestions, meal planning, and more.",
+    "apiKey": "Gemini API Key",
+    "apiKeyPlaceholder": "Paste your API key",
+    "verify": "Verify",
+    "keyValid": "Valid",
+    "keyInvalid": "Invalid"
+  },
   "password": {
     "title": "Password",
     "setPassword": "Set Password",

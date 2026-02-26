@@ -34,6 +34,7 @@ from users.schemas import (
     SetPasswordIn,
     UserOut,
     UserUpdateIn,
+    VerifyGeminiKeyIn,
 )
 from users.webauthn import (
     get_authentication_options,
@@ -123,6 +124,28 @@ def remove_password(request, payload: RemovePasswordIn):
     user.set_unusable_password()
     user.save()
     return {"detail": "Password removed."}
+
+
+# ── AI / Gemini ─────────────────────────────────────────────────────
+
+
+@router.post("/users/me/verify-gemini-key/", response=MessageOut, tags=["users"])
+def verify_gemini_key(request, payload: VerifyGeminiKeyIn):
+    import urllib.request
+
+    url = f"https://generativelanguage.googleapis.com/v1beta/models?key={payload.api_key}"
+    req = urllib.request.Request(url, method="GET")
+    try:
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            if resp.status == 200:
+                return {"detail": "API key is valid."}
+    except urllib.error.HTTPError as e:
+        if e.code == 400:
+            raise HttpError(400, "Invalid API key.") from None
+        raise HttpError(400, "Could not verify API key.") from None
+    except Exception:
+        raise HttpError(400, "Could not reach Gemini API.") from None
+    raise HttpError(400, "Could not verify API key.")
 
 
 # ── Households ───────────────────────────────────────────────────────
