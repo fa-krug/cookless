@@ -60,6 +60,40 @@
     "cannotDeleteLast": "You need at least one passkey.",
     "added": "Added {{date}}"
   },
+  "tokens": {
+    "title": "API Access",
+    "docsLink": "API Documentation",
+    "createToken": "New Token",
+    "deleteToken": "Remove",
+    "confirmDelete": "Remove this token? Any apps using it will stop working.",
+    "tokenName": "Name",
+    "namePlaceholder": "e.g. My Script, Home Assistant",
+    "scopes": "Permissions",
+    "scopeGroups": {
+      "recipes": "Recipes",
+      "planner": "Meal Plans",
+      "shopping": "Shopping",
+      "households": "Households"
+    },
+    "scopeRead": "Read",
+    "scopeWrite": "Write",
+    "expiration": "Expires",
+    "preset30d": "30 days",
+    "preset90d": "90 days",
+    "preset1y": "1 year",
+    "presetNever": "Never",
+    "presetCustom": "Custom",
+    "created": "Created {{date}}",
+    "lastUsed": "Last used {{date}}",
+    "neverUsed": "Never used",
+    "expired": "Expired",
+    "noTokens": "No API tokens yet.",
+    "tokenCreated": "Token created!",
+    "copyToken": "Copy",
+    "copied": "Copied!",
+    "tokenWarning": "Save this token now — you won't see it again!",
+    "tokenLabel": "Your new token"
+  },
   "recipes": {
     "title": "Recipes",
     "known": "Favourites",
@@ -371,7 +405,9 @@
     "householdLeave": "Couldn't leave the household.",
     "ownershipTransfer": "Couldn't transfer ownership.",
     "recipeGenerate": "Couldn't generate recipes. Try again?",
-    "tagsReset": "Couldn't reset tags. Try again?"
+    "tagsReset": "Couldn't reset tags. Try again?",
+    "tokenCreate": "Couldn't create the token. Try again?",
+    "tokenDelete": "Couldn't delete the token."
   },
   "success": {
     "recipeSaved": "Recipe saved!",

@@ -60,6 +60,40 @@
     "cannotDeleteLast": "Du brauchst mindestens einen Passkey.",
     "added": "Hinzugefügt {{date}}"
   },
+  "tokens": {
+    "title": "API-Zugang",
+    "docsLink": "API-Dokumentation",
+    "createToken": "Neuer Token",
+    "deleteToken": "Entfernen",
+    "confirmDelete": "Diesen Token entfernen? Apps, die ihn nutzen, funktionieren dann nicht mehr.",
+    "tokenName": "Name",
+    "namePlaceholder": "z.B. Mein Skript, Home Assistant",
+    "scopes": "Berechtigungen",
+    "scopeGroups": {
+      "recipes": "Rezepte",
+      "planner": "Essensplanung",
+      "shopping": "Einkaufen",
+      "households": "Haushalt"
+    },
+    "scopeRead": "Lesen",
+    "scopeWrite": "Schreiben",
+    "expiration": "Läuft ab",
+    "preset30d": "30 Tage",
+    "preset90d": "90 Tage",
+    "preset1y": "1 Jahr",
+    "presetNever": "Nie",
+    "presetCustom": "Eigenes Datum",
+    "created": "Erstellt {{date}}",
+    "lastUsed": "Zuletzt verwendet {{date}}",
+    "neverUsed": "Noch nie verwendet",
+    "expired": "Abgelaufen",
+    "noTokens": "Noch keine API-Token.",
+    "tokenCreated": "Token erstellt!",
+    "copyToken": "Kopieren",
+    "copied": "Kopiert!",
+    "tokenWarning": "Speichere diesen Token jetzt — du siehst ihn nicht nochmal!",
+    "tokenLabel": "Dein neuer Token"
+  },
   "recipes": {
     "title": "Rezepte",
     "known": "Favoriten",
@@ -371,7 +405,9 @@
     "householdLeave": "Haushalt verlassen hat nicht geklappt.",
     "ownershipTransfer": "Eigentümerschaft übertragen hat nicht geklappt.",
     "recipeGenerate": "Rezepte erstellen hat nicht geklappt. Nochmal?",
-    "tagsReset": "Tags zurücksetzen hat nicht geklappt. Nochmal?"
+    "tagsReset": "Tags zurücksetzen hat nicht geklappt. Nochmal?",
+    "tokenCreate": "Token konnte nicht erstellt werden. Nochmal versuchen?",
+    "tokenDelete": "Token konnte nicht gelöscht werden."
   },
   "success": {
     "recipeSaved": "Rezept gespeichert!",
