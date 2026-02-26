@@ -1,6 +1,6 @@
 import type { InfiniteData } from "@tanstack/react-query";
 import { useQueryClient } from "@tanstack/react-query";
-import { ArrowLeftRight, ArrowLeft, Save, Sparkles, Trash2, Upload, UtensilsCrossed } from "lucide-react";
+import { ArrowLeftRight, ArrowLeft, ChefHat, Save, Sparkles, Trash2, Upload, UtensilsCrossed } from "lucide-react";
 import { Spinner } from "../components/ui/Spinner";
 import { useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -22,6 +22,7 @@ import { useAuth } from "../hooks/useAuth";
 import { useDeleteRecipeImage, useGenerateRecipeImage, useUploadRecipeImage } from "../hooks/useRecipeImage";
 import { useDeleteRecipe, useMoveRecipe, useRecipe, useUpdateRecipe } from "../hooks/useRecipes";
 import { useCloseDetailsOnClickOutside } from "../hooks/useCloseDetailsOnClickOutside";
+import { useDropUp } from "../hooks/useDropUp";
 import { useCreateTag, useTags } from "../hooks/useTags";
 import { useToast } from "../hooks/useToast";
 import { useUnits } from "../hooks/useUnits";
@@ -110,6 +111,7 @@ function RecipeForm({ recipe, recipeId, allIngredients, allUnits }: RecipeFormPr
   const { data: groupedTags } = useTags();
   const createTag = useCreateTag();
   const tagSectionRef = useCloseDetailsOnClickOutside<HTMLDivElement>();
+  const tagDropUp = useDropUp();
 
   const initialIngredients = useMemo(
     () => buildIngredientRows(recipe, allIngredients, nameKey),
@@ -446,7 +448,7 @@ function RecipeForm({ recipe, recipeId, allIngredients, allUnits }: RecipeFormPr
                 const tags = groupedTags[category] || [];
                 const selected = tags.filter((tag) => tagIds.includes(tag.id));
                 return (
-                  <details key={category} className="relative">
+                  <details key={category} className="relative" ref={tagDropUp(category).ref} onToggle={tagDropUp(category).onToggle}>
                     <summary className="cursor-pointer select-none rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm">
                       {t(`tags.${category}`)}
                       {selected.length > 0 && (
@@ -455,7 +457,7 @@ function RecipeForm({ recipe, recipeId, allIngredients, allUnits }: RecipeFormPr
                         </span>
                       )}
                     </summary>
-                    <div className="absolute z-10 mt-1 max-h-60 min-w-48 overflow-y-auto rounded-lg border border-gray-200 bg-white p-2 shadow-lg">
+                    <div className={`absolute z-10 max-h-60 min-w-48 overflow-y-auto rounded-lg border border-gray-200 bg-white p-2 shadow-lg ${tagDropUp(category).openUp ? "bottom-full mb-1" : "mt-1"}`}>
                       {tags.map((tag) => (
                         <label
                           key={tag.id}
@@ -547,6 +549,16 @@ function RecipeForm({ recipe, recipeId, allIngredients, allUnits }: RecipeFormPr
 
         {/* Action buttons */}
         <div className="space-y-3">
+          {/* Cook button */}
+          <button
+            type="button"
+            onClick={() => navigate(`/cook/${recipeId}`)}
+            className="flex w-full items-center justify-center gap-2 rounded-lg bg-orange-500 px-4 py-2 text-sm font-medium text-white hover:bg-orange-600"
+          >
+            <ChefHat size={16} />
+            {t("cooking.start")}
+          </button>
+
           {/* Move button */}
           <button
             type="button"
@@ -563,7 +575,7 @@ function RecipeForm({ recipe, recipeId, allIngredients, allUnits }: RecipeFormPr
             <button
               type="submit"
               disabled={updateRecipe.isPending}
-              className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-orange-500 px-4 py-2 text-sm font-medium text-white hover:bg-orange-600 disabled:opacity-50"
+              className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-orange-500 px-4 py-2 text-sm font-medium text-orange-500 hover:bg-orange-50 disabled:opacity-50"
             >
               {updateRecipe.isPending ? <Spinner /> : <Save size={16} />}
               {t("common.save")}

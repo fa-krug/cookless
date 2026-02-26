@@ -10,6 +10,7 @@ import StepEditor, { type StepRow } from "../components/StepEditor";
 import { createIngredient, useIngredients } from "../hooks/useIngredients";
 import { useCreateRecipe } from "../hooks/useRecipes";
 import { useCloseDetailsOnClickOutside } from "../hooks/useCloseDetailsOnClickOutside";
+import { useDropUp } from "../hooks/useDropUp";
 import { useCreateTag, useTags } from "../hooks/useTags";
 import { useToast } from "../hooks/useToast";
 import { useUnits } from "../hooks/useUnits";
@@ -29,6 +30,7 @@ export default function RecipeCreatePage() {
   const createRecipe = useCreateRecipe();
   const createTag = useCreateTag();
   const tagSectionRef = useCloseDetailsOnClickOutside<HTMLDivElement>();
+  const tagDropUp = useDropUp();
 
   const [title, setTitle] = useState("");
   const [defaultServings, setDefaultServings] = useState(2);
@@ -197,7 +199,7 @@ export default function RecipeCreatePage() {
                 const tags = groupedTags[category] || [];
                 const selected = tags.filter((tag) => tagIds.includes(tag.id));
                 return (
-                  <details key={category} className="relative">
+                  <details key={category} className="relative" ref={tagDropUp(category).ref} onToggle={tagDropUp(category).onToggle}>
                     <summary className="cursor-pointer select-none rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm">
                       {t(`tags.${category}`)}
                       {selected.length > 0 && (
@@ -206,7 +208,7 @@ export default function RecipeCreatePage() {
                         </span>
                       )}
                     </summary>
-                    <div className="absolute z-10 mt-1 max-h-60 min-w-48 overflow-y-auto rounded-lg border border-gray-200 bg-white p-2 shadow-lg">
+                    <div className={`absolute z-10 max-h-60 min-w-48 overflow-y-auto rounded-lg border border-gray-200 bg-white p-2 shadow-lg ${tagDropUp(category).openUp ? "bottom-full mb-1" : "mt-1"}`}>
                       {tags.map((tag) => (
                         <label
                           key={tag.id}

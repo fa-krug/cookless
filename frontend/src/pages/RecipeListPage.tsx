@@ -14,6 +14,7 @@ import { Spinner } from "../components/ui/Spinner";
 import { useAuth } from "../hooks/useAuth";
 import { useDeleteRecipe, useRecipes } from "../hooks/useRecipes";
 import { useCloseDetailsOnClickOutside } from "../hooks/useCloseDetailsOnClickOutside";
+import { useDropUp } from "../hooks/useDropUp";
 import { useTags } from "../hooks/useTags";
 import { useToast } from "../hooks/useToast";
 
@@ -84,6 +85,7 @@ export default function RecipeListPage() {
   );
   const { data: groupedTags } = useTags();
   const tagFilterRef = useCloseDetailsOnClickOutside<HTMLDivElement>();
+  const tagDropUp = useDropUp();
   const deleteRecipe = useDeleteRecipe();
 
   const allRecipes = data?.pages.flatMap((page) => page.items) ?? [];
@@ -272,7 +274,7 @@ export default function RecipeListPage() {
               const tags = groupedTags[category] || [];
               const selectedInCategory = tags.filter((t) => selectedTags.includes(t.id));
               return (
-                <details key={category} className="relative">
+                <details key={category} className="relative" ref={tagDropUp(category).ref} onToggle={tagDropUp(category).onToggle}>
                   <summary className="flex cursor-pointer select-none items-center gap-1 rounded-full border border-gray-300 bg-white px-3 py-1 text-xs font-medium text-gray-600 hover:border-gray-400">
                     {t(`tags.${category}`)}
                     {selectedInCategory.length > 0 && (
@@ -281,7 +283,7 @@ export default function RecipeListPage() {
                       </span>
                     )}
                   </summary>
-                  <div className="absolute z-10 mt-1 max-h-60 min-w-48 overflow-y-auto rounded-lg border border-gray-200 bg-white p-2 shadow-lg">
+                  <div className={`absolute z-10 max-h-60 min-w-48 overflow-y-auto rounded-lg border border-gray-200 bg-white p-2 shadow-lg ${tagDropUp(category).openUp ? "bottom-full mb-1" : "mt-1"}`}>
                     {tags.map((tag) => (
                       <label
                         key={tag.id}
