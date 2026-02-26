@@ -1,10 +1,17 @@
+import time
+from io import BytesIO
+from pathlib import Path
 from uuid import UUID
 
+from django.conf import settings
+from django.core.files.base import ContentFile
 from django.db import transaction
 from django.db.models import Prefetch
 from django.shortcuts import get_object_or_404
 
-from ninja import Router
+from ninja import File, Router, UploadedFile
+from ninja.errors import HttpError
+from PIL import Image as PILImage
 
 from recipes.models import CookingStep, Ingredient, Recipe, RecipeIngredient, Unit
 from recipes.schemas import (
@@ -19,6 +26,10 @@ from recipes.schemas import (
 from users.permissions import require_household_member
 
 router = Router()
+
+
+MAX_IMAGE_SIZE = 5 * 1024 * 1024  # 5MB
+ALLOWED_IMAGE_TYPES = {"image/jpeg", "image/png", "image/webp"}
 
 
 # ── Helpers ──────────────────────────────────────────────────────────
@@ -38,6 +49,33 @@ def _save_ingredients(recipe: Recipe, ingredients_data: list) -> None:
             for item in ingredients_data
         ]
     )
+
+
+def _process_and_save_image(recipe: Recipe, uploaded_file: UploadedFile) -> None:
+    """Resize to max 1024px, convert to WebP, save."""
+    img = PILImage.open(uploaded_file)
+    img.verify()
+    uploaded_file.seek(0)
+    img = PILImage.open(uploaded_file)
+
+    max_size = 1024
+    if max(img.size) > max_size:
+        img.thumbnail((max_size, max_size), PILImage.Resampling.LANCZOS)
+
+    if img.mode in ("RGBA", "P"):
+        img = img.convert("RGB")  # type: ignore[assignment]
+
+    buf = BytesIO()
+    img.save(buf, format="WEBP", quality=85)
+    buf.seek(0)
+
+    if recipe.image:
+        old_path = Path(settings.MEDIA_ROOT) / recipe.image.name
+        if old_path.exists():
+            old_path.unlink()
+
+    filename = f"recipes/{recipe.id}_{int(time.time())}.webp"
+    recipe.image.save(filename, ContentFile(buf.read()), save=True)
 
 
 def _save_steps(recipe: Recipe, steps_data: list, method: str) -> None:
@@ -171,6 +209,25 @@ def move_recipe(request, recipe_id: UUID):
     recipe = get_object_or_404(Recipe, pk=recipe_id, household=request.user.active_household)
     recipe.list_type = "TO_TRY" if recipe.list_type == "KNOWN" else "KNOWN"
     recipe.save()
+    return recipe
+
+
+@router.post("/recipes/{recipe_id}/image/upload/", response=RecipeOut, tags=["recipes"])
+def upload_recipe_image(request, recipe_id: UUID, image: UploadedFile = File(...)):  # noqa: B008
+    require_household_member(request)
+    recipe = get_object_or_404(Recipe, pk=recipe_id, household=request.user.active_household)
+
+    if image.content_type not in ALLOWED_IMAGE_TYPES:
+        raise HttpError(400, "Invalid file type")
+
+    if image.size and image.size > MAX_IMAGE_SIZE:
+        raise HttpError(400, "File too large (max 5MB)")
+
+    try:
+        _process_and_save_image(recipe, image)
+    except Exception:
+        raise HttpError(400, "Invalid image file") from None
+
     return recipe
 
 
