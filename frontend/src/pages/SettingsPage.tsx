@@ -1,5 +1,9 @@
 import {
+  Check,
   ChevronRight,
+  Code,
+  Copy,
+  ExternalLink,
   Home,
   KeyRound,
   LogOut,
@@ -13,6 +17,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { api } from "../api/client";
+import type { AccessTokenCreated } from "../api/types";
 import { type Passkey, type User } from "../api/types";
 import { addPasskey } from "../api/webauthn";
 import { ConfirmDialog } from "../components/ui/ConfirmDialog";
@@ -22,6 +27,7 @@ import { SettingsSkeleton } from "../components/ui/SettingsSkeleton";
 import { useAuth } from "../hooks/useAuth";
 import { useConfirm } from "../hooks/useConfirm";
 import { useToast } from "../hooks/useToast";
+import { useTokens, useCreateToken, useDeleteToken } from "../hooks/useTokens";
 
 export default function SettingsPage() {
   const { t, i18n } = useTranslation();
@@ -48,6 +54,18 @@ export default function SettingsPage() {
   const [passwordError, setPasswordError] = useState("");
   const [passwordSuccess, setPasswordSuccess] = useState("");
   const [savingPassword, setSavingPassword] = useState(false);
+
+  // Token state
+  const { data: tokens = [], isLoading: tokensLoading } = useTokens();
+  const createToken = useCreateToken();
+  const deleteToken = useDeleteToken();
+  const [showTokenForm, setShowTokenForm] = useState(false);
+  const [newTokenName, setNewTokenName] = useState("");
+  const [newTokenScopes, setNewTokenScopes] = useState<string[]>([]);
+  const [newTokenPreset, setNewTokenPreset] = useState<string>("90d");
+  const [newTokenCustomDate, setNewTokenCustomDate] = useState("");
+  const [createdToken, setCreatedToken] = useState<AccessTokenCreated | null>(null);
+  const [copied, setCopied] = useState(false);
 
   const fetchPasskeys = useCallback(async () => {
     try {
@@ -177,6 +195,67 @@ export default function SettingsPage() {
     } catch (err) {
       setPasswordError(mapPasswordError(extractApiDetail(err), t, "password"));
     }
+  }
+
+  const SCOPE_GROUPS = ["recipes", "planner", "shopping", "households"] as const;
+
+  function toggleScope(scope: string) {
+    setNewTokenScopes((prev) =>
+      prev.includes(scope) ? prev.filter((s) => s !== scope) : [...prev, scope],
+    );
+  }
+
+  async function handleCreateToken() {
+    const payload: {
+      name: string;
+      scopes: string[];
+      duration_preset?: string;
+      expires_at?: string;
+    } = {
+      name: newTokenName.trim(),
+      scopes: newTokenScopes,
+    };
+
+    if (newTokenPreset === "custom" && newTokenCustomDate) {
+      payload.expires_at = new Date(newTokenCustomDate).toISOString();
+    } else if (newTokenPreset && newTokenPreset !== "never") {
+      payload.duration_preset = newTokenPreset;
+    }
+
+    try {
+      const result = await createToken.mutateAsync(payload);
+      setCreatedToken(result);
+      setShowTokenForm(false);
+      setNewTokenName("");
+      setNewTokenScopes([]);
+      setNewTokenPreset("90d");
+      setNewTokenCustomDate("");
+      addToast(t("tokens.tokenCreated"), "success");
+    } catch {
+      addToast(t("errors.tokenCreate"), "error");
+    }
+  }
+
+  async function handleDeleteToken(id: string) {
+    const confirmed = await confirm({
+      title: t("tokens.deleteToken"),
+      message: t("tokens.confirmDelete"),
+      confirmLabel: t("common.remove"),
+      confirmVariant: "danger",
+      cancelLabel: t("common.cancel"),
+    });
+    if (!confirmed) return;
+    try {
+      await deleteToken.mutateAsync(id);
+    } catch {
+      addToast(t("errors.tokenDelete"), "error");
+    }
+  }
+
+  async function copyToken(token: string) {
+    await navigator.clipboard.writeText(token);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   }
 
   return (
@@ -386,6 +465,205 @@ export default function SettingsPage() {
           >
             <ShieldMinus size={16} />
             {t("password.removePassword")}
+          </button>
+        )}
+      </div>
+
+      {/* API Tokens */}
+      <div className="mb-4 rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="text-lg font-semibold text-gray-900">{t("tokens.title")}</h2>
+          <a
+            href="/api/v1/docs"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1 text-xs text-orange-500 hover:text-orange-700"
+          >
+            {t("tokens.docsLink")}
+            <ExternalLink size={12} />
+          </a>
+        </div>
+
+        {/* Created token display */}
+        {createdToken && (
+          <div className="mb-4 rounded-md border border-orange-300 bg-orange-50 p-3">
+            <p className="mb-1 text-xs font-medium text-orange-800">{t("tokens.tokenLabel")}</p>
+            <div className="flex items-center gap-2">
+              <code className="min-w-0 flex-1 break-all rounded bg-white px-2 py-1 font-mono text-xs text-gray-900">
+                {createdToken.token}
+              </code>
+              <button
+                type="button"
+                onClick={() => copyToken(createdToken.token)}
+                className="shrink-0 rounded-md p-1.5 text-orange-600 hover:bg-orange-100"
+              >
+                {copied ? <Check size={16} /> : <Copy size={16} />}
+              </button>
+            </div>
+            <p className="mt-2 text-xs text-orange-700">{t("tokens.tokenWarning")}</p>
+            <button
+              type="button"
+              onClick={() => setCreatedToken(null)}
+              className="mt-2 text-xs text-orange-600 hover:text-orange-800"
+            >
+              {t("common.close")}
+            </button>
+          </div>
+        )}
+
+        {/* Token list */}
+        {tokensLoading ? (
+          <SettingsSkeleton />
+        ) : tokens.length === 0 && !showTokenForm ? (
+          <p className="text-sm text-gray-500">{t("tokens.noTokens")}</p>
+        ) : (
+          <div className="space-y-3">
+            {tokens.map((token) => (
+              <div
+                key={token.id}
+                className="flex items-center justify-between rounded-md border border-gray-200 px-3 py-2"
+              >
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm font-medium text-gray-900">{token.name}</p>
+                    {token.expires_at && new Date(token.expires_at) < new Date() && (
+                      <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs text-red-700">
+                        {t("tokens.expired")}
+                      </span>
+                    )}
+                  </div>
+                  <p className="font-mono text-xs text-gray-400">{token.token_prefix}...</p>
+                  <div className="mt-1 flex flex-wrap gap-1">
+                    {token.scopes.map((scope) => (
+                      <span
+                        key={scope}
+                        className="rounded bg-gray-100 px-1.5 py-0.5 text-xs text-gray-600"
+                      >
+                        {scope}
+                      </span>
+                    ))}
+                  </div>
+                  <p className="mt-1 text-xs text-gray-500">
+                    {token.last_used_at
+                      ? t("tokens.lastUsed", {
+                          date: new Date(token.last_used_at).toLocaleDateString(),
+                        })
+                      : t("tokens.neverUsed")}
+                  </p>
+                </div>
+                <button
+                  onClick={() => handleDeleteToken(token.id)}
+                  className="shrink-0 rounded-md p-1.5 text-red-500 hover:bg-red-50"
+                  aria-label={t("tokens.deleteToken")}
+                >
+                  <Trash2 size={16} />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Create form */}
+        {showTokenForm ? (
+          <div className="mt-3 space-y-3 rounded-md border border-gray-200 p-3">
+            <input
+              type="text"
+              value={newTokenName}
+              onChange={(e) => setNewTokenName(e.target.value)}
+              placeholder={t("tokens.namePlaceholder")}
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
+            />
+
+            <div>
+              <p className="mb-2 text-sm font-medium text-gray-700">{t("tokens.scopes")}</p>
+              <div className="space-y-2">
+                {SCOPE_GROUPS.map((group) => (
+                  <div key={group} className="flex items-center gap-3">
+                    <span className="w-24 text-sm text-gray-600">
+                      {t(`tokens.scopeGroups.${group}`)}
+                    </span>
+                    <label className="flex items-center gap-1.5 text-xs">
+                      <input
+                        type="checkbox"
+                        checked={newTokenScopes.includes(`${group}:read`)}
+                        onChange={() => toggleScope(`${group}:read`)}
+                        className="rounded border-gray-300 text-orange-500 focus:ring-orange-500"
+                      />
+                      {t("tokens.scopeRead")}
+                    </label>
+                    <label className="flex items-center gap-1.5 text-xs">
+                      <input
+                        type="checkbox"
+                        checked={newTokenScopes.includes(`${group}:write`)}
+                        onChange={() => toggleScope(`${group}:write`)}
+                        className="rounded border-gray-300 text-orange-500 focus:ring-orange-500"
+                      />
+                      {t("tokens.scopeWrite")}
+                    </label>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <p className="mb-2 text-sm font-medium text-gray-700">{t("tokens.expiration")}</p>
+              <div className="flex flex-wrap gap-2">
+                {(["30d", "90d", "1y", "never", "custom"] as const).map((preset) => (
+                  <button
+                    key={preset}
+                    type="button"
+                    onClick={() => setNewTokenPreset(preset)}
+                    className={`rounded-md px-3 py-1.5 text-xs font-medium ${
+                      newTokenPreset === preset
+                        ? "bg-orange-500 text-white"
+                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                    }`}
+                  >
+                    {t(`tokens.preset${preset.charAt(0).toUpperCase() + preset.slice(1)}`)}
+                  </button>
+                ))}
+              </div>
+              {newTokenPreset === "custom" && (
+                <input
+                  type="date"
+                  value={newTokenCustomDate}
+                  onChange={(e) => setNewTokenCustomDate(e.target.value)}
+                  min={new Date().toISOString().split("T")[0]}
+                  className="mt-2 rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
+                />
+              )}
+            </div>
+
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={handleCreateToken}
+                disabled={
+                  !newTokenName.trim() ||
+                  newTokenScopes.length === 0 ||
+                  createToken.isPending
+                }
+                className="flex flex-1 items-center justify-center gap-2 rounded-md bg-orange-500 px-4 py-2 text-sm font-medium text-white hover:bg-orange-600 disabled:opacity-50"
+              >
+                {createToken.isPending ? <Spinner /> : <Code size={16} />}
+                {t("tokens.createToken")}
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowTokenForm(false)}
+                className="rounded-md px-4 py-2 text-sm text-gray-500 hover:bg-gray-100"
+              >
+                {t("common.cancel")}
+              </button>
+            </div>
+          </div>
+        ) : (
+          <button
+            onClick={() => setShowTokenForm(true)}
+            className="mt-3 flex w-full items-center justify-center gap-2 rounded-md border border-orange-500 px-4 py-2 text-sm font-medium text-orange-500 hover:bg-orange-50"
+          >
+            <Plus size={16} />
+            {t("tokens.createToken")}
           </button>
         )}
       </div>
