@@ -257,6 +257,7 @@
   },
   "settings": {
     "title": "Settings",
+    "admin": "Admin Panel",
     "language": "Language",
     "languages": {
       "en": "English",

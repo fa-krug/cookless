@@ -43,6 +43,7 @@ class UserOut(Schema):
     onboarding_step: str
     has_password: bool
     has_passkey: bool
+    is_staff: bool
 
     @staticmethod
     def resolve_has_password(obj):

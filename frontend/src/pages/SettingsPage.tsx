@@ -1,4 +1,4 @@
-import { ChevronRight, Home, KeyRound, LogOut, Plus, ShieldMinus, Trash2 } from "lucide-react";
+import { ChevronRight, Home, KeyRound, LogOut, Plus, Shield, ShieldMinus, Trash2 } from "lucide-react";
 import { Spinner } from "../components/ui/Spinner";
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -364,6 +364,20 @@ export default function SettingsPage() {
           </button>
         )}
       </div>
+
+      {/* Admin */}
+      {user?.is_staff && (
+        <a
+          href="/admin/"
+          className="mb-4 flex w-full items-center rounded-lg border border-gray-200 bg-white p-4 shadow-sm"
+        >
+          <Shield size={20} className="mr-3 text-gray-400" />
+          <div className="min-w-0 flex-1 text-left">
+            <p className="text-sm font-semibold text-gray-900">{t("settings.admin")}</p>
+          </div>
+          <ChevronRight size={20} className="text-gray-400" />
+        </a>
+      )}
 
       {/* Account / Logout */}
       <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">

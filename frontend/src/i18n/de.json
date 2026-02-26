@@ -257,6 +257,7 @@
   },
   "settings": {
     "title": "Einstellungen",
+    "admin": "Admin-Bereich",
     "language": "Sprache",
     "languages": {
       "en": "English",
