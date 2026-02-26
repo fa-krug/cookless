@@ -81,4 +81,23 @@ describe("StepEditor", () => {
 
     expect(screen.getByText("steps.noSteps")).toBeInTheDocument();
   });
+
+  it("renders program selector for machine steps", () => {
+    const steps: StepRow[] = [{ step_number: 1, instruction: "" }];
+    render(
+      <StepEditor steps={steps} onChange={vi.fn()} label="Machine" isMachine />,
+    );
+
+    expect(screen.getByText("steps.programs.MANUAL_COOKING")).toBeInTheDocument();
+    expect(screen.getByText("steps.programs.CHOPPING")).toBeInTheDocument();
+  });
+
+  it("does not show program selector for non-machine steps", () => {
+    const steps: StepRow[] = [{ step_number: 1, instruction: "" }];
+    render(
+      <StepEditor steps={steps} onChange={vi.fn()} label="By Hand" />,
+    );
+
+    expect(screen.queryByText("steps.programs.MANUAL_COOKING")).not.toBeInTheDocument();
+  });
 });

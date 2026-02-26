@@ -48,9 +48,26 @@ def build_generation_prompt(
         f"unit_abbreviation (string), order (integer starting at 0))\n"
         f"- manual_steps (array of objects with step_number (integer) and "
         f"instruction (string in {lang_note}))\n"
-        f"- machine_steps (array of objects with step_number (integer) and "
-        f"instruction (string in {lang_note}), "
-        f"for Thermomix or similar kitchen machines; can be empty)\n"
+        f"- machine_steps (array of step objects for Thermomix or similar kitchen machines; can be empty.\n"
+        f"  Each step is EITHER free text OR a structured program:\n"
+        f'  Free text: {{"step_number": 1, "instruction": "Add ingredients"}}\n'
+        f'  Program: {{"step_number": 1, "instruction": "", "program_type": "MANUAL_COOKING", '
+        f'"temperature": 100, "duration_seconds": 300, "speed": 5, "direction": "LEFT", "turbo": false}}\n'
+        f"  Available programs:\n"
+        f"  - MANUAL_COOKING: temperature (37-130°C), duration_seconds (1-5940), speed (1-10), direction (LEFT/RIGHT), turbo (bool, optional)\n"
+        f"  - CHOPPING: duration_seconds (1-5940), speed (1-10)\n"
+        f"  - KNEADING: duration_seconds (1-5940)\n"
+        f"  - STEAMING: temperature (37-130°C), duration_seconds (1-5940)\n"
+        f"  - BLENDING: duration_seconds (1-5940)\n"
+        f"  - SEARING: temperature (37-130°C), duration_seconds (1-5940), speed (1-10)\n"
+        f"  - SLOW_COOKING: temperature (37-130°C), duration_seconds (1-43200)\n"
+        f"  - SOUS_VIDE: temperature (37-130°C), duration_seconds (1-43200)\n"
+        f"  - WEIGHING: weight_grams (1-5000)\n"
+        f"  - TURBO: duration_seconds (1-60)\n"
+        f"  - EGG_COOKING: duration_seconds (1-5940)\n"
+        f"  - FERMENTATION: temperature (37-60°C), duration_seconds (1-43200)\n"
+        f"  - PRE_CLEANING: (no parameters)\n"
+        f"  Prefer structured programs over free text when the step is a machine operation.)\n"
         f"- tag_names_en (array of strings, English tag names that apply)"
     )
 
@@ -176,11 +193,13 @@ def call_gemini_text(api_key: str, prompt: str) -> list[dict[str, Any]]:
         }
     ).encode()
 
-    url = f"{GEMINI_TEXT_URL}?key={api_key}"
     req = urllib.request.Request(
-        url,
+        GEMINI_TEXT_URL,
         data=body,
-        headers={"Content-Type": "application/json"},
+        headers={
+            "Content-Type": "application/json",
+            "x-goog-api-key": api_key,
+        },
         method="POST",
     )
 
