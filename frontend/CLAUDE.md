@@ -122,7 +122,7 @@ All pages lazy-loaded with `React.lazy` + `<Suspense>`.
 | `/shopping` | ShoppingListPage | Current shopping list with category groups |
 | `/shopping/:id` | ShoppingListDetailPage | Specific shopping list by ID |
 | `/cook/:id` | CookingViewPage | Step-by-step with wake lock |
-| `/settings` | SettingsPage | Language, passkeys, password, logout |
+| `/settings` | SettingsPage | Household, language, AI config, passkeys, password, admin link, logout |
 | `/household` | HouseholdPage | Members, invites, ownership, multi-household |
 | `*` | Redirect to `/recipes` | |
 
@@ -252,7 +252,7 @@ Each major page has a dedicated skeleton component (`RecipeListSkeleton`, `Recip
 - Languages: `en`, `de`. Fallback: `en`.
 - Detection: `localStorage` -> `navigator`. Cached to `localStorage`.
 - Resources bundled as JSON imports (not async).
-- Top-level keys: `common`, `nav`, `auth`, `invite`, `passkeys`, `recipes`, `ingredients`, `steps`, `plan`, `shopping`, `cooking`, `household`, `install`, `password`, `settings`, `errors`, `success`, `setup`, `welcome`
+- Top-level keys: `common`, `nav`, `auth`, `invite`, `passkeys`, `recipes`, `ingredients`, `steps`, `plan`, `shopping`, `cooking`, `household`, `install`, `ai`, `password`, `settings`, `errors`, `success`, `setup`, `welcome`
 - `plan.weekdays` is an array accessed with `{ returnObjects: true }`.
 
 ## Vite Config

@@ -43,6 +43,7 @@ Four routers registered in `cookless/api.py` (all mounted at empty prefix):
 | DELETE | `/users/me/passkeys/{id}/` | Delete passkey |
 | POST | `/users/me/passkeys/add/begin/` | Begin adding passkey to existing account |
 | POST | `/users/me/passkeys/add/complete/` | Complete adding passkey |
+| POST | `/users/me/verify-gemini-key/` | Verify a Gemini API key |
 
 ### Households (in `users/api.py`)
 
@@ -52,6 +53,7 @@ Four routers registered in `cookless/api.py` (all mounted at empty prefix):
 | POST | `/households/` | Create household |
 | PATCH | `/households/{id}/` | Rename (OWNER) |
 | DELETE | `/households/{id}/` | Delete (OWNER, must be sole member) |
+| PATCH | `/households/{id}/settings/` | Update AI settings (OWNER) |
 | POST | `/households/{id}/switch/` | Switch active household |
 | POST | `/households/{id}/leave/` | Leave household |
 | POST | `/households/{id}/members/{pk}/transfer-ownership/` | Transfer OWNER role |
@@ -154,12 +156,15 @@ Four routers registered in `cookless/api.py` (all mounted at empty prefix):
 - `SetPasswordIn` -- `current_password` (optional), `new_password`
 - `RegisterPasswordIn` -- `email`, `password`, `invite_code`
 - `LoginPasswordIn` -- `email`, `password`
+- `HouseholdSettingsUpdateIn` -- `ai_enabled` (optional bool), `gemini_api_key` (optional str)
+- `VerifyGeminiKeyIn` -- `api_key`
 
 ### Response schemas
 
 - `RecipeListOut` -- lean (no ingredients/steps), used for list endpoint
 - `RecipeOut` -- full with `ingredients`, `manual_steps`, `machine_steps` (resolved via `Prefetch` with `to_attr`)
 - `UserOut` -- includes computed `has_password` and `has_passkey` fields
+- `HouseholdSummaryOut` / `HouseholdOut` -- include `ai_enabled` and `gemini_api_key`
 - `ShoppingListItemOut` -- flattens ingredient/unit into scalars (`ingredient_name`, `unit_abbreviation`)
 
 ## Auth & Permissions

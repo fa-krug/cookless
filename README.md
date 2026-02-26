@@ -10,6 +10,7 @@ A meal planning PWA that minimizes cooking effort through batch cooking and ingr
 - **Cooking view** -- step-by-step cooking guide with screen wake lock
 - **Multi-user households** -- owner/member roles with a code-based invite system
 - **Onboarding wizard** -- guided setup for new users (set password, add passkey, create household)
+- **AI support** -- optional Gemini integration per household (toggle + API key in settings)
 - **PWA** -- installable with offline shopping list support via Workbox service worker
 - **i18n** -- English and German
 
