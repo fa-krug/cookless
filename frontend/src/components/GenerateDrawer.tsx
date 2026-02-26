@@ -3,10 +3,13 @@ import { Spinner } from "./ui/Spinner";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ApiError } from "../api/client";
-import type { MealPlan } from "../api/types";
+import type { MealPlan, TagCategory } from "../api/types";
 import { useSetupPlan } from "../hooks/useMealPlan";
+import { useTags } from "../hooks/useTags";
 import { useToast } from "../hooks/useToast";
 import Drawer from "./ui/Drawer";
+
+const TAG_CATEGORIES: TagCategory[] = ["DIETARY", "PROTEIN", "CUISINE", "MEAL_TYPE"];
 
 interface GenerateDrawerProps {
   isOpen: boolean;
@@ -34,9 +37,10 @@ interface DrawerFormProps {
 }
 
 function DrawerForm({ existingPlan, onClose }: DrawerFormProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { addToast } = useToast();
   const setupPlan = useSetupPlan();
+  const { data: groupedTags } = useTags();
 
   const [iterationWeeks, setIterationWeeks] = useState(
     existingPlan?.iteration_weeks ?? 1,
@@ -50,6 +54,9 @@ function DrawerForm({ existingPlan, onClose }: DrawerFormProps) {
   );
   const [defaultLeftoverDays, setDefaultLeftoverDays] = useState(
     existingPlan?.default_leftover_days ?? 1,
+  );
+  const [excludedTagIds, setExcludedTagIds] = useState<Set<string>>(
+    new Set(existingPlan?.excluded_tag_ids ?? []),
   );
   const [shoppingDayError, setShoppingDayError] = useState<
     false | "required" | "tooClose"
@@ -89,6 +96,7 @@ function DrawerForm({ existingPlan, onClose }: DrawerFormProps) {
         servings,
         known_ratio: knownRatio,
         default_leftover_days: defaultLeftoverDays,
+        excluded_tag_ids: Array.from(excludedTagIds),
       },
       {
         onSuccess: () => onClose(),
@@ -211,6 +219,60 @@ function DrawerForm({ existingPlan, onClose }: DrawerFormProps) {
           className="w-20 rounded-lg border border-gray-300 px-3 py-2 text-sm"
         />
       </div>
+
+      {/* Tag exclusions */}
+      {groupedTags && (
+        <div className="space-y-3">
+          <div>
+            <h3 className="text-sm font-medium text-gray-700 mb-1">{t("tags.title")}</h3>
+            <p className="text-xs text-gray-500">{t("tags.excludeFromPlan")}</p>
+          </div>
+          {TAG_CATEGORIES.map((category) => {
+            const tags = groupedTags[category] || [];
+            if (tags.length === 0) return null;
+            return (
+              <div key={category}>
+                <h4 className="text-xs font-medium text-gray-500 uppercase mb-1">
+                  {t(`tags.${category}`)}
+                </h4>
+                <div className="flex flex-wrap gap-2">
+                  {tags.map((tag) => {
+                    const isExcluded = excludedTagIds.has(tag.id);
+                    return (
+                      <label
+                        key={tag.id}
+                        className={`flex items-center gap-1.5 text-sm px-2 py-1 rounded-lg border cursor-pointer ${
+                          isExcluded
+                            ? "border-gray-200 bg-gray-50 text-gray-400 line-through"
+                            : "border-gray-300 bg-white"
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={!isExcluded}
+                          onChange={() => {
+                            setExcludedTagIds((prev) => {
+                              const next = new Set(prev);
+                              if (next.has(tag.id)) {
+                                next.delete(tag.id);
+                              } else {
+                                next.add(tag.id);
+                              }
+                              return next;
+                            });
+                          }}
+                          className="rounded accent-orange-500"
+                        />
+                        {i18n.language === "de" ? tag.name_de : tag.name_en}
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
 
       <button
         onClick={handleSubmit}

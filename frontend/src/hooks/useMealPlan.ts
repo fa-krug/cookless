@@ -8,6 +8,7 @@ interface SetupPlanPayload {
   servings: number;
   known_ratio: number;
   default_leftover_days: number;
+  excluded_tag_ids?: string[];
 }
 
 export function useMealPlans() {
