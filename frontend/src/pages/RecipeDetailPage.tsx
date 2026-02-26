@@ -31,10 +31,10 @@ export default function RecipeDetailPage() {
   const { t } = useTranslation();
 
   const { data: recipe, isLoading: recipeLoading } = useRecipe(id ?? "");
-  const { data: allIngredients = [] } = useIngredients();
-  const { data: allUnits = [] } = useUnits();
+  const { data: allIngredients = [], isLoading: ingredientsLoading } = useIngredients();
+  const { data: allUnits = [], isLoading: unitsLoading } = useUnits();
 
-  if (recipeLoading) {
+  if (recipeLoading || ingredientsLoading || unitsLoading) {
     return <RecipeDetailSkeleton />;
   }
 
