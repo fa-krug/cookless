@@ -249,6 +249,15 @@
     "keyValid": "Gültig",
     "keyInvalid": "Ungültig"
   },
+  "recipeImage": {
+    "upload": "Foto hochladen",
+    "generate": "Mit KI erstellen",
+    "remove": "Foto entfernen",
+    "generating": "Wird erstellt...",
+    "uploadFailed": "Foto konnte nicht hochgeladen werden.",
+    "generateFailed": "Foto konnte nicht erstellt werden.",
+    "noImage": "Noch kein Foto"
+  },
   "password": {
     "title": "Passwort",
     "setPassword": "Passwort festlegen",
