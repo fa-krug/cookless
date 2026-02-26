@@ -116,11 +116,34 @@ class RecipeIngredient(models.Model):
 
 class CookingStep(models.Model):
     METHOD_CHOICES = [("MANUAL", "Manual"), ("MACHINE", "Machine")]
+    PROGRAM_CHOICES = [
+        ("MANUAL_COOKING", "Manual Cooking"),
+        ("CHOPPING", "Chopping"),
+        ("KNEADING", "Kneading"),
+        ("STEAMING", "Steaming"),
+        ("BLENDING", "Blending"),
+        ("SEARING", "Searing"),
+        ("SLOW_COOKING", "Slow Cooking"),
+        ("SOUS_VIDE", "Sous Vide"),
+        ("WEIGHING", "Weighing"),
+        ("TURBO", "Turbo"),
+        ("EGG_COOKING", "Egg Cooking"),
+        ("FERMENTATION", "Fermentation"),
+        ("PRE_CLEANING", "Pre-Cleaning"),
+    ]
+    DIRECTION_CHOICES = [("LEFT", "Left"), ("RIGHT", "Right")]
 
     recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE, related_name="steps")
     method = models.CharField(max_length=10, choices=METHOD_CHOICES)
     step_number = models.PositiveIntegerField()
-    instruction = models.TextField()
+    instruction = models.TextField(blank=True, default="")
+    program_type = models.CharField(max_length=20, choices=PROGRAM_CHOICES, blank=True, default="")
+    temperature = models.PositiveIntegerField(null=True, blank=True)
+    duration_seconds = models.PositiveIntegerField(null=True, blank=True)
+    speed = models.PositiveIntegerField(null=True, blank=True)
+    turbo = models.BooleanField(default=False)
+    direction = models.CharField(max_length=5, choices=DIRECTION_CHOICES, blank=True, default="")
+    weight_grams = models.PositiveIntegerField(null=True, blank=True)
 
     class Meta:
         ordering = ["method", "step_number"]
