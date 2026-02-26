@@ -84,6 +84,7 @@ export interface RecipeSummary {
   prep_time_minutes: number | null;
   cook_time_minutes: number | null;
   leftover_days: number | null;
+  image: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -96,6 +97,7 @@ export interface Recipe {
   prep_time_minutes: number | null;
   cook_time_minutes: number | null;
   leftover_days: number | null;
+  image: string | null;
   ingredients: RecipeIngredient[];
   manual_steps: CookingStep[];
   machine_steps: CookingStep[];
