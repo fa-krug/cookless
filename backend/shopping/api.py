@@ -10,7 +10,7 @@ from shopping.schemas import (
     ShoppingListItemOut,
     ShoppingListOut,
 )
-from users.permissions import require_household_member
+from users.permissions import require_household_member, require_scope
 
 router = Router()
 
@@ -18,6 +18,7 @@ router = Router()
 @router.get("/shopping-lists/", response=list[ShoppingListOut], tags=["shopping-lists"])
 def list_shopping_lists(request):
     require_household_member(request)
+    require_scope(request, "shopping:read")
     return (
         ShoppingList.objects.filter(iteration__meal_plan__household=request.user.active_household)
         .prefetch_related("items__ingredient", "items__unit")
@@ -28,6 +29,7 @@ def list_shopping_lists(request):
 @router.get("/shopping-lists/{list_id}/", response=ShoppingListOut, tags=["shopping-lists"])
 def get_shopping_list(request, list_id: UUID):
     require_household_member(request)
+    require_scope(request, "shopping:read")
     return get_object_or_404(
         ShoppingList.objects.prefetch_related("items__ingredient", "items__unit"),
         pk=list_id,
@@ -42,6 +44,7 @@ def get_shopping_list(request, list_id: UUID):
 )
 def toggle_item(request, item_id: UUID):
     require_household_member(request)
+    require_scope(request, "shopping:write")
     item = get_object_or_404(
         ShoppingListItem.objects.select_related("ingredient", "unit"),
         pk=item_id,
@@ -59,6 +62,7 @@ def toggle_item(request, item_id: UUID):
 )
 def bulk_toggle_items(request, payload: BulkToggleIn):
     require_household_member(request)
+    require_scope(request, "shopping:write")
     items = ShoppingListItem.objects.filter(
         pk__in=payload.item_ids,
         shopping_list__iteration__meal_plan__household=request.user.active_household,

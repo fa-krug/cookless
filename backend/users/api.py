@@ -16,7 +16,7 @@ from webauthn.helpers import base64url_to_bytes, bytes_to_base64url, options_to_
 
 from recipes.tag_defaults import seed_default_tags
 from users.models import Household, HouseholdMember, Invite, PasskeyCredential, PersonalAccessToken
-from users.permissions import require_household_owner
+from users.permissions import require_household_owner, require_scope
 from users.schemas import (
     HouseholdCreateIn,
     HouseholdOut,
@@ -157,6 +157,7 @@ def verify_gemini_key(request, payload: VerifyGeminiKeyIn):
 
 @router.get("/households/", response=list[HouseholdOut], tags=["households"])
 def list_households(request):
+    require_scope(request, "households:read")
     return (
         Household.objects.filter(members__user=request.user)
         .prefetch_related("members__user")
@@ -166,6 +167,7 @@ def list_households(request):
 
 @router.post("/households/", response={201: HouseholdOut}, tags=["households"])
 def create_household(request, payload: HouseholdCreateIn):
+    require_scope(request, "households:write")
     household = Household.objects.create(name=payload.name)
     seed_default_tags(household)
     HouseholdMember.objects.create(
@@ -183,6 +185,7 @@ def create_household(request, payload: HouseholdCreateIn):
 
 @router.patch("/households/{household_id}/", response=HouseholdOut, tags=["households"])
 def update_household(request, household_id: UUID, payload: HouseholdUpdateIn):
+    require_scope(request, "households:write")
     household = get_object_or_404(
         Household.objects.filter(members__user=request.user), pk=household_id
     )
@@ -194,6 +197,7 @@ def update_household(request, household_id: UUID, payload: HouseholdUpdateIn):
 
 @router.patch("/households/{household_id}/settings/", response=HouseholdOut, tags=["households"])
 def update_household_settings(request, household_id: UUID, payload: HouseholdSettingsUpdateIn):
+    require_scope(request, "households:write")
     household = get_object_or_404(
         Household.objects.filter(members__user=request.user), pk=household_id
     )
@@ -208,6 +212,7 @@ def update_household_settings(request, household_id: UUID, payload: HouseholdSet
 
 @router.post("/households/{household_id}/switch/", response=MessageOut, tags=["households"])
 def switch_household(request, household_id: UUID):
+    require_scope(request, "households:write")
     household = get_object_or_404(Household, pk=household_id)
     if not HouseholdMember.objects.filter(household=household, user=request.user).exists():
         raise HttpError(403, "You are not a member of this household.")
@@ -218,6 +223,7 @@ def switch_household(request, household_id: UUID):
 
 @router.delete("/households/{household_id}/", response={204: None}, tags=["households"])
 def delete_household(request, household_id: UUID):
+    require_scope(request, "households:write")
     household = get_object_or_404(
         Household.objects.filter(members__user=request.user), pk=household_id
     )
@@ -240,6 +246,7 @@ def delete_household(request, household_id: UUID):
 
 @router.post("/households/{household_id}/leave/", response=MessageOut, tags=["households"])
 def leave_household(request, household_id: UUID):
+    require_scope(request, "households:write")
     household = get_object_or_404(
         Household.objects.filter(members__user=request.user), pk=household_id
     )
@@ -265,6 +272,7 @@ def leave_household(request, household_id: UUID):
     tags=["households"],
 )
 def transfer_ownership(request, household_id: UUID, member_pk: int):
+    require_scope(request, "households:write")
     household = get_object_or_404(
         Household.objects.filter(members__user=request.user), pk=household_id
     )
@@ -287,6 +295,7 @@ def transfer_ownership(request, household_id: UUID, member_pk: int):
 
 @router.post("/households/{household_id}/invites/", response={201: InviteOut}, tags=["invites"])
 def create_invite(request, household_id: UUID):
+    require_scope(request, "households:write")
     household = get_object_or_404(
         Household.objects.filter(members__user=request.user), pk=household_id
     )
@@ -340,6 +349,7 @@ def accept_invite(request, code: str):
     tags=["households"],
 )
 def delete_member(request, household_id: UUID, member_pk: int):
+    require_scope(request, "households:write")
     household = get_object_or_404(
         Household.objects.filter(members__user=request.user), pk=household_id
     )

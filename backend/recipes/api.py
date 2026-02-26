@@ -34,7 +34,7 @@ from recipes.schemas import (
 )
 from recipes.tag_defaults import seed_default_tags
 from recipes.tag_schemas import GroupedTagsOut, TagCreateIn, TagOut, TagUpdateIn
-from users.permissions import require_household_member
+from users.permissions import require_household_member, require_scope
 
 router = Router()
 
@@ -160,6 +160,7 @@ def list_recipes(
     offset: int = 0,
 ):
     require_household_member(request)
+    require_scope(request, "recipes:read")
     qs = Recipe.objects.filter(household=request.user.active_household).prefetch_related("tags")
     if list_type:
         qs = qs.filter(list_type=list_type)
@@ -181,6 +182,7 @@ def list_recipes(
 @router.post("/recipes/", response={201: RecipeOut}, tags=["recipes"])
 def create_recipe(request, payload: RecipeCreateIn):
     require_household_member(request)
+    require_scope(request, "recipes:write")
     with transaction.atomic():
         recipe = Recipe.objects.create(
             household=request.user.active_household,
@@ -204,6 +206,7 @@ def create_recipe(request, payload: RecipeCreateIn):
 @router.post("/recipes/bulk-create/", response={201: BulkCreateRecipesOut}, tags=["recipes"])
 def bulk_create_recipes(request, payload: BulkCreateRecipesIn):
     require_household_member(request)
+    require_scope(request, "recipes:write")
     household = request.user.active_household
 
     # Pre-load lookup maps
@@ -277,6 +280,7 @@ def bulk_create_recipes(request, payload: BulkCreateRecipesIn):
 @router.post("/recipes/generate/", tags=["recipes"])
 def generate_recipes(request, payload: GenerateRecipesIn):
     require_household_member(request)
+    require_scope(request, "recipes:write")
     household = request.user.active_household
 
     if not household.ai_enabled:
@@ -377,6 +381,7 @@ def generate_recipes(request, payload: GenerateRecipesIn):
 @router.get("/recipes/{recipe_id}/", response=RecipeOut, tags=["recipes"])
 def get_recipe(request, recipe_id: UUID):
     require_household_member(request)
+    require_scope(request, "recipes:read")
     return get_object_or_404(
         Recipe.objects.prefetch_related(
             "ingredients",
@@ -400,6 +405,7 @@ def get_recipe(request, recipe_id: UUID):
 @router.put("/recipes/{recipe_id}/", response=RecipeOut, tags=["recipes"])
 def update_recipe_put(request, recipe_id: UUID, payload: RecipeCreateIn):
     require_household_member(request)
+    require_scope(request, "recipes:write")
     recipe = get_object_or_404(Recipe, pk=recipe_id, household=request.user.active_household)
     with transaction.atomic():
         recipe.title = payload.title
@@ -421,6 +427,7 @@ def update_recipe_put(request, recipe_id: UUID, payload: RecipeCreateIn):
 @router.patch("/recipes/{recipe_id}/", response=RecipeOut, tags=["recipes"])
 def update_recipe_patch(request, recipe_id: UUID, payload: RecipeCreateIn):
     require_household_member(request)
+    require_scope(request, "recipes:write")
     recipe = get_object_or_404(Recipe, pk=recipe_id, household=request.user.active_household)
     with transaction.atomic():
         recipe.title = payload.title
@@ -442,6 +449,7 @@ def update_recipe_patch(request, recipe_id: UUID, payload: RecipeCreateIn):
 @router.delete("/recipes/{recipe_id}/", response={204: None}, tags=["recipes"])
 def delete_recipe(request, recipe_id: UUID):
     require_household_member(request)
+    require_scope(request, "recipes:write")
     recipe = get_object_or_404(Recipe, pk=recipe_id, household=request.user.active_household)
     recipe.delete()
     return None
@@ -450,6 +458,7 @@ def delete_recipe(request, recipe_id: UUID):
 @router.post("/recipes/{recipe_id}/move/", response=RecipeOut, tags=["recipes"])
 def move_recipe(request, recipe_id: UUID):
     require_household_member(request)
+    require_scope(request, "recipes:write")
     recipe = get_object_or_404(Recipe, pk=recipe_id, household=request.user.active_household)
     recipe.list_type = "TO_TRY" if recipe.list_type == "KNOWN" else "KNOWN"
     recipe.save()
@@ -459,6 +468,7 @@ def move_recipe(request, recipe_id: UUID):
 @router.post("/recipes/{recipe_id}/image/upload/", response=RecipeOut, tags=["recipes"])
 def upload_recipe_image(request, recipe_id: UUID, image: UploadedFile = File(...)):  # noqa: B008
     require_household_member(request)
+    require_scope(request, "recipes:write")
     recipe = get_object_or_404(Recipe, pk=recipe_id, household=request.user.active_household)
 
     if image.content_type not in ALLOWED_IMAGE_TYPES:
@@ -478,6 +488,7 @@ def upload_recipe_image(request, recipe_id: UUID, image: UploadedFile = File(...
 @router.delete("/recipes/{recipe_id}/image/", response=RecipeOut, tags=["recipes"])
 def delete_recipe_image(request, recipe_id: UUID):
     require_household_member(request)
+    require_scope(request, "recipes:write")
     recipe = get_object_or_404(Recipe, pk=recipe_id, household=request.user.active_household)
 
     if recipe.image:
@@ -493,6 +504,7 @@ def delete_recipe_image(request, recipe_id: UUID):
 @router.post("/recipes/{recipe_id}/image/generate/", response=RecipeOut, tags=["recipes"])
 def generate_recipe_image(request, recipe_id: UUID):
     require_household_member(request)
+    require_scope(request, "recipes:write")
     household = request.user.active_household
 
     if not household.ai_enabled:
@@ -560,6 +572,7 @@ def generate_recipe_image(request, recipe_id: UUID):
 @router.get("/recipes/{recipe_id}/steps/", response=list[CookingStepOut], tags=["recipes"])
 def list_steps(request, recipe_id: UUID, method: str | None = None):
     require_household_member(request)
+    require_scope(request, "recipes:read")
     recipe = get_object_or_404(Recipe, pk=recipe_id, household=request.user.active_household)
     qs = recipe.steps.all()
     if method:
@@ -573,12 +586,14 @@ def list_steps(request, recipe_id: UUID, method: str | None = None):
 @router.get("/ingredients/", response=list[IngredientOut], tags=["ingredients"])
 def list_ingredients(request):
     require_household_member(request)
+    require_scope(request, "recipes:read")
     return Ingredient.objects.all()
 
 
 @router.post("/ingredients/", response={201: IngredientOut}, tags=["ingredients"])
 def create_ingredient(request, payload: IngredientCreateIn):
     require_household_member(request)
+    require_scope(request, "recipes:write")
     return Ingredient.objects.create(
         name_de=payload.name_de,
         name_en=payload.name_en,
@@ -589,6 +604,7 @@ def create_ingredient(request, payload: IngredientCreateIn):
 @router.get("/units/", response=list[UnitOut], tags=["units"])
 def list_units(request):
     require_household_member(request)
+    require_scope(request, "recipes:read")
     return Unit.objects.all()
 
 
@@ -598,6 +614,7 @@ def list_units(request):
 @router.get("/tags/", response=GroupedTagsOut, tags=["tags"])
 def list_tags(request):
     require_household_member(request)
+    require_scope(request, "recipes:read")
     tags = Tag.objects.filter(household=request.user.active_household)
     grouped: dict[str, list[Tag]] = {cat.value: [] for cat in TagCategory}
     for tag in tags:
@@ -608,6 +625,7 @@ def list_tags(request):
 @router.post("/tags/", response={201: TagOut}, tags=["tags"])
 def create_tag(request, payload: TagCreateIn):
     require_household_member(request)
+    require_scope(request, "recipes:write")
     tag = Tag.objects.create(
         household=request.user.active_household,
         category=payload.category,
@@ -621,6 +639,7 @@ def create_tag(request, payload: TagCreateIn):
 @router.post("/tags/reset/", response=GroupedTagsOut, tags=["tags"])
 def reset_tags(request):
     require_household_member(request)
+    require_scope(request, "recipes:write")
     household = request.user.active_household
     Tag.objects.filter(household=household).delete()
     seed_default_tags(household)
@@ -634,6 +653,7 @@ def reset_tags(request):
 @router.put("/tags/{tag_id}/", response=TagOut, tags=["tags"])
 def update_tag(request, tag_id: UUID, payload: TagUpdateIn):
     require_household_member(request)
+    require_scope(request, "recipes:write")
     tag = get_object_or_404(Tag, pk=tag_id, household=request.user.active_household)
     tag.name_en = payload.name_en
     tag.name_de = payload.name_de
@@ -644,6 +664,7 @@ def update_tag(request, tag_id: UUID, payload: TagUpdateIn):
 @router.delete("/tags/{tag_id}/", response={204: None}, tags=["tags"])
 def delete_tag(request, tag_id: UUID):
     require_household_member(request)
+    require_scope(request, "recipes:write")
     tag = get_object_or_404(Tag, pk=tag_id, household=request.user.active_household)
     tag.delete()
     return None
