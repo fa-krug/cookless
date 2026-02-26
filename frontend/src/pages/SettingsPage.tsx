@@ -1,5 +1,4 @@
 import {
-  Check,
   ChevronRight,
   Home,
   KeyRound,
@@ -7,16 +6,14 @@ import {
   Plus,
   Shield,
   ShieldMinus,
-  Sparkles,
   Trash2,
-  X,
 } from "lucide-react";
 import { Spinner } from "../components/ui/Spinner";
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { api } from "../api/client";
-import { TAG_CATEGORIES, type Household, type Passkey, type TagCategory, type User } from "../api/types";
+import { TAG_CATEGORIES, type Passkey, type TagCategory, type User } from "../api/types";
 import { addPasskey } from "../api/webauthn";
 import { ConfirmDialog } from "../components/ui/ConfirmDialog";
 import ResponsiveOverlay from "../components/ui/ResponsiveOverlay";
@@ -34,6 +31,9 @@ export default function SettingsPage() {
   const navigate = useNavigate();
 
   const [language, setLanguage] = useState(i18n.language);
+  const [theme, setTheme] = useState<"light" | "dark">(() =>
+    document.documentElement.classList.contains("dark") ? "dark" : "light",
+  );
   const [householdOpen, setHouseholdOpen] = useState(false);
 
   // Passkey state
@@ -60,13 +60,6 @@ export default function SettingsPage() {
   const [addingCategory, setAddingCategory] = useState<TagCategory | null>(null);
   const [newTagEn, setNewTagEn] = useState("");
   const [newTagDe, setNewTagDe] = useState("");
-
-  // AI state
-  const household = user?.active_household;
-  const [aiEnabled, setAiEnabled] = useState(household?.ai_enabled ?? false);
-  const [geminiKey, setGeminiKey] = useState(household?.gemini_api_key ?? "");
-  const [verifyingKey, setVerifyingKey] = useState(false);
-  const [keyStatus, setKeyStatus] = useState<"idle" | "valid" | "invalid">("idle");
 
   const fetchPasskeys = useCallback(async () => {
     try {
@@ -210,45 +203,6 @@ export default function SettingsPage() {
     }
   }
 
-  async function saveHouseholdSettings(patch: Record<string, unknown>) {
-    if (!household) return;
-    try {
-      await api.patch<Household>(
-        `/api/v1/households/${household.id}/settings/`,
-        patch,
-      );
-      await refreshUser();
-    } catch {
-      addToast(t("errors.settingsSave"), "error");
-    }
-  }
-
-  async function handleAiToggle() {
-    const next = !aiEnabled;
-    setAiEnabled(next);
-    await saveHouseholdSettings({ ai_enabled: next });
-  }
-
-  async function handleGeminiKeyBlur() {
-    if (geminiKey === (household?.gemini_api_key ?? "")) return;
-    setKeyStatus("idle");
-    await saveHouseholdSettings({ gemini_api_key: geminiKey });
-  }
-
-  async function handleVerifyKey() {
-    if (!geminiKey) return;
-    setVerifyingKey(true);
-    setKeyStatus("idle");
-    try {
-      await api.post("/api/v1/users/me/verify-gemini-key/", { api_key: geminiKey });
-      setKeyStatus("valid");
-    } catch {
-      setKeyStatus("invalid");
-    } finally {
-      setVerifyingKey(false);
-    }
-  }
-
   return (
     <div className="p-4">
       <h1 className="mb-4 text-2xl font-bold text-gray-900">{t("settings.title")}</h1>
@@ -309,6 +263,30 @@ export default function SettingsPage() {
               }`}
             >
               {t(`settings.languages.${lang}`)}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Theme */}
+      <div className="mb-4 rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
+        <h2 className="mb-3 text-lg font-semibold text-gray-900">{t("settings.theme")}</h2>
+        <div className="flex gap-2">
+          {(["light", "dark"] as const).map((t_) => (
+            <button
+              key={t_}
+              onClick={() => {
+                setTheme(t_);
+                localStorage.setItem("theme", t_);
+                document.documentElement.classList.toggle("dark", t_ === "dark");
+              }}
+              className={`rounded-md px-4 py-2 text-sm font-medium ${
+                theme === t_
+                  ? "bg-orange-500 text-white"
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+              }`}
+            >
+              {t(`settings.themes.${t_}`)}
             </button>
           ))}
         </div>
@@ -526,79 +504,6 @@ export default function SettingsPage() {
           {addingPasskey ? <Spinner /> : <Plus size={16} />}
           {addingPasskey ? t("common.loading") : t("passkeys.addPasskey")}
         </button>
-      </div>
-
-      {/* AI */}
-      <div className="mb-4 rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
-        <div className="mb-3 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Sparkles size={20} className="text-gray-400" />
-            <h2 className="text-lg font-semibold text-gray-900">{t("ai.title")}</h2>
-          </div>
-          <button
-            onClick={handleAiToggle}
-            role="switch"
-            aria-checked={aiEnabled}
-            className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full transition-colors ${
-              aiEnabled ? "bg-orange-500" : "bg-gray-200"
-            }`}
-          >
-            <span
-              className={`inline-block h-5 w-5 translate-y-0.5 rounded-full bg-white shadow transition-transform ${
-                aiEnabled ? "translate-x-5.5" : "translate-x-0.5"
-              }`}
-            />
-          </button>
-        </div>
-
-        <p className="mb-3 text-sm text-gray-500">{t("ai.description")}</p>
-
-        {aiEnabled && (
-          <>
-            <label className="mb-1 block text-sm font-medium text-gray-700">
-              {t("ai.apiKey")}
-            </label>
-            <div className="flex gap-2">
-              <input
-                type="password"
-                placeholder={t("ai.apiKeyPlaceholder")}
-                value={geminiKey}
-                onChange={(e) => {
-                  setGeminiKey(e.target.value);
-                  setKeyStatus("idle");
-                }}
-                onBlur={handleGeminiKeyBlur}
-                className="min-w-0 flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
-              />
-              <button
-                onClick={handleVerifyKey}
-                disabled={!geminiKey || verifyingKey}
-                className={`flex shrink-0 items-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium disabled:opacity-50 ${
-                  keyStatus === "valid"
-                    ? "bg-green-100 text-green-700"
-                    : keyStatus === "invalid"
-                      ? "bg-red-100 text-red-700"
-                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                }`}
-              >
-                {verifyingKey ? (
-                  <Spinner />
-                ) : keyStatus === "valid" ? (
-                  <Check size={16} />
-                ) : keyStatus === "invalid" ? (
-                  <X size={16} />
-                ) : null}
-                {verifyingKey
-                  ? t("common.loading")
-                  : keyStatus === "valid"
-                    ? t("ai.keyValid")
-                    : keyStatus === "invalid"
-                      ? t("ai.keyInvalid")
-                      : t("ai.verify")}
-              </button>
-            </div>
-          </>
-        )}
       </div>
 
       {/* Password */}

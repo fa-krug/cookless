@@ -47,12 +47,9 @@ export default function LoginPage() {
     <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-orange-50 via-amber-50/50 to-white px-4">
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
-          <h1 className="mb-1">
+          <h1>
             <AppLogo className="text-5xl" />
           </h1>
-          <p className="text-sm font-medium tracking-wide text-gray-400 uppercase">
-            {t("nav.plan")}
-          </p>
         </div>
 
         <div className="rounded-2xl bg-white p-6 shadow-lg shadow-orange-900/5 ring-1 ring-gray-950/5">

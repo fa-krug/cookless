@@ -256,6 +256,18 @@ Each major page has a dedicated skeleton component (`RecipeListSkeleton`, `Recip
 - Top-level keys: `common`, `nav`, `auth`, `invite`, `passkeys`, `recipes`, `recipeImage`, `ingredients`, `steps`, `plan`, `shopping`, `cooking`, `household`, `install`, `ai`, `password`, `settings`, `errors`, `success`, `setup`, `welcome`
 - `plan.weekdays` is an array accessed with `{ returnObjects: true }`.
 
+### Tone: cozy and friendly
+
+All user-facing text must feel warm, casual, and encouraging — like a friend helping you cook.
+
+- Use contractions ("Couldn't", "Let's", "You've")
+- Prefer "you/your" over impersonal phrasing
+- End error messages with a gentle nudge ("Try again?", "Give it another try?")
+- Celebrate small wins ("All done!", "Nice!", "Welcome!")
+- Use casual alternatives ("Got it!" not "Mark as purchased", "Leg los!" not "Beginnen")
+- Keep labels short and human ("Prep" not "Preparation time", "What's it called?" not "Enter recipe title")
+- German translations use informal "du" (never "Sie") and match the same warmth
+
 ## Vite Config
 
 - **Plugins:** `@vitejs/plugin-react`, `@tailwindcss/vite`, `VitePWA`

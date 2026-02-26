@@ -195,7 +195,7 @@ export default function RecipeListPage() {
 
   function handleGenerateClick() {
     if (!aiConfigured) {
-      navigate("/settings");
+      navigate("/household");
       return;
     }
     setShowGenerateDrawer(true);

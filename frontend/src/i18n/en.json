@@ -145,7 +145,7 @@
     "noPlanTitle": "No meal plan yet",
     "noPlanSubtitle": "Set up your first plan to get cooking!",
     "noActiveTitle": "No active plan",
-    "noActiveSubtitle": "Generate your next meal plan to get started",
+    "noActiveSubtitle": "Time to plan your next round!",
     "pastIterations": "Previous plans",
     "renew": "Refresh"
   },
@@ -153,7 +153,7 @@
     "title": "Shopping List",
     "emptyState": "Nothing to shop for yet. Create a meal plan first!",
     "emptyTitle": "Nothing to shop for",
-    "emptySubtitle": "Create a meal plan to generate your shopping list",
+    "emptySubtitle": "Create a meal plan and we'll sort it out for you!",
     "goToPlan": "Go to meal plan",
     "allDoneTitle": "All done!",
     "allDoneSubtitle": "Everything on this list has been checked off",
@@ -242,12 +242,12 @@
   },
   "ai": {
     "title": "AI Support",
-    "description": "Use AI to help with recipe suggestions, meal planning, and more.",
+    "description": "Let AI lend a hand with recipe ideas and more.",
     "apiKey": "Gemini API Key",
     "apiKeyPlaceholder": "Paste your API key",
     "verify": "Verify",
-    "keyValid": "Valid",
-    "keyInvalid": "Invalid"
+    "keyValid": "Looks good!",
+    "keyInvalid": "That doesn't look right"
   },
   "generateRecipes": {
     "button": "Generate with AI",
@@ -264,7 +264,7 @@
     "saveCount_one": "Save {{count}} recipe",
     "saveCount_other": "Save {{count}} recipes",
     "saved": "{{count}} recipes added to Want to try!",
-    "noResults": "No recipes generated. Try adjusting your settings.",
+    "noResults": "No recipes came up. Try tweaking your settings!",
     "configureAi": "Set up AI first",
     "selected": "{{count}} selected"
   },
@@ -288,9 +288,9 @@
     "passwordMismatch": "Passwords don't match.",
     "passwordSet": "Password set!",
     "passwordChanged": "Password changed!",
-    "passwordRemoved": "Password removed.",
+    "passwordRemoved": "Password removed!",
     "removeConfirm": "Enter your current password to confirm:",
-    "noPasswordSet": "No password set."
+    "noPasswordSet": "No password set yet."
   },
   "settings": {
     "title": "Settings",
@@ -299,6 +299,11 @@
     "languages": {
       "en": "English",
       "de": "Deutsch"
+    },
+    "theme": "Theme",
+    "themes": {
+      "light": "Light",
+      "dark": "Dark"
     },
     "logout": "Log out",
     "logoutConfirm": "Are you sure you want to log out?",
@@ -327,8 +332,8 @@
   "success": {
     "recipeSaved": "Recipe saved!",
     "householdJoined": "Welcome to the household!",
-    "householdDeleted": "Household deleted.",
-    "householdLeft": "You left the household.",
+    "householdDeleted": "Household deleted!",
+    "householdLeft": "You've left the household.",
     "ownershipTransferred": "Ownership transferred!"
   },
   "setup": {

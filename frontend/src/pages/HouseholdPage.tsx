@@ -1,7 +1,20 @@
-import { Clipboard, Link, LogOut, Pencil, Plus, Shield, UserMinus, UserPlus } from "lucide-react";
+import {
+  Check,
+  Clipboard,
+  Link,
+  LogOut,
+  Pencil,
+  Plus,
+  Shield,
+  Sparkles,
+  UserMinus,
+  UserPlus,
+  X,
+} from "lucide-react";
 import { Spinner } from "../components/ui/Spinner";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { api } from "../api/client";
 import type { Household, Invite } from "../api/types";
 import { ConfirmDialog } from "../components/ui/ConfirmDialog";
 import { useToast } from "../hooks/useToast";
@@ -289,6 +302,13 @@ export default function HouseholdPage() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteConfirmName, setDeleteConfirmName] = useState("");
 
+  // AI state
+  const household = user?.active_household;
+  const [aiEnabled, setAiEnabled] = useState(household?.ai_enabled ?? false);
+  const [geminiKey, setGeminiKey] = useState(household?.gemini_api_key ?? "");
+  const [verifyingKey, setVerifyingKey] = useState(false);
+  const [keyStatus, setKeyStatus] = useState<"idle" | "valid" | "invalid">("idle");
+
   const activeHouseholdId = user?.active_household?.id ?? null;
 
   const activeHousehold = households?.find((h) => h.id === activeHouseholdId) ?? null;
@@ -330,6 +350,45 @@ export default function HouseholdPage() {
       },
       onError: () => addToast(t("errors.householdLeave"), "error"),
     });
+  }
+
+  async function saveHouseholdSettings(patch: Record<string, unknown>) {
+    if (!household) return;
+    try {
+      await api.patch<Household>(
+        `/api/v1/households/${household.id}/settings/`,
+        patch,
+      );
+      await refreshUser();
+    } catch {
+      addToast(t("errors.settingsSave"), "error");
+    }
+  }
+
+  async function handleAiToggle() {
+    const next = !aiEnabled;
+    setAiEnabled(next);
+    await saveHouseholdSettings({ ai_enabled: next });
+  }
+
+  async function handleGeminiKeyBlur() {
+    if (geminiKey === (household?.gemini_api_key ?? "")) return;
+    setKeyStatus("idle");
+    await saveHouseholdSettings({ gemini_api_key: geminiKey });
+  }
+
+  async function handleVerifyKey() {
+    if (!geminiKey) return;
+    setVerifyingKey(true);
+    setKeyStatus("idle");
+    try {
+      await api.post("/api/v1/users/me/verify-gemini-key/", { api_key: geminiKey });
+      setKeyStatus("valid");
+    } catch {
+      setKeyStatus("invalid");
+    } finally {
+      setVerifyingKey(false);
+    }
   }
 
   return (
@@ -462,6 +521,81 @@ export default function HouseholdPage() {
       <div className="mb-4">
         <JoinHouseholdSection />
       </div>
+
+      {/* AI Settings (owner only) */}
+      {activeHousehold && isOwner && (
+        <div className="mb-4 rounded-lg bg-white p-4 shadow-sm">
+          <div className="mb-3 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Sparkles size={20} className="text-gray-400" />
+              <h2 className="text-lg font-semibold text-gray-900">{t("ai.title")}</h2>
+            </div>
+            <button
+              onClick={handleAiToggle}
+              role="switch"
+              aria-checked={aiEnabled}
+              className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full transition-colors ${
+                aiEnabled ? "bg-orange-500" : "bg-gray-200"
+              }`}
+            >
+              <span
+                className={`inline-block h-5 w-5 translate-y-0.5 rounded-full bg-white shadow transition-transform ${
+                  aiEnabled ? "translate-x-5.5" : "translate-x-0.5"
+                }`}
+              />
+            </button>
+          </div>
+
+          <p className="mb-3 text-sm text-gray-500">{t("ai.description")}</p>
+
+          {aiEnabled && (
+            <>
+              <label className="mb-1 block text-sm font-medium text-gray-700">
+                {t("ai.apiKey")}
+              </label>
+              <div className="flex gap-2">
+                <input
+                  type="password"
+                  placeholder={t("ai.apiKeyPlaceholder")}
+                  value={geminiKey}
+                  onChange={(e) => {
+                    setGeminiKey(e.target.value);
+                    setKeyStatus("idle");
+                  }}
+                  onBlur={handleGeminiKeyBlur}
+                  className="min-w-0 flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
+                />
+                <button
+                  onClick={handleVerifyKey}
+                  disabled={!geminiKey || verifyingKey}
+                  className={`flex shrink-0 items-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium disabled:opacity-50 ${
+                    keyStatus === "valid"
+                      ? "bg-green-100 text-green-700"
+                      : keyStatus === "invalid"
+                        ? "bg-red-100 text-red-700"
+                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  }`}
+                >
+                  {verifyingKey ? (
+                    <Spinner />
+                  ) : keyStatus === "valid" ? (
+                    <Check size={16} />
+                  ) : keyStatus === "invalid" ? (
+                    <X size={16} />
+                  ) : null}
+                  {verifyingKey
+                    ? t("common.loading")
+                    : keyStatus === "valid"
+                      ? t("ai.keyValid")
+                      : keyStatus === "invalid"
+                        ? t("ai.keyInvalid")
+                        : t("ai.verify")}
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      )}
 
       {/* Leave household (non-owner only) */}
       {activeHousehold && !isOwner && (

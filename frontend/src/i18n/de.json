@@ -145,7 +145,7 @@
     "noPlanTitle": "Noch kein Essensplan",
     "noPlanSubtitle": "Erstelle deinen ersten Plan und leg los!",
     "noActiveTitle": "Kein aktiver Plan",
-    "noActiveSubtitle": "Erstelle deinen nächsten Essensplan",
+    "noActiveSubtitle": "Zeit für die nächste Runde!",
     "pastIterations": "Frühere Pläne",
     "renew": "Auffrischen"
   },
@@ -153,7 +153,7 @@
     "title": "Einkaufsliste",
     "emptyState": "Noch nichts einzukaufen. Erstelle zuerst einen Essensplan!",
     "emptyTitle": "Nichts einzukaufen",
-    "emptySubtitle": "Erstelle einen Essensplan, um deine Einkaufsliste zu erstellen",
+    "emptySubtitle": "Erstelle einen Essensplan und wir kümmern uns drum!",
     "goToPlan": "Zum Essensplan",
     "allDoneTitle": "Alles erledigt!",
     "allDoneSubtitle": "Alles auf dieser Liste wurde abgehakt",
@@ -242,12 +242,12 @@
   },
   "ai": {
     "title": "KI-Unterstützung",
-    "description": "Nutze KI für Rezeptvorschläge, Essensplanung und mehr.",
+    "description": "Lass dir von der KI bei Rezeptideen und mehr helfen.",
     "apiKey": "Gemini API-Schlüssel",
     "apiKeyPlaceholder": "API-Schlüssel einfügen",
     "verify": "Prüfen",
-    "keyValid": "Gültig",
-    "keyInvalid": "Ungültig"
+    "keyValid": "Passt!",
+    "keyInvalid": "Das sieht nicht richtig aus"
   },
   "generateRecipes": {
     "button": "Mit KI erstellen",
@@ -264,7 +264,7 @@
     "saveCount_one": "{{count}} Rezept speichern",
     "saveCount_other": "{{count}} Rezepte speichern",
     "saved": "{{count}} Rezepte zu Ausprobieren hinzugefügt!",
-    "noResults": "Keine Rezepte erstellt. Versuche andere Einstellungen.",
+    "noResults": "Keine Rezepte erstellt. Probier andere Einstellungen!",
     "configureAi": "KI zuerst einrichten",
     "selected": "{{count}} ausgewählt"
   },
@@ -288,9 +288,9 @@
     "passwordMismatch": "Passwörter stimmen nicht überein.",
     "passwordSet": "Passwort festgelegt!",
     "passwordChanged": "Passwort geändert!",
-    "passwordRemoved": "Passwort entfernt.",
+    "passwordRemoved": "Passwort entfernt!",
     "removeConfirm": "Aktuelles Passwort eingeben zum Bestätigen:",
-    "noPasswordSet": "Kein Passwort festgelegt."
+    "noPasswordSet": "Noch kein Passwort festgelegt."
   },
   "settings": {
     "title": "Einstellungen",
@@ -300,35 +300,40 @@
       "en": "English",
       "de": "Deutsch"
     },
+    "theme": "Design",
+    "themes": {
+      "light": "Hell",
+      "dark": "Dunkel"
+    },
     "logout": "Abmelden",
     "logoutConfirm": "Möchtest du dich wirklich abmelden?",
     "account": "Konto"
   },
   "errors": {
-    "recipeSave": "Rezept konnte nicht gespeichert werden. Nochmal?",
-    "recipeDelete": "Rezept konnte nicht gelöscht werden.",
-    "recipeMove": "Rezept konnte nicht verschoben werden.",
-    "planGenerate": "Essensplan konnte nicht erstellt werden. Nochmal?",
-    "shoppingUpdate": "Einkaufsliste konnte nicht aktualisiert werden.",
-    "settingsSave": "Einstellungen konnten nicht gespeichert werden.",
-    "householdCreate": "Haushalt konnte nicht erstellt werden.",
+    "recipeSave": "Rezept speichern hat nicht geklappt. Nochmal?",
+    "recipeDelete": "Rezept löschen hat nicht geklappt.",
+    "recipeMove": "Rezept verschieben hat nicht geklappt.",
+    "planGenerate": "Essensplan erstellen hat nicht geklappt. Nochmal?",
+    "shoppingUpdate": "Einkaufsliste aktualisieren hat nicht geklappt.",
+    "settingsSave": "Einstellungen speichern hat nicht geklappt.",
+    "householdCreate": "Haushalt erstellen hat nicht geklappt.",
     "householdJoin": "Beitritt hat nicht geklappt.",
-    "householdSwitch": "Haushalt konnte nicht gewechselt werden.",
-    "memberRemove": "Mitglied konnte nicht entfernt werden.",
-    "inviteCreate": "Einladung konnte nicht erstellt werden.",
-    "passkeyAdd": "Passkey konnte nicht hinzugefügt werden.",
-    "passkeyDelete": "Passkey konnte nicht entfernt werden.",
-    "householdUpdate": "Haushalt konnte nicht aktualisiert werden.",
-    "householdDelete": "Haushalt konnte nicht gelöscht werden.",
-    "householdLeave": "Haushalt konnte nicht verlassen werden.",
-    "ownershipTransfer": "Eigentümerschaft konnte nicht übertragen werden.",
-    "recipeGenerate": "Rezepte konnten nicht erstellt werden. Nochmal?"
+    "householdSwitch": "Haushalt wechseln hat nicht geklappt.",
+    "memberRemove": "Mitglied entfernen hat nicht geklappt.",
+    "inviteCreate": "Einladung erstellen hat nicht geklappt.",
+    "passkeyAdd": "Passkey hinzufügen hat nicht geklappt.",
+    "passkeyDelete": "Passkey entfernen hat nicht geklappt.",
+    "householdUpdate": "Haushalt aktualisieren hat nicht geklappt.",
+    "householdDelete": "Haushalt löschen hat nicht geklappt.",
+    "householdLeave": "Haushalt verlassen hat nicht geklappt.",
+    "ownershipTransfer": "Eigentümerschaft übertragen hat nicht geklappt.",
+    "recipeGenerate": "Rezepte erstellen hat nicht geklappt. Nochmal?"
   },
   "success": {
     "recipeSaved": "Rezept gespeichert!",
     "householdJoined": "Willkommen im Haushalt!",
-    "householdDeleted": "Haushalt gelöscht.",
-    "householdLeft": "Du hast den Haushalt verlassen.",
+    "householdDeleted": "Haushalt gelöscht!",
+    "householdLeft": "Du hast den Haushalt verlassen!",
     "ownershipTransferred": "Eigentümerschaft übertragen!"
   },
   "setup": {

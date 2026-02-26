@@ -21,6 +21,35 @@
   100% { background-color: transparent; }
 }
 
+/* Dark mode: override Tailwind 4 color variables */
+html.dark {
+  color-scheme: dark;
+
+  /* Invert gray scale */
+  --color-gray-50: #1e293b;
+  --color-gray-100: #1e293b;
+  --color-gray-200: #334155;
+  --color-gray-300: #475569;
+  --color-gray-400: #64748b;
+  --color-gray-500: #94a3b8;
+  --color-gray-600: #cbd5e1;
+  --color-gray-700: #e2e8f0;
+  --color-gray-800: #f1f5f9;
+  --color-gray-900: #f8fafc;
+
+  /* bg-white → dark surface */
+  --color-white: #0f172a;
+
+  /* Tinted backgrounds */
+  --color-orange-50: #431407;
+  --color-red-50: #450a0a;
+}
+
+/* Protect text-white on colored buttons in dark mode */
+html.dark .text-white {
+  color: #fff !important;
+}
+
 @layer base {
   html {
     -webkit-text-size-adjust: 100%;
