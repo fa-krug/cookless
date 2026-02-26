@@ -118,3 +118,29 @@ def test_upload_rejects_invalid_type(auth_client, recipe):
         {"image": buf},
     )
     assert response.status_code == 400
+
+
+@pytest.mark.django_db
+def test_delete_image(auth_client, recipe):
+    client, _, _ = auth_client
+    img = _create_test_image()
+    client.post(f"/api/v1/recipes/{recipe.id}/image/upload/", {"image": img})
+    recipe.refresh_from_db()
+    assert recipe.image
+
+    response = client.delete(f"/api/v1/recipes/{recipe.id}/image/")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["image"] is None
+
+    recipe.refresh_from_db()
+    assert not recipe.image
+
+
+@pytest.mark.django_db
+def test_delete_image_when_none(auth_client, recipe):
+    client, _, _ = auth_client
+    response = client.delete(f"/api/v1/recipes/{recipe.id}/image/")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["image"] is None

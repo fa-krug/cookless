@@ -231,6 +231,21 @@ def upload_recipe_image(request, recipe_id: UUID, image: UploadedFile = File(...
     return recipe
 
 
+@router.delete("/recipes/{recipe_id}/image/", response=RecipeOut, tags=["recipes"])
+def delete_recipe_image(request, recipe_id: UUID):
+    require_household_member(request)
+    recipe = get_object_or_404(Recipe, pk=recipe_id, household=request.user.active_household)
+
+    if recipe.image:
+        old_path = Path(settings.MEDIA_ROOT) / recipe.image.name
+        if old_path.exists():
+            old_path.unlink()
+        recipe.image = ""
+        recipe.save(update_fields=["image"])
+
+    return recipe
+
+
 @router.get("/recipes/{recipe_id}/steps/", response=list[CookingStepOut], tags=["recipes"])
 def list_steps(request, recipe_id: UUID, method: str | None = None):
     require_household_member(request)
