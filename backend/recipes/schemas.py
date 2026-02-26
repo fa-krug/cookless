@@ -49,8 +49,16 @@ class RecipeListOut(Schema):
     prep_time_minutes: int | None = None
     cook_time_minutes: int | None = None
     leftover_days: int | None = None
+    image: str | None = None
     created_at: datetime
     updated_at: datetime
+
+    @staticmethod
+    def resolve_image(obj, context):
+        if obj.image:
+            request = context["request"]
+            return request.build_absolute_uri(obj.image.url)
+        return None
 
 
 class PaginatedRecipeListOut(Schema):
@@ -72,11 +80,19 @@ class RecipeOut(Schema):
     prep_time_minutes: int | None = None
     cook_time_minutes: int | None = None
     leftover_days: int | None = None
+    image: str | None = None
     ingredients: list[RecipeIngredientOut]
     manual_steps: list[CookingStepOut]
     machine_steps: list[CookingStepOut]
     created_at: datetime
     updated_at: datetime
+
+    @staticmethod
+    def resolve_image(obj, context):
+        if obj.image:
+            request = context["request"]
+            return request.build_absolute_uri(obj.image.url)
+        return None
 
     @staticmethod
     def resolve_manual_steps(obj):
