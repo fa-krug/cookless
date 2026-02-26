@@ -132,3 +132,28 @@ class LoginBeginIn(Schema):
 
 class LoginCompleteIn(Schema):
     credential: str
+
+
+class TokenCreateIn(Schema):
+    name: str
+    scopes: list[str]
+    expires_at: datetime | None = None
+    duration_preset: str | None = None
+
+
+class TokenOut(Schema):
+    id: UUID
+    name: str
+    token_prefix: str
+    scopes: list[str]
+    expires_at: datetime | None
+    last_used_at: datetime | None
+    created_at: datetime
+
+    @staticmethod
+    def resolve_scopes(obj):
+        return [s for s in obj.scopes.split(",") if s]
+
+
+class TokenCreatedOut(TokenOut):
+    token: str
