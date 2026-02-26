@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 
 import pytest
 
-from users.models import PasskeyCredential
+from users.models import Household, PasskeyCredential
 
 User = get_user_model()
 
@@ -17,9 +17,10 @@ def test_create_user():
 
 
 @pytest.mark.django_db
-def test_user_has_settings_defaults():
-    user = User.objects.create_user(email="test@example.com")
-    assert user.settings == {}
+def test_household_has_ai_defaults():
+    household = Household.objects.create(name="Test")
+    assert household.ai_enabled is False
+    assert household.gemini_api_key == ""
 
 
 @pytest.mark.django_db

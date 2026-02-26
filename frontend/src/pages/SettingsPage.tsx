@@ -49,9 +49,9 @@ export default function SettingsPage() {
   const [savingPassword, setSavingPassword] = useState(false);
 
   // AI state
-  const householdSettings = user?.active_household?.settings;
-  const [aiEnabled, setAiEnabled] = useState(householdSettings?.ai_enabled ?? false);
-  const [geminiKey, setGeminiKey] = useState(householdSettings?.gemini_api_key ?? "");
+  const household = user?.active_household;
+  const [aiEnabled, setAiEnabled] = useState(household?.ai_enabled ?? false);
+  const [geminiKey, setGeminiKey] = useState(household?.gemini_api_key ?? "");
   const [verifyingKey, setVerifyingKey] = useState(false);
   const [keyStatus, setKeyStatus] = useState<"idle" | "valid" | "invalid">("idle");
 
@@ -198,12 +198,11 @@ export default function SettingsPage() {
   }
 
   async function saveHouseholdSettings(patch: Record<string, unknown>) {
-    if (!user?.active_household) return;
-    const merged = { ...householdSettings, ...patch };
+    if (!household) return;
     try {
       await api.patch<Household>(
-        `/api/v1/households/${user.active_household.id}/settings/`,
-        { settings: merged },
+        `/api/v1/households/${household.id}/settings/`,
+        patch,
       );
       await refreshUser();
     } catch {
@@ -218,7 +217,7 @@ export default function SettingsPage() {
   }
 
   async function handleGeminiKeyBlur() {
-    if (geminiKey === (householdSettings?.gemini_api_key ?? "")) return;
+    if (geminiKey === (household?.gemini_api_key ?? "")) return;
     setKeyStatus("idle");
     await saveHouseholdSettings({ gemini_api_key: geminiKey });
   }

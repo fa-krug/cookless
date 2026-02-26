@@ -37,7 +37,7 @@ def _setup_plan_with_ingredients(household):
     plan = MealPlan.objects.create(
         household=household,
         iteration_weeks=1,
-        shopping_days=[5],
+        shopping_day_1=5,
         servings=2,
         known_ratio=0.7,
         default_leftover_days=1,

@@ -7,7 +7,8 @@ from ninja import Schema
 class HouseholdSummaryOut(Schema):
     id: UUID
     name: str
-    settings: dict
+    ai_enabled: bool
+    gemini_api_key: str
 
 
 class HouseholdMemberOut(Schema):
@@ -24,7 +25,8 @@ class HouseholdMemberOut(Schema):
 class HouseholdOut(Schema):
     id: UUID
     name: str
-    settings: dict
+    ai_enabled: bool
+    gemini_api_key: str
     members: list[HouseholdMemberOut]
 
 
@@ -61,7 +63,8 @@ class UserUpdateIn(Schema):
 
 
 class HouseholdSettingsUpdateIn(Schema):
-    settings: dict
+    ai_enabled: bool | None = None
+    gemini_api_key: str | None = None
 
 
 class InviteOut(Schema):

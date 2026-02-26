@@ -107,10 +107,10 @@ Four routers registered in `cookless/api.py` (all mounted at empty prefix):
 
 **User** (`AbstractBaseUser + PermissionsMixin`, UUID pk)
 - `email` (unique, USERNAME_FIELD), `preferred_language` (en/de), `active_household` (FK, SET_NULL)
-- `settings` (JSONField), `onboarding_step` (CHANGE_PASSWORD / ADD_PASSKEY / CREATE_HOUSEHOLD / COMPLETED)
+- `onboarding_step` (CHANGE_PASSWORD / ADD_PASSKEY / CREATE_HOUSEHOLD / COMPLETED)
 - `has_passkey` property, custom `UserManager` (create_user sets unusable password)
 
-**Household** -- `name`, `created_at`
+**Household** -- `name`, `ai_enabled` (bool, default False), `gemini_api_key` (CharField, blank), `created_at`
 
 **HouseholdMember** -- `household` + `user` (unique together), `role` (OWNER/MEMBER)
 
@@ -132,7 +132,7 @@ Four routers registered in `cookless/api.py` (all mounted at empty prefix):
 
 ### planner app
 
-**MealPlan** (OneToOne to Household) -- `iteration_weeks`, `shopping_days` (JSONField, list of weekday ints 0-6), `servings`, `known_ratio`, `default_leftover_days`
+**MealPlan** (OneToOne to Household) -- `iteration_weeks`, `shopping_day_1` (int 0-6), `shopping_day_2` (nullable int 0-6), `servings`, `known_ratio`, `default_leftover_days`. Property `shopping_days` returns list of active days.
 
 **PlanIteration** -- `meal_plan` (FK), `start_date`, `end_date`, `status` (ACTIVE/ARCHIVED). Ordered by `-start_date`.
 
@@ -201,6 +201,7 @@ Called explicitly at the top of view functions (not decorators).
 
 ## Database Patterns
 
+- **No JSONField:** Never use `JSONField`. Always use real model fields (BooleanField, CharField, IntegerField, etc.) instead. For small fixed-size lists, use multiple nullable fields (e.g. `shopping_day_1`, `shopping_day_2`).
 - **Delete-and-bulk_create:** Recipe ingredients and steps are fully replaced on every update (`_save_ingredients`, `_save_steps`)
 - **Prefetch with to_attr:** Recipe detail uses `Prefetch` to split steps into `manual_steps_list` and `machine_steps_list`
 - **Targeted updates:** `save(update_fields=["is_checked"])` for shopping item toggles

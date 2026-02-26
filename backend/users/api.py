@@ -192,7 +192,10 @@ def update_household_settings(request, household_id: UUID, payload: HouseholdSet
         Household.objects.filter(members__user=request.user), pk=household_id
     )
     require_household_owner(request, household)
-    household.settings = payload.settings
+    if payload.ai_enabled is not None:
+        household.ai_enabled = payload.ai_enabled
+    if payload.gemini_api_key is not None:
+        household.gemini_api_key = payload.gemini_api_key
     household.save()
     return household
 

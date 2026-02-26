@@ -25,7 +25,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='user',
             name='settings',
-            field=models.JSONField(default=users.models._default_user_settings),
+            field=models.JSONField(default=dict),
         ),
         migrations.AddField(
             model_name='user',

@@ -24,7 +24,8 @@ def setup_meal_plan(
         household=household,
         defaults={
             "iteration_weeks": iteration_weeks,
-            "shopping_days": shopping_days,
+            "shopping_day_1": shopping_days[0],
+            "shopping_day_2": shopping_days[1] if len(shopping_days) > 1 else None,
             "servings": servings,
             "known_ratio": known_ratio,
             "default_leftover_days": default_leftover_days,

@@ -7,10 +7,6 @@ from django.db import models
 from django.utils import timezone
 
 
-def _default_user_settings() -> dict:
-    return {}
-
-
 class UserManager(BaseUserManager["User"]):
     def create_user(self, email: str, **extra_fields: Any) -> "User":
         email = self.normalize_email(email)
@@ -57,7 +53,6 @@ class User(AbstractBaseUser, PermissionsMixin):
         blank=True,
         related_name="active_users",
     )
-    settings = models.JSONField(default=_default_user_settings)
     onboarding_step = models.CharField(
         max_length=20,
         choices=OnboardingStep.choices,
@@ -78,14 +73,11 @@ class User(AbstractBaseUser, PermissionsMixin):
         return self.passkey_credentials.exists()
 
 
-def _default_household_settings() -> dict:
-    return {}
-
-
 class Household(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=255)
-    settings = models.JSONField(default=_default_household_settings)
+    ai_enabled = models.BooleanField(default=False)
+    gemini_api_key = models.CharField(max_length=255, blank=True, default="")
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self) -> str:

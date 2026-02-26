@@ -13,7 +13,7 @@ def _create_plan_with_iteration(household, **plan_kwargs):
     """Create a MealPlan with an active PlanIteration."""
     defaults = {
         "iteration_weeks": 1,
-        "shopping_days": [5],
+        "shopping_day_1": 5,
         "servings": 2,
         "known_ratio": 0.7,
         "default_leftover_days": 1,

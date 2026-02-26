@@ -17,7 +17,7 @@ def test_create_meal_plan_with_entries():
     plan = MealPlan.objects.create(
         household=household,
         iteration_weeks=1,
-        shopping_days=[5],
+        shopping_day_1=5,
         servings=2,
         known_ratio=0.7,
         default_leftover_days=1,
@@ -55,7 +55,7 @@ def test_meal_plan_str():
     plan = MealPlan.objects.create(
         household=household,
         iteration_weeks=1,
-        shopping_days=[5],
+        shopping_day_1=5,
     )
     assert str(plan) == "MealPlan for Home"
 
@@ -66,7 +66,7 @@ def test_plan_iteration_str():
     plan = MealPlan.objects.create(
         household=household,
         iteration_weeks=1,
-        shopping_days=[5],
+        shopping_day_1=5,
     )
     iteration = PlanIteration.objects.create(
         meal_plan=plan,
@@ -86,7 +86,7 @@ def test_meal_plan_entry_str():
     plan = MealPlan.objects.create(
         household=household,
         iteration_weeks=1,
-        shopping_days=[5],
+        shopping_day_1=5,
     )
     iteration = PlanIteration.objects.create(
         meal_plan=plan,
@@ -113,7 +113,7 @@ def test_meal_plan_entry_defaults():
     plan = MealPlan.objects.create(
         household=household,
         iteration_weeks=1,
-        shopping_days=[5],
+        shopping_day_1=5,
     )
     iteration = PlanIteration.objects.create(
         meal_plan=plan,
@@ -142,7 +142,7 @@ def test_meal_plan_cascade_delete():
     plan = MealPlan.objects.create(
         household=household,
         iteration_weeks=1,
-        shopping_days=[5],
+        shopping_day_1=5,
     )
     iteration = PlanIteration.objects.create(
         meal_plan=plan,
@@ -171,7 +171,7 @@ def test_meal_plan_entry_meal_type_choices():
     plan = MealPlan.objects.create(
         household=household,
         iteration_weeks=1,
-        shopping_days=[5],
+        shopping_day_1=5,
     )
     iteration = PlanIteration.objects.create(
         meal_plan=plan,

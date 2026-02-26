@@ -14,6 +14,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='household',
             name='settings',
-            field=models.JSONField(default=users.models._default_household_settings),
+            field=models.JSONField(default=dict),
         ),
     ]

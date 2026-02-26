@@ -205,7 +205,7 @@ def test_other_household_plans_not_visible(auth_client):
     other_plan = MealPlan.objects.create(
         household=other_household,
         iteration_weeks=1,
-        shopping_days=[5],
+        shopping_day_1=5,
         servings=2,
         known_ratio=0.7,
         default_leftover_days=1,
