@@ -187,6 +187,7 @@ def create_recipe(request, payload: RecipeCreateIn):
         recipe = Recipe.objects.create(
             household=request.user.active_household,
             title=payload.title,
+            description=payload.description,
             list_type=payload.list_type,
             default_servings=payload.default_servings,
             prep_time_minutes=payload.prep_time_minutes,
@@ -220,6 +221,7 @@ def bulk_create_recipes(request, payload: BulkCreateRecipesIn):
             recipe = Recipe.objects.create(
                 household=household,
                 title=recipe_data.title,
+                description=recipe_data.description,
                 list_type="TO_TRY",
                 default_servings=recipe_data.default_servings,
                 prep_time_minutes=recipe_data.prep_time_minutes,
@@ -409,6 +411,7 @@ def update_recipe_put(request, recipe_id: UUID, payload: RecipeCreateIn):
     recipe = get_object_or_404(Recipe, pk=recipe_id, household=request.user.active_household)
     with transaction.atomic():
         recipe.title = payload.title
+        recipe.description = payload.description
         recipe.list_type = payload.list_type
         recipe.default_servings = payload.default_servings
         recipe.prep_time_minutes = payload.prep_time_minutes
@@ -431,6 +434,7 @@ def update_recipe_patch(request, recipe_id: UUID, payload: RecipeCreateIn):
     recipe = get_object_or_404(Recipe, pk=recipe_id, household=request.user.active_household)
     with transaction.atomic():
         recipe.title = payload.title
+        recipe.description = payload.description
         recipe.list_type = payload.list_type
         recipe.default_servings = payload.default_servings
         recipe.prep_time_minutes = payload.prep_time_minutes

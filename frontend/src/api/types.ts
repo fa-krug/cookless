@@ -105,6 +105,7 @@ export interface CookingStep {
 export interface RecipeSummary {
   id: string;
   title: string;
+  description: string;
   list_type: ListType;
   default_servings: number;
   prep_time_minutes: number | null;
@@ -119,6 +120,7 @@ export interface RecipeSummary {
 export interface Recipe {
   id: string;
   title: string;
+  description: string;
   list_type: ListType;
   default_servings: number;
   prep_time_minutes: number | null;

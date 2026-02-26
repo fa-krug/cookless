@@ -42,6 +42,7 @@ const RECIPES: Recipe[] = [
   {
     id: "1",
     title: "Zebra Cake",
+    description: "",
     list_type: "KNOWN",
     default_servings: 4,
     prep_time_minutes: 15,
@@ -58,6 +59,7 @@ const RECIPES: Recipe[] = [
   {
     id: "2",
     title: "Apple Pie",
+    description: "",
     list_type: "KNOWN",
     default_servings: 2,
     prep_time_minutes: null,
@@ -74,6 +76,7 @@ const RECIPES: Recipe[] = [
   {
     id: "3",
     title: "Mango Lassi",
+    description: "",
     list_type: "KNOWN",
     default_servings: 2,
     prep_time_minutes: 5,

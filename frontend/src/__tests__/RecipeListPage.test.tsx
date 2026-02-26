@@ -36,6 +36,7 @@ const KNOWN_RECIPES: Recipe[] = [
   {
     id: "1",
     title: "Pasta Carbonara",
+    description: "",
     list_type: "KNOWN",
     default_servings: 4,
     prep_time_minutes: 15,
@@ -52,6 +53,7 @@ const KNOWN_RECIPES: Recipe[] = [
   {
     id: "2",
     title: "Caesar Salad",
+    description: "",
     list_type: "KNOWN",
     default_servings: 2,
     prep_time_minutes: null,
@@ -71,6 +73,7 @@ const TO_TRY_RECIPES: Recipe[] = [
   {
     id: "3",
     title: "Sushi Rolls",
+    description: "",
     list_type: "TO_TRY",
     default_servings: 2,
     prep_time_minutes: 45,

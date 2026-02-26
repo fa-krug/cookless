@@ -84,6 +84,7 @@ class Recipe(models.Model):
         "users.Household", on_delete=models.CASCADE, related_name="recipes"
     )
     title = models.CharField(max_length=255)
+    description = models.TextField(blank=True, default="")
     list_type = models.CharField(max_length=10, choices=LIST_TYPE_CHOICES)
     default_servings = models.PositiveIntegerField(default=2)
     prep_time_minutes = models.PositiveIntegerField(null=True, blank=True)

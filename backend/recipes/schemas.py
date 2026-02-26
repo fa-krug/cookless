@@ -47,6 +47,7 @@ class RecipeIngredientOut(Schema):
 class RecipeListOut(Schema):
     id: UUID
     title: str
+    description: str
     list_type: str
     default_servings: int
     prep_time_minutes: int | None = None
@@ -93,6 +94,7 @@ class CookingStepOut(Schema):
 class RecipeOut(Schema):
     id: UUID
     title: str
+    description: str
     list_type: str
     default_servings: int
     prep_time_minutes: int | None = None
@@ -146,6 +148,7 @@ class RecipeIngredientIn(Schema):
 
 class RecipeCreateIn(Schema):
     title: str
+    description: str = ""
     list_type: str
     default_servings: int = 2
     prep_time_minutes: int | None = None
@@ -175,6 +178,7 @@ class GeneratedIngredientIn(Schema):
 
 class GeneratedRecipeIn(Schema):
     title: str
+    description: str = ""
     default_servings: int = 2
     prep_time_minutes: int | None = None
     cook_time_minutes: int | None = None
