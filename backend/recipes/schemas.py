@@ -142,3 +142,33 @@ class GenerateRecipesIn(Schema):
     tag_ids: list[UUID] = []
     free_text: str = ""
     generate_images: bool = True
+
+
+class GeneratedIngredientIn(Schema):
+    name_en: str
+    name_de: str
+    category: str = "OTHER"
+    quantity: str
+    unit_abbreviation: str
+    order: int = 0
+
+
+class GeneratedRecipeIn(Schema):
+    title: str
+    default_servings: int = 2
+    prep_time_minutes: int | None = None
+    cook_time_minutes: int | None = None
+    leftover_days: int | None = None
+    ingredients: list[GeneratedIngredientIn] = []
+    manual_steps: list[CookingStepIn] = []
+    machine_steps: list[CookingStepIn] = []
+    tag_ids: list[UUID] = []
+    image_base64: str | None = None
+
+
+class BulkCreateRecipesIn(Schema):
+    recipes: list[GeneratedRecipeIn]
+
+
+class BulkCreateRecipesOut(Schema):
+    created_ids: list[UUID]

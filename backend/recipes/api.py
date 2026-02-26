@@ -21,6 +21,8 @@ from PIL import Image as PILImage
 from recipes.generation import build_generation_prompt, call_gemini_text
 from recipes.models import CookingStep, Ingredient, Recipe, RecipeIngredient, Tag, TagCategory, Unit
 from recipes.schemas import (
+    BulkCreateRecipesIn,
+    BulkCreateRecipesOut,
     CookingStepOut,
     GenerateRecipesIn,
     IngredientCreateIn,
@@ -167,6 +169,79 @@ def create_recipe(request, payload: RecipeCreateIn):
                 Tag.objects.filter(id__in=payload.tag_ids, household=request.user.active_household)
             )
     return recipe
+
+
+@router.post("/recipes/bulk-create/", response={201: BulkCreateRecipesOut}, tags=["recipes"])
+def bulk_create_recipes(request, payload: BulkCreateRecipesIn):
+    require_household_member(request)
+    household = request.user.active_household
+
+    # Pre-load lookup maps
+    unit_map = {u.abbreviation.lower(): u for u in Unit.objects.all()}
+    ingredient_map = {i.name_en.lower(): i for i in Ingredient.objects.all()}
+
+    created_ids: list = []
+
+    with transaction.atomic():
+        for recipe_data in payload.recipes:
+            recipe = Recipe.objects.create(
+                household=household,
+                title=recipe_data.title,
+                list_type="TO_TRY",
+                default_servings=recipe_data.default_servings,
+                prep_time_minutes=recipe_data.prep_time_minutes,
+                cook_time_minutes=recipe_data.cook_time_minutes,
+                leftover_days=recipe_data.leftover_days,
+            )
+            created_ids.append(recipe.id)
+
+            # Resolve ingredients
+            recipe_ingredients = []
+            for ing_data in recipe_data.ingredients:
+                unit = unit_map.get(ing_data.unit_abbreviation.lower())
+                if unit is None:
+                    continue  # Skip unknown units
+
+                ingredient = ingredient_map.get(ing_data.name_en.lower())
+                if ingredient is None:
+                    ingredient = Ingredient.objects.create(
+                        name_en=ing_data.name_en,
+                        name_de=ing_data.name_de,
+                        category=ing_data.category,
+                    )
+                    ingredient_map[ing_data.name_en.lower()] = ingredient
+
+                recipe_ingredients.append(
+                    RecipeIngredient(
+                        recipe=recipe,
+                        ingredient=ingredient,
+                        quantity=ing_data.quantity,
+                        unit=unit,
+                        order=ing_data.order,
+                    )
+                )
+
+            if recipe_ingredients:
+                RecipeIngredient.objects.bulk_create(recipe_ingredients)
+
+            # Save steps
+            _save_steps(recipe, recipe_data.manual_steps, "MANUAL")
+            _save_steps(recipe, recipe_data.machine_steps, "MACHINE")
+
+            # Set tags
+            if recipe_data.tag_ids:
+                recipe.tags.set(Tag.objects.filter(id__in=recipe_data.tag_ids, household=household))
+
+            # Handle image
+            if recipe_data.image_base64:
+                try:
+                    image_bytes = base64.b64decode(recipe_data.image_base64)
+                    img = PILImage.open(BytesIO(image_bytes))
+                    _save_image_as_webp(recipe, img)
+                except Exception:
+                    pass  # Silently skip invalid images
+
+    return 201, {"created_ids": created_ids}
 
 
 @router.post("/recipes/generate/", tags=["recipes"])
