@@ -169,8 +169,8 @@ def test_list_recipes_query_count(auth_client, django_assert_max_num_queries):
         )
 
     # 1: session auth, 1: user, 1: active_household FK, 1: household membership check,
-    # 1: COUNT query, 1: recipes (no prefetch needed — list uses lean RecipeListOut schema)
-    with django_assert_max_num_queries(6):
+    # 1: COUNT query, 1: recipes, 1: prefetch tags
+    with django_assert_max_num_queries(7):
         response = client.get("/api/v1/recipes/")
     assert response.status_code == 200
     assert len(response.json()["items"]) == 5

@@ -149,3 +149,104 @@ def test_cannot_access_other_household_tags(auth_client):
     assert other_tag is not None
     response = client.delete(f"/api/v1/tags/{other_tag.id}/")
     assert response.status_code == 404
+
+
+@pytest.mark.django_db
+def test_create_recipe_with_tags(auth_client):
+    client, household = auth_client
+    tag = Tag.objects.filter(household=household, name_en="Vegan").first()
+    assert tag is not None
+    response = client.post(
+        "/api/v1/recipes/",
+        json.dumps(
+            {
+                "title": "Green Bowl",
+                "list_type": "KNOWN",
+                "default_servings": 2,
+                "ingredients": [],
+                "manual_steps": [],
+                "machine_steps": [],
+                "tag_ids": [str(tag.id)],
+            }
+        ),
+        content_type="application/json",
+    )
+    assert response.status_code == 201
+    data = response.json()
+    assert len(data["tags"]) == 1
+    assert data["tags"][0]["name_en"] == "Vegan"
+
+
+@pytest.mark.django_db
+def test_update_recipe_tags(auth_client):
+    client, household = auth_client
+    vegan = Tag.objects.filter(household=household, name_en="Vegan").first()
+    assert vegan is not None
+    italian = Tag.objects.filter(household=household, name_en="Italian").first()
+    assert italian is not None
+    recipe = Recipe.objects.create(
+        household=household, title="Pasta", list_type="KNOWN", default_servings=2
+    )
+    recipe.tags.add(vegan)
+
+    response = client.put(
+        f"/api/v1/recipes/{recipe.id}/",
+        json.dumps(
+            {
+                "title": "Pasta",
+                "list_type": "KNOWN",
+                "default_servings": 2,
+                "ingredients": [],
+                "manual_steps": [],
+                "machine_steps": [],
+                "tag_ids": [str(italian.id)],
+            }
+        ),
+        content_type="application/json",
+    )
+    assert response.status_code == 200
+    tag_names = [t["name_en"] for t in response.json()["tags"]]
+    assert "Italian" in tag_names
+    assert "Vegan" not in tag_names
+
+
+@pytest.mark.django_db
+def test_list_recipes_includes_tags(auth_client):
+    client, household = auth_client
+    tag = Tag.objects.filter(household=household, name_en="Simple").first()
+    assert tag is not None
+    recipe = Recipe.objects.create(
+        household=household, title="Toast", list_type="KNOWN", default_servings=1
+    )
+    recipe.tags.add(tag)
+
+    response = client.get("/api/v1/recipes/")
+    assert response.status_code == 200
+    items = response.json()["items"]
+    assert len(items) == 1
+    assert len(items[0]["tags"]) == 1
+    assert items[0]["tags"][0]["name_en"] == "Simple"
+
+
+@pytest.mark.django_db
+def test_filter_recipes_by_tags(auth_client):
+    client, household = auth_client
+    vegan = Tag.objects.filter(household=household, name_en="Vegan").first()
+    assert vegan is not None
+    pork = Tag.objects.filter(household=household, name_en="Pork").first()
+    assert pork is not None
+
+    r1 = Recipe.objects.create(
+        household=household, title="Salad", list_type="KNOWN", default_servings=2
+    )
+    r1.tags.add(vegan)
+    r2 = Recipe.objects.create(
+        household=household, title="Schnitzel", list_type="KNOWN", default_servings=2
+    )
+    r2.tags.add(pork)
+
+    response = client.get(f"/api/v1/recipes/?tags={vegan.id}")
+    assert response.status_code == 200
+    items = response.json()["items"]
+    assert len(items) == 1
+    assert items[0]["title"] == "Salad"

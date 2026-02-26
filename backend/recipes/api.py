@@ -67,9 +67,13 @@ def list_recipes(
     offset: int = 0,
 ):
     require_household_member(request)
-    qs = Recipe.objects.filter(household=request.user.active_household)
+    qs = Recipe.objects.filter(household=request.user.active_household).prefetch_related("tags")
     if list_type:
         qs = qs.filter(list_type=list_type)
+    tags_param = request.GET.get("tags")
+    if tags_param:
+        tag_ids = [t.strip() for t in tags_param.split(",") if t.strip()]
+        qs = qs.filter(tags__id__in=tag_ids).distinct()
 
     total_count = qs.count()
 
@@ -97,6 +101,10 @@ def create_recipe(request, payload: RecipeCreateIn):
         _save_ingredients(recipe, payload.ingredients)
         _save_steps(recipe, payload.manual_steps, "MANUAL")
         _save_steps(recipe, payload.machine_steps, "MACHINE")
+        if payload.tag_ids:
+            recipe.tags.set(
+                Tag.objects.filter(id__in=payload.tag_ids, household=request.user.active_household)
+            )
     return recipe
 
 
@@ -106,6 +114,7 @@ def get_recipe(request, recipe_id: UUID):
     return get_object_or_404(
         Recipe.objects.prefetch_related(
             "ingredients",
+            "tags",
             Prefetch(
                 "steps",
                 queryset=CookingStep.objects.filter(method="MANUAL"),
@@ -137,6 +146,9 @@ def update_recipe_put(request, recipe_id: UUID, payload: RecipeCreateIn):
         _save_ingredients(recipe, payload.ingredients)
         _save_steps(recipe, payload.manual_steps, "MANUAL")
         _save_steps(recipe, payload.machine_steps, "MACHINE")
+        recipe.tags.set(
+            Tag.objects.filter(id__in=payload.tag_ids, household=request.user.active_household)
+        )
     return recipe
 
 
@@ -155,6 +167,9 @@ def update_recipe_patch(request, recipe_id: UUID, payload: RecipeCreateIn):
         _save_ingredients(recipe, payload.ingredients)
         _save_steps(recipe, payload.manual_steps, "MANUAL")
         _save_steps(recipe, payload.machine_steps, "MACHINE")
+        recipe.tags.set(
+            Tag.objects.filter(id__in=payload.tag_ids, household=request.user.active_household)
+        )
     return recipe
 
 
