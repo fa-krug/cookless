@@ -10,6 +10,7 @@ class SetupPlanIn(Schema):
     servings: int = Field(default=2, ge=1, le=12)
     known_ratio: float = Field(default=0.7, ge=0.0, le=1.0)
     default_leftover_days: int = Field(default=1, ge=0, le=3)
+    excluded_tag_ids: list[UUID] = []
 
 
 class MealPlanEntryOut(Schema):
@@ -47,5 +48,10 @@ class MealPlanOut(Schema):
     servings: int
     known_ratio: float
     default_leftover_days: int
+    excluded_tag_ids: list[UUID] = []
     iterations: list[PlanIterationOut]
     created_at: datetime
+
+    @staticmethod
+    def resolve_excluded_tag_ids(obj):
+        return [tag.id for tag in obj.excluded_tags.all()]

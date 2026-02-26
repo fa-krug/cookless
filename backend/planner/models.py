@@ -1,6 +1,12 @@
+from __future__ import annotations
+
 import uuid
+from typing import TYPE_CHECKING
 
 from django.db import models
+
+if TYPE_CHECKING:
+    from recipes.models import Tag
 
 
 class MealPlan(models.Model):
@@ -21,6 +27,9 @@ class MealPlan(models.Model):
     known_ratio = models.FloatField(default=0.7)
     default_leftover_days = models.PositiveIntegerField(default=1)
     created_at = models.DateTimeField(auto_now_add=True)
+    excluded_tags: models.ManyToManyField[Tag, models.Model] = models.ManyToManyField(
+        "recipes.Tag", blank=True, related_name="+"
+    )
 
     def __str__(self) -> str:
         return f"MealPlan for {self.household}"

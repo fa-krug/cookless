@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import uuid
 from decimal import Decimal
 
@@ -46,6 +48,34 @@ class Unit(models.Model):
         return Decimal(str(quantity))
 
 
+class TagCategory(models.TextChoices):
+    DIETARY = "DIETARY", "Dietary"
+    PROTEIN = "PROTEIN", "Protein"
+    CUISINE = "CUISINE", "Cuisine"
+    MEAL_TYPE = "MEAL_TYPE", "Meal Type"
+
+
+class Tag(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    household = models.ForeignKey("users.Household", on_delete=models.CASCADE, related_name="tags")
+    category = models.CharField(max_length=20, choices=TagCategory.choices)
+    name_en = models.CharField(max_length=60)
+    name_de = models.CharField(max_length=60)
+    is_default = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ["category", "name_en"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["household", "category", "name_en"],
+                name="unique_tag_per_household_category",
+            )
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.category}: {self.name_en}"
+
+
 class Recipe(models.Model):
     LIST_TYPE_CHOICES = [("KNOWN", "Known"), ("TO_TRY", "To Try")]
 
@@ -62,6 +92,9 @@ class Recipe(models.Model):
     image = models.ImageField(upload_to="recipes/", blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    tags: models.ManyToManyField[Tag, models.Model] = models.ManyToManyField(
+        "Tag", blank=True, related_name="recipes"
+    )
 
     def __str__(self) -> str:
         return self.title

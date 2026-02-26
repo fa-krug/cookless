@@ -42,6 +42,7 @@ const KNOWN_RECIPES: Recipe[] = [
     machine_steps: [],
     created_at: "2026-01-01T00:00:00Z",
     updated_at: "2026-01-01T00:00:00Z",
+    tags: [],
   },
   {
     id: "2",
@@ -57,6 +58,7 @@ const KNOWN_RECIPES: Recipe[] = [
     machine_steps: [],
     created_at: "2026-01-02T00:00:00Z",
     updated_at: "2026-01-02T00:00:00Z",
+    tags: [],
   },
 ];
 
@@ -75,6 +77,7 @@ const TO_TRY_RECIPES: Recipe[] = [
     machine_steps: [],
     created_at: "2026-01-03T00:00:00Z",
     updated_at: "2026-01-03T00:00:00Z",
+    tags: [],
   },
 ];
 

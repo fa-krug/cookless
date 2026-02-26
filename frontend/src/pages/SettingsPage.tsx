@@ -16,13 +16,14 @@ import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { api } from "../api/client";
-import type { Household, Passkey, User } from "../api/types";
+import { TAG_CATEGORIES, type Household, type Passkey, type TagCategory, type User } from "../api/types";
 import { addPasskey } from "../api/webauthn";
 import { ConfirmDialog } from "../components/ui/ConfirmDialog";
 import ResponsiveOverlay from "../components/ui/ResponsiveOverlay";
 import { SettingsSkeleton } from "../components/ui/SettingsSkeleton";
 import { useAuth } from "../hooks/useAuth";
 import { useConfirm } from "../hooks/useConfirm";
+import { useCreateTag, useDeleteTag, useTags, useUpdateTag } from "../hooks/useTags";
 import { useToast } from "../hooks/useToast";
 
 export default function SettingsPage() {
@@ -47,6 +48,18 @@ export default function SettingsPage() {
   const [passwordError, setPasswordError] = useState("");
   const [passwordSuccess, setPasswordSuccess] = useState("");
   const [savingPassword, setSavingPassword] = useState(false);
+
+  // Tag state
+  const { data: groupedTags } = useTags();
+  const createTag = useCreateTag();
+  const updateTag = useUpdateTag();
+  const deleteTag = useDeleteTag();
+  const [editingTag, setEditingTag] = useState<string | null>(null);
+  const [editNameEn, setEditNameEn] = useState("");
+  const [editNameDe, setEditNameDe] = useState("");
+  const [addingCategory, setAddingCategory] = useState<TagCategory | null>(null);
+  const [newTagEn, setNewTagEn] = useState("");
+  const [newTagDe, setNewTagDe] = useState("");
 
   // AI state
   const household = user?.active_household;
@@ -298,6 +311,169 @@ export default function SettingsPage() {
               {t(`settings.languages.${lang}`)}
             </button>
           ))}
+        </div>
+      </div>
+
+      {/* Manage Tags */}
+      <div className="mb-4 rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
+        <h2 className="mb-3 text-lg font-semibold text-gray-900">{t("tags.manageTags")}</h2>
+        <div className="space-y-3">
+          {groupedTags &&
+            TAG_CATEGORIES.map((category) => {
+              const tags = groupedTags[category] || [];
+              return (
+                <details key={category} className="rounded-lg border">
+                  <summary className="cursor-pointer rounded-lg bg-gray-50 px-4 py-2 font-medium">
+                    {t(`tags.${category}`)}
+                    <span className="ml-2 text-sm text-gray-500">({tags.length})</span>
+                  </summary>
+                  <div className="space-y-1 p-3">
+                    {tags.length === 0 && (
+                      <p className="text-sm text-gray-400">{t("tags.noTags")}</p>
+                    )}
+                    {tags.map((tag) => (
+                      <div
+                        key={tag.id}
+                        className="flex items-center justify-between rounded px-2 py-1 hover:bg-gray-50"
+                      >
+                        {editingTag === tag.id ? (
+                          <div className="flex flex-1 items-center gap-2">
+                            <input
+                              value={editNameEn}
+                              onChange={(e) => setEditNameEn(e.target.value)}
+                              className="w-28 rounded border px-2 py-0.5 text-sm"
+                              placeholder={t("tags.nameEn")}
+                            />
+                            <input
+                              value={editNameDe}
+                              onChange={(e) => setEditNameDe(e.target.value)}
+                              className="w-28 rounded border px-2 py-0.5 text-sm"
+                              placeholder={t("tags.nameDe")}
+                            />
+                            <button
+                              type="button"
+                              onClick={async () => {
+                                await updateTag.mutateAsync({
+                                  id: tag.id,
+                                  payload: { name_en: editNameEn, name_de: editNameDe },
+                                });
+                                setEditingTag(null);
+                              }}
+                              className="rounded bg-orange-500 px-2 py-0.5 text-xs text-white"
+                            >
+                              {t("common.save")}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setEditingTag(null)}
+                              className="px-2 py-0.5 text-xs text-gray-500"
+                            >
+                              {t("common.cancel")}
+                            </button>
+                          </div>
+                        ) : (
+                          <>
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm">
+                                {i18n.language === "de" ? tag.name_de : tag.name_en}
+                              </span>
+                              {tag.is_default && (
+                                <span className="rounded bg-gray-100 px-1.5 py-0.5 text-xs text-gray-400">
+                                  default
+                                </span>
+                              )}
+                            </div>
+                            <div className="flex gap-1">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setEditingTag(tag.id);
+                                  setEditNameEn(tag.name_en);
+                                  setEditNameDe(tag.name_de);
+                                }}
+                                className="px-1 text-xs text-gray-500 hover:text-orange-600"
+                              >
+                                {t("tags.editTag")}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={async () => {
+                                  const confirmed = await confirm({
+                                    title: t("tags.deleteTag"),
+                                    message: t("tags.deleteConfirm", { count: 0 }),
+                                    confirmVariant: "danger",
+                                    cancelLabel: t("common.cancel"),
+                                  });
+                                  if (confirmed) {
+                                    deleteTag.mutate(tag.id);
+                                  }
+                                }}
+                                className="px-1 text-xs text-gray-500 hover:text-red-600"
+                              >
+                                {t("tags.deleteTag")}
+                              </button>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    ))}
+                    {addingCategory === category ? (
+                      <div className="mt-2 flex items-center gap-2 border-t pt-2">
+                        <input
+                          value={newTagEn}
+                          onChange={(e) => setNewTagEn(e.target.value)}
+                          className="w-28 rounded border px-2 py-0.5 text-sm"
+                          placeholder={t("tags.nameEn")}
+                        />
+                        <input
+                          value={newTagDe}
+                          onChange={(e) => setNewTagDe(e.target.value)}
+                          className="w-28 rounded border px-2 py-0.5 text-sm"
+                          placeholder={t("tags.nameDe")}
+                        />
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            if (newTagEn.trim() && newTagDe.trim()) {
+                              await createTag.mutateAsync({
+                                category,
+                                name_en: newTagEn.trim(),
+                                name_de: newTagDe.trim(),
+                              });
+                              setNewTagEn("");
+                              setNewTagDe("");
+                              setAddingCategory(null);
+                            }
+                          }}
+                          className="rounded bg-orange-500 px-2 py-0.5 text-xs text-white"
+                        >
+                          {t("common.save")}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setAddingCategory(null);
+                            setNewTagEn("");
+                            setNewTagDe("");
+                          }}
+                          className="px-2 py-0.5 text-xs text-gray-500"
+                        >
+                          {t("common.cancel")}
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => setAddingCategory(category)}
+                        className="mt-2 w-full border-t pt-2 text-left text-sm text-orange-600 hover:text-orange-700"
+                      >
+                        + {t("tags.addTag")}
+                      </button>
+                    )}
+                  </div>
+                </details>
+              );
+            })}
         </div>
       </div>
 

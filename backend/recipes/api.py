@@ -17,7 +17,7 @@ from ninja import File, Router, UploadedFile
 from ninja.errors import HttpError
 from PIL import Image as PILImage
 
-from recipes.models import CookingStep, Ingredient, Recipe, RecipeIngredient, Unit
+from recipes.models import CookingStep, Ingredient, Recipe, RecipeIngredient, Tag, TagCategory, Unit
 from recipes.schemas import (
     CookingStepOut,
     IngredientCreateIn,
@@ -27,6 +27,7 @@ from recipes.schemas import (
     RecipeOut,
     UnitOut,
 )
+from recipes.tag_schemas import GroupedTagsOut, TagCreateIn, TagOut, TagUpdateIn
 from users.permissions import require_household_member
 
 router = Router()
@@ -124,9 +125,13 @@ def list_recipes(
     offset: int = 0,
 ):
     require_household_member(request)
-    qs = Recipe.objects.filter(household=request.user.active_household)
+    qs = Recipe.objects.filter(household=request.user.active_household).prefetch_related("tags")
     if list_type:
         qs = qs.filter(list_type=list_type)
+    tags_param = request.GET.get("tags")
+    if tags_param:
+        tag_ids = [t.strip() for t in tags_param.split(",") if t.strip()]
+        qs = qs.filter(tags__id__in=tag_ids).distinct()
 
     total_count = qs.count()
 
@@ -154,6 +159,10 @@ def create_recipe(request, payload: RecipeCreateIn):
         _save_ingredients(recipe, payload.ingredients)
         _save_steps(recipe, payload.manual_steps, "MANUAL")
         _save_steps(recipe, payload.machine_steps, "MACHINE")
+        if payload.tag_ids:
+            recipe.tags.set(
+                Tag.objects.filter(id__in=payload.tag_ids, household=request.user.active_household)
+            )
     return recipe
 
 
@@ -163,6 +172,7 @@ def get_recipe(request, recipe_id: UUID):
     return get_object_or_404(
         Recipe.objects.prefetch_related(
             "ingredients",
+            "tags",
             Prefetch(
                 "steps",
                 queryset=CookingStep.objects.filter(method="MANUAL"),
@@ -194,6 +204,9 @@ def update_recipe_put(request, recipe_id: UUID, payload: RecipeCreateIn):
         _save_ingredients(recipe, payload.ingredients)
         _save_steps(recipe, payload.manual_steps, "MANUAL")
         _save_steps(recipe, payload.machine_steps, "MACHINE")
+        recipe.tags.set(
+            Tag.objects.filter(id__in=payload.tag_ids, household=request.user.active_household)
+        )
     return recipe
 
 
@@ -212,6 +225,9 @@ def update_recipe_patch(request, recipe_id: UUID, payload: RecipeCreateIn):
         _save_ingredients(recipe, payload.ingredients)
         _save_steps(recipe, payload.manual_steps, "MANUAL")
         _save_steps(recipe, payload.machine_steps, "MACHINE")
+        recipe.tags.set(
+            Tag.objects.filter(id__in=payload.tag_ids, household=request.user.active_household)
+        )
     return recipe
 
 
@@ -361,3 +377,47 @@ def create_ingredient(request, payload: IngredientCreateIn):
 def list_units(request):
     require_household_member(request)
     return Unit.objects.all()
+
+
+# ── Tags ────────────────────────────────────────────────────────────
+
+
+@router.get("/tags/", response=GroupedTagsOut, tags=["tags"])
+def list_tags(request):
+    require_household_member(request)
+    tags = Tag.objects.filter(household=request.user.active_household)
+    grouped: dict[str, list[Tag]] = {cat.value: [] for cat in TagCategory}
+    for tag in tags:
+        grouped[tag.category].append(tag)
+    return grouped
+
+
+@router.post("/tags/", response={201: TagOut}, tags=["tags"])
+def create_tag(request, payload: TagCreateIn):
+    require_household_member(request)
+    tag = Tag.objects.create(
+        household=request.user.active_household,
+        category=payload.category,
+        name_en=payload.name_en,
+        name_de=payload.name_de,
+        is_default=False,
+    )
+    return 201, tag
+
+
+@router.put("/tags/{tag_id}/", response=TagOut, tags=["tags"])
+def update_tag(request, tag_id: UUID, payload: TagUpdateIn):
+    require_household_member(request)
+    tag = get_object_or_404(Tag, pk=tag_id, household=request.user.active_household)
+    tag.name_en = payload.name_en
+    tag.name_de = payload.name_de
+    tag.save(update_fields=["name_en", "name_de"])
+    return tag
+
+
+@router.delete("/tags/{tag_id}/", response={204: None}, tags=["tags"])
+def delete_tag(request, tag_id: UUID):
+    require_household_member(request)
+    tag = get_object_or_404(Tag, pk=tag_id, household=request.user.active_household)
+    tag.delete()
+    return None

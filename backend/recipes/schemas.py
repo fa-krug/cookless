@@ -4,6 +4,8 @@ from uuid import UUID
 
 from ninja import Schema
 
+from recipes.tag_schemas import TagOut
+
 
 class UnitOut(Schema):
     id: int
@@ -52,6 +54,7 @@ class RecipeListOut(Schema):
     image: str | None = None
     created_at: datetime
     updated_at: datetime
+    tags: list[TagOut] = []
 
     @staticmethod
     def resolve_image(obj, context):
@@ -86,6 +89,7 @@ class RecipeOut(Schema):
     machine_steps: list[CookingStepOut]
     created_at: datetime
     updated_at: datetime
+    tags: list[TagOut] = []
 
     @staticmethod
     def resolve_image(obj, context):
@@ -129,3 +133,4 @@ class RecipeCreateIn(Schema):
     ingredients: list[RecipeIngredientIn] = []
     manual_steps: list[CookingStepIn] = []
     machine_steps: list[CookingStepIn] = []
+    tag_ids: list[UUID] = []

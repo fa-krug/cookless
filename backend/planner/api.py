@@ -25,6 +25,7 @@ def setup_plan(request, payload: SetupPlanIn):
             servings=payload.servings,
             known_ratio=payload.known_ratio,
             default_leftover_days=payload.default_leftover_days,
+            excluded_tag_ids=payload.excluded_tag_ids,
         )
     except ValueError as e:
         raise HttpError(422, str(e)) from None
@@ -35,14 +36,14 @@ def setup_plan(request, payload: SetupPlanIn):
 def list_plans(request):
     require_household_member(request)
     return MealPlan.objects.filter(household=request.user.active_household).prefetch_related(
-        "iterations__entries"
+        "iterations__entries", "excluded_tags"
     )
 
 
 @router.get("/meal-plans/{plan_id}/", response=MealPlanOut)
 def get_plan(request, plan_id: UUID):
     require_household_member(request)
-    qs = MealPlan.objects.prefetch_related("iterations__entries")
+    qs = MealPlan.objects.prefetch_related("iterations__entries", "excluded_tags")
     return get_object_or_404(qs, id=plan_id, household=request.user.active_household)
 
 

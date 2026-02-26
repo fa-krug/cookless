@@ -2,7 +2,14 @@ import { Trash2, UtensilsCrossed } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
-import type { RecipeSummary } from "../api/types";
+import type { RecipeSummary, TagCategory } from "../api/types";
+
+const TAG_COLORS: Record<TagCategory, string> = {
+  DIETARY: "bg-green-100 text-green-800",
+  PROTEIN: "bg-red-100 text-red-800",
+  CUISINE: "bg-blue-100 text-blue-800",
+  MEAL_TYPE: "bg-amber-100 text-amber-800",
+};
 
 interface RecipeCardProps {
   recipe: RecipeSummary;
@@ -11,7 +18,7 @@ interface RecipeCardProps {
 }
 
 export default function RecipeCard({ recipe, onDelete, highlight }: RecipeCardProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -57,6 +64,18 @@ export default function RecipeCard({ recipe, onDelete, highlight }: RecipeCardPr
             </span>
           </div>
         </div>
+        {recipe.tags.length > 0 && (
+          <div className="mt-2 flex flex-wrap gap-1">
+            {recipe.tags.map((tag) => (
+              <span
+                key={tag.id}
+                className={`text-xs px-1.5 py-0.5 rounded ${TAG_COLORS[tag.category]}`}
+              >
+                {i18n.language === "de" ? tag.name_de : tag.name_en}
+              </span>
+            ))}
+          </div>
+        )}
       </Link>
       <button
         onClick={() => onDelete(recipe.id)}
