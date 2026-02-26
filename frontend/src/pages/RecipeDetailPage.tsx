@@ -135,6 +135,7 @@ function RecipeForm({ recipe, recipeId, allIngredients, allUnits }: RecipeFormPr
       machine_steps: machineSteps
         .filter((s) => s.instruction.trim())
         .map((s, i) => ({ step_number: i + 1, instruction: s.instruction })),
+      tag_ids: recipe.tags.map((tag) => tag.id),
     };
 
     updateRecipe.mutate({ id: recipeId, data: payload }, {

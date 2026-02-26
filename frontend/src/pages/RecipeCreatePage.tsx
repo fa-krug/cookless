@@ -66,6 +66,7 @@ export default function RecipeCreatePage() {
       machine_steps: machineSteps
         .filter((s) => s.instruction.trim())
         .map((s, i) => ({ step_number: i + 1, instruction: s.instruction })),
+      tag_ids: [],
     };
 
     createRecipe.mutate(payload, {

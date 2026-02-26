@@ -4,6 +4,7 @@ export type ListType = "KNOWN" | "TO_TRY";
 export type MealType = "BREAKFAST" | "LUNCH" | "DINNER" | "SNACK";
 export type IngredientCategory = "PRODUCE" | "DAIRY" | "MEAT" | "PANTRY" | "FROZEN" | "OTHER";
 export type HouseholdRole = "OWNER" | "MEMBER";
+export type TagCategory = "DIETARY" | "PROTEIN" | "CUISINE" | "MEAL_TYPE";
 
 // ── Users & Households ───────────────────────────────────────────
 
@@ -86,6 +87,7 @@ export interface RecipeSummary {
   leftover_days: number | null;
   created_at: string;
   updated_at: string;
+  tags: Tag[];
 }
 
 export interface Recipe {
@@ -101,6 +103,7 @@ export interface Recipe {
   machine_steps: CookingStep[];
   created_at: string;
   updated_at: string;
+  tags: Tag[];
 }
 
 export interface RecipeIngredientPayload {
@@ -125,6 +128,7 @@ export interface RecipeUpdatePayload {
   ingredients: RecipeIngredientPayload[];
   manual_steps: CookingStepPayload[];
   machine_steps: CookingStepPayload[];
+  tag_ids: string[];
 }
 
 // ── Meal Plans ───────────────────────────────────────────────────
@@ -158,6 +162,7 @@ export interface MealPlan {
   servings: number;
   known_ratio: number;
   default_leftover_days: number;
+  excluded_tag_ids: string[];
   iterations: PlanIteration[];
   created_at: string;
 }
@@ -187,6 +192,29 @@ export interface Passkey {
   id: string;
   device_name: string;
   created_at: string;
+}
+
+// ── Tags ──────────────────────────────────────────────────────────
+
+export interface Tag {
+  id: string;
+  category: TagCategory;
+  name_en: string;
+  name_de: string;
+  is_default: boolean;
+}
+
+export type GroupedTags = Record<TagCategory, Tag[]>;
+
+export interface TagCreatePayload {
+  category: TagCategory;
+  name_en: string;
+  name_de: string;
+}
+
+export interface TagUpdatePayload {
+  name_en: string;
+  name_de: string;
 }
 
 // ── Pagination ──────────────────────────────────────────────────

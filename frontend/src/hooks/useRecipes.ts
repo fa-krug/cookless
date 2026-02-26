@@ -4,12 +4,13 @@ import type { ListType, PaginatedResponse, Recipe, RecipeSummary, RecipeUpdatePa
 
 const PAGE_SIZE = 20;
 
-export function useRecipes(listType?: ListType) {
+export function useRecipes(listType?: ListType, tagIds?: string[]) {
   return useInfiniteQuery<PaginatedResponse<RecipeSummary>>({
-    queryKey: ["recipes", listType],
+    queryKey: ["recipes", listType, tagIds],
     queryFn: ({ pageParam = 0 }) => {
       const params = new URLSearchParams();
       if (listType) params.set("list_type", listType);
+      if (tagIds && tagIds.length > 0) params.set("tags", tagIds.join(","));
       params.set("limit", PAGE_SIZE.toString());
       params.set("offset", String(pageParam));
       return api.get<PaginatedResponse<RecipeSummary>>(`/api/v1/recipes/?${params}`);
