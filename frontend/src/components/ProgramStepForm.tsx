@@ -1,3 +1,4 @@
+import { PenLine } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { CookingStepPayload, Direction, ProgramType } from "../api/types";
 import { MACHINE_PROGRAMS, getProgramDef } from "../constants/machinePrograms";
@@ -42,28 +43,27 @@ export default function ProgramStepForm({ step, onChange }: ProgramStepFormProps
   // Program selection grid (when no program selected yet)
   if (!program) {
     return (
-      <div>
-        <div className="grid grid-cols-3 gap-1.5">
-          {MACHINE_PROGRAMS.map((p) => (
-            <button
-              key={p.type}
-              type="button"
-              onClick={() => selectProgram(p.type)}
-              className="flex flex-col items-center gap-1 rounded-md border border-gray-200 px-2 py-2 text-xs hover:border-orange-400 hover:bg-orange-50"
-            >
-              <p.icon size={18} className="text-gray-600" />
-              <span className="text-center leading-tight">
-                {t(`steps.programs.${p.type}`)}
-              </span>
-            </button>
-          ))}
-        </div>
+      <div className="grid grid-cols-3 gap-1.5">
+        {MACHINE_PROGRAMS.map((p) => (
+          <button
+            key={p.type}
+            type="button"
+            onClick={() => selectProgram(p.type)}
+            className="flex flex-col items-center gap-1 rounded-md border border-gray-200 px-2 py-2 text-xs hover:border-orange-400 hover:bg-orange-50"
+          >
+            <p.icon size={18} className="text-gray-600" />
+            <span className="text-center leading-tight">
+              {t(`steps.programs.${p.type}`)}
+            </span>
+          </button>
+        ))}
         <button
           type="button"
           onClick={clearProgram}
-          className="mt-2 text-xs text-gray-500 hover:text-gray-700"
+          className="flex flex-col items-center gap-1 rounded-md border border-gray-200 px-2 py-2 text-xs hover:border-orange-400 hover:bg-orange-50"
         >
-          {t("steps.freeText")}
+          <PenLine size={18} className="text-gray-600" />
+          <span className="text-center leading-tight">{t("steps.freeText")}</span>
         </button>
       </div>
     );
@@ -84,16 +84,16 @@ export default function ProgramStepForm({ step, onChange }: ProgramStepFormProps
     <div className="space-y-2">
       {/* Program badge + change button */}
       <div className="flex items-center gap-2">
-        <div className="flex items-center gap-1.5 rounded-full bg-orange-100 px-3 py-1">
-          <program.icon size={16} className="text-orange-600" />
-          <span className="text-sm font-medium text-orange-800">
+        <div className="flex items-center gap-1.5 rounded-full bg-orange-500 px-3 py-1">
+          <program.icon size={16} className="text-white" />
+          <span className="text-sm font-medium text-white">
             {t(`steps.programs.${step.program_type}`)}
           </span>
         </div>
         <button
           type="button"
           onClick={() => onChange({ ...step, program_type: null })}
-          className="text-xs text-gray-500 hover:text-gray-700"
+          className="rounded-md px-2 py-1 text-xs text-gray-500 hover:bg-gray-200 hover:text-gray-700"
         >
           {t("steps.changeProgram")}
         </button>

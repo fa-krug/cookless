@@ -37,7 +37,7 @@ export default function SortableStep({
     <div
       ref={setNodeRef}
       style={style}
-      className={`flex items-start gap-2 ${showProgram ? "rounded-md bg-orange-50 p-2" : ""} ${isDragging ? "z-10 scale-105 rounded-md bg-white shadow-lg" : ""}`}
+      className={`flex items-start gap-2 rounded-lg border ${showProgram ? "border-orange-500/20 bg-orange-50 p-3" : "border-transparent p-1"} ${isDragging ? "z-10 scale-105 bg-white shadow-lg" : ""}`}
     >
       <button
         type="button"
@@ -69,7 +69,7 @@ export default function SortableStep({
               <button
                 type="button"
                 onClick={() => onStepChange({ ...step, program_type: null, instruction: "" })}
-                className="mt-1 text-xs text-orange-500 hover:text-orange-700"
+                className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-md border border-dashed border-orange-400 px-3 py-2 text-sm text-orange-500 hover:bg-orange-50"
               >
                 {t("steps.selectProgram")}
               </button>
