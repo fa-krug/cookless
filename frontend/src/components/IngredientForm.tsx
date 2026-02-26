@@ -154,7 +154,6 @@ function IngredientRowInput({
           value={search}
           onChange={(e) => {
             setSearch(e.target.value);
-            onUpdate(index, { ingredient: 0, ingredientName: e.target.value });
             setShowDropdown(true);
           }}
           onFocus={() => setShowDropdown(true)}
