@@ -145,3 +145,31 @@ class PasskeyCredential(models.Model):
 
     def __str__(self) -> str:
         return f"{self.user.email} — {self.device_name}"
+
+
+class PersonalAccessToken(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="access_tokens")
+    name = models.CharField(max_length=100)
+    token_hash = models.CharField(max_length=64, unique=True, db_index=True)
+    token_prefix = models.CharField(max_length=14, default="")
+    scopes = models.CharField(max_length=255, default="")
+    expires_at = models.DateTimeField(null=True, blank=True)
+    last_used_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self) -> str:
+        return f"{self.user.email} — {self.name}"
+
+    @property
+    def is_expired(self) -> bool:
+        if self.expires_at is None:
+            return False
+        return timezone.now() > self.expires_at
+
+    @property
+    def scope_list(self) -> list[str]:
+        return [s for s in self.scopes.split(",") if s]
