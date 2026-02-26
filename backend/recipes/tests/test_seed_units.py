@@ -4,6 +4,7 @@ from django.core.management import call_command
 
 import pytest
 
+from recipes.apps import _seed_units_if_empty
 from recipes.models import Unit
 
 
@@ -52,3 +53,21 @@ def test_seed_units_bilingual_names():
     el = Unit.objects.get(abbreviation="EL")
     assert el.name_de == "Esslöffel"
     assert el.name_en == "tablespoon"
+
+
+@pytest.mark.django_db
+def test_auto_seed_units_when_empty():
+    Unit.objects.all().delete()
+    assert Unit.objects.count() == 0
+    _seed_units_if_empty(sender=None)
+    assert Unit.objects.count() == 8
+
+
+@pytest.mark.django_db
+def test_auto_seed_units_skips_when_units_exist():
+    # Ensure at least one unit exists (from post_migrate or previous test)
+    if not Unit.objects.exists():
+        Unit.objects.create(abbreviation="x", name_de="Test", name_en="Test")
+    count_before = Unit.objects.count()
+    _seed_units_if_empty(sender=None)
+    assert Unit.objects.count() == count_before

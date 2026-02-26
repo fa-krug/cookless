@@ -133,8 +133,8 @@ def remove_password(request, payload: RemovePasswordIn):
 def verify_gemini_key(request, payload: VerifyGeminiKeyIn):
     import urllib.request
 
-    url = f"https://generativelanguage.googleapis.com/v1beta/models?key={payload.api_key}"
-    req = urllib.request.Request(url, method="GET")
+    url = "https://generativelanguage.googleapis.com/v1beta/models"
+    req = urllib.request.Request(url, method="GET", headers={"x-goog-api-key": payload.api_key})
     try:
         with urllib.request.urlopen(req, timeout=10) as resp:
             if resp.status == 200:

@@ -68,9 +68,9 @@ export function ConfirmDialog({
       ref={dialogRef}
       className="m-auto w-full max-w-sm rounded-2xl border-none bg-transparent p-0 shadow-xl backdrop:bg-black/40"
     >
-      <div className="rounded-2xl bg-white p-5 shadow-xl dark:bg-gray-800">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{title}</h2>
-        <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">{message}</p>
+      <div className="rounded-2xl bg-white p-5 shadow-xl">
+        <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
+        <p className="mt-2 text-sm text-gray-600">{message}</p>
 
         {(requireTypedConfirmation != null || inputField != null) && (
           <input
@@ -78,7 +78,7 @@ export function ConfirmDialog({
             value={typedValue}
             onChange={(e) => setTypedValue(e.target.value)}
             placeholder={inputField?.placeholder ?? requireTypedConfirmation}
-            className="mt-3 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400"
+            className="mt-3 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
             autoFocus
           />
         )}
@@ -87,7 +87,7 @@ export function ConfirmDialog({
           <button
             type="button"
             onClick={onCancel}
-            className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
+            className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
           >
             {cancelLabel}
           </button>
