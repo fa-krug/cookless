@@ -16,6 +16,7 @@ def setup_meal_plan(
     servings: int,
     known_ratio: float,
     default_leftover_days: int,
+    excluded_tag_ids: list | None = None,
 ) -> MealPlan:
     """Create or update a meal plan for the household and generate the first iteration."""
     validate_shopping_days(shopping_days)
@@ -31,6 +32,12 @@ def setup_meal_plan(
             "default_leftover_days": default_leftover_days,
         },
     )
+
+    if excluded_tag_ids is not None:
+        from recipes.models import Tag
+
+        tags = Tag.objects.filter(id__in=excluded_tag_ids, household=household)
+        plan.excluded_tags.set(tags)
 
     # Delete all existing iterations (cascade deletes entries)
     plan.iterations.all().delete()
@@ -96,12 +103,15 @@ def _populate_iteration(
     """Select recipes, assign schedule, and generate shopping lists for an iteration."""
     days = (iteration.end_date - iteration.start_date).days + 1
 
+    excluded_tags = list(plan.excluded_tags.all())
+
     recipes = _select_recipes(
         household=plan.household,
         days=days,
         known_ratio=plan.known_ratio,
         default_leftover_days=plan.default_leftover_days,
         exclude_ids=exclude_recipe_ids,
+        excluded_tags=excluded_tags,
     )
 
     _assign_schedule_lunch_only(
@@ -134,6 +144,7 @@ def _select_recipes(
     known_ratio: float,
     default_leftover_days: int,
     exclude_ids: set,
+    excluded_tags: list | None = None,
 ) -> list[Recipe]:
     """Select recipes with ingredient overlap optimization."""
     cooking_sessions = max(days // (1 + default_leftover_days), 1)
@@ -142,6 +153,10 @@ def _select_recipes(
 
     known_qs = Recipe.objects.filter(household=household, list_type="KNOWN")
     try_qs = Recipe.objects.filter(household=household, list_type="TO_TRY")
+
+    if excluded_tags:
+        known_qs = known_qs.exclude(tags__in=excluded_tags)
+        try_qs = try_qs.exclude(tags__in=excluded_tags)
 
     if exclude_ids:
         known_filtered = list(known_qs.exclude(id__in=exclude_ids))
