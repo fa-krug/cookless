@@ -31,4 +31,4 @@ class BearerTokenAuth(HttpBearer):
         return pat.user
 
 
-auth = [SessionAuth(), BearerTokenAuth()]
+auth = [BearerTokenAuth(), SessionAuth()]
