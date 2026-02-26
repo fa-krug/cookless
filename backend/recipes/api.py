@@ -279,7 +279,7 @@ def generate_recipes(request, payload: GenerateRecipesIn):
 
         try:
             recipes = call_gemini_text(api_key, prompt)
-        except RuntimeError as exc:
+        except Exception as exc:
             yield json_lib.dumps({"type": "error", "message": str(exc)}) + "\n"
             return
 
@@ -290,7 +290,7 @@ def generate_recipes(request, payload: GenerateRecipesIn):
                 tag_id = tag_map.get(tag_name.lower())
                 if tag_id:
                     resolved_tag_ids.append(tag_id)
-            recipe_data["resolved_tag_ids"] = resolved_tag_ids
+            recipe_data["tag_ids"] = resolved_tag_ids
 
             # Resolve unit abbreviations to IDs
             for ing in recipe_data.get("ingredients", []):

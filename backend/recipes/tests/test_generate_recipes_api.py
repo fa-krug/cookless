@@ -93,7 +93,7 @@ def test_generate_recipes_success(auth_client):
     assert lines[0]["type"] == "recipe"
     assert lines[0]["index"] == 0
     assert lines[0]["data"]["title"] == "Test Soup"
-    assert str(tag.id) in lines[0]["data"]["resolved_tag_ids"]
+    assert str(tag.id) in lines[0]["data"]["tag_ids"]
 
     # Check unit resolution
     assert lines[0]["data"]["ingredients"][0]["unit_id"] is not None

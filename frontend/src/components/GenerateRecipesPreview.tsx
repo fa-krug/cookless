@@ -62,10 +62,14 @@ export function GenerateRecipesPreview({ config, onClose }: GenerateRecipesPrevi
     }
   }, [t]);
 
+  const controllerRef = useRef<AbortController | null>(null);
+
   useEffect(() => {
     abortRef.current = false;
+    const controller = new AbortController();
+    controllerRef.current = controller;
 
-    streamGenerateRecipes(config, handleEvent).catch((err) => {
+    streamGenerateRecipes(config, handleEvent, controller.signal).catch((err) => {
       if (!abortRef.current) {
         setError(err instanceof Error ? err.message : t("errors.recipeGenerate"));
         setGenerating(false);
@@ -74,6 +78,7 @@ export function GenerateRecipesPreview({ config, onClose }: GenerateRecipesPrevi
 
     return () => {
       abortRef.current = true;
+      controller.abort();
     };
   }, [config, handleEvent, t]);
 
@@ -85,6 +90,7 @@ export function GenerateRecipesPreview({ config, onClose }: GenerateRecipesPrevi
 
   const handleCancel = () => {
     abortRef.current = true;
+    controllerRef.current?.abort();
     onClose();
   };
 

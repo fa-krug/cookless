@@ -17,6 +17,7 @@ function getCsrfToken(): string {
 export async function streamGenerateRecipes(
   payload: GenerateRecipesPayload,
   onEvent: (event: GenerateStreamEvent) => void,
+  signal?: AbortSignal,
 ): Promise<void> {
   const response = await fetch(`${BASE_URL}/api/v1/recipes/generate/`, {
     method: "POST",
@@ -26,6 +27,7 @@ export async function streamGenerateRecipes(
     },
     credentials: "include",
     body: JSON.stringify(payload),
+    signal,
   });
 
   if (!response.ok) {
