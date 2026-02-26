@@ -67,19 +67,14 @@ def _save_ingredients(recipe: Recipe, ingredients_data: list) -> None:
     )
 
 
-def _process_and_save_image(recipe: Recipe, uploaded_file: UploadedFile) -> None:
-    """Resize to max 1024px, convert to WebP, save."""
-    img = PILImage.open(uploaded_file)
-    img.verify()
-    uploaded_file.seek(0)
-    img = PILImage.open(uploaded_file)
-
+def _save_image_as_webp(recipe: Recipe, img: PILImage.Image) -> None:
+    """Resize to max 1024px, convert to WebP, delete old file, save."""
     max_size = 1024
     if max(img.size) > max_size:
         img.thumbnail((max_size, max_size), PILImage.Resampling.LANCZOS)
 
     if img.mode in ("RGBA", "P"):
-        img = img.convert("RGB")  # type: ignore[assignment]
+        img = img.convert("RGB")
 
     buf = BytesIO()
     img.save(buf, format="WEBP", quality=85)
@@ -92,6 +87,15 @@ def _process_and_save_image(recipe: Recipe, uploaded_file: UploadedFile) -> None
 
     filename = f"recipes/{recipe.id}_{int(time.time())}.webp"
     recipe.image.save(filename, ContentFile(buf.read()), save=True)
+
+
+def _process_and_save_image(recipe: Recipe, uploaded_file: UploadedFile) -> None:
+    """Validate uploaded image, resize to WebP, save."""
+    img = PILImage.open(uploaded_file)
+    img.verify()
+    uploaded_file.seek(0)
+    img = PILImage.open(uploaded_file)
+    _save_image_as_webp(recipe, img)
 
 
 def _save_steps(recipe: Recipe, steps_data: list, method: str) -> None:
@@ -319,24 +323,7 @@ def generate_recipe_image(request, recipe_id: UUID):
 
     # Process and save
     img = PILImage.open(BytesIO(image_bytes))
-    if img.mode in ("RGBA", "P"):
-        img = img.convert("RGB")  # type: ignore[assignment]
-    max_size = 1024
-    if max(img.size) > max_size:
-        img.thumbnail((max_size, max_size), PILImage.Resampling.LANCZOS)
-
-    buf = BytesIO()
-    img.save(buf, format="WEBP", quality=85)
-    buf.seek(0)
-
-    # Delete old image
-    if recipe.image:
-        old_path = Path(settings.MEDIA_ROOT) / recipe.image.name
-        if old_path.exists():
-            old_path.unlink()
-
-    filename = f"recipes/{recipe.id}_{int(time.time())}.webp"
-    recipe.image.save(filename, ContentFile(buf.read()), save=True)
+    _save_image_as_webp(recipe, img)
 
     return recipe
 

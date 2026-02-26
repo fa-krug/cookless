@@ -3,11 +3,11 @@ URL configuration for cookless project.
 """
 
 from django.conf import settings
-from django.conf.urls.static import static
 from django.contrib import admin
 from django.http import JsonResponse
 from django.urls import path, re_path
 from django.views.generic import TemplateView
+from django.views.static import serve
 
 from cookless.api import api
 
@@ -22,8 +22,14 @@ urlpatterns = [
     path("api/v1/", api.urls),
 ]
 
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+# Serve media files (low volume, no CDN needed)
+urlpatterns += [
+    re_path(
+        r"^media/(?P<path>.*)$",
+        serve,
+        {"document_root": settings.MEDIA_ROOT},
+    ),
+]
 
 # Catch-all for SPA routing - must be last
 urlpatterns += [

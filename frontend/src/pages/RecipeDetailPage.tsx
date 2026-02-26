@@ -243,7 +243,7 @@ function RecipeForm({ recipe, recipeId, allIngredients, allUnits }: RecipeFormPr
 
   function handleDeleteImage() {
     deleteImage.mutate(recipeId, {
-      onError: () => addToast(t("recipeImage.uploadFailed"), "error"),
+      onError: () => addToast(t("common.error"), "error"),
     });
   }
 
