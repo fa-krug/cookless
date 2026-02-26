@@ -2,6 +2,8 @@
 URL configuration for cookless project.
 """
 
+from django.conf import settings
+from django.conf.urls.static import static
 from django.contrib import admin
 from django.http import JsonResponse
 from django.urls import path, re_path
@@ -20,7 +22,10 @@ urlpatterns = [
     path("api/v1/", api.urls),
 ]
 
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
 # Catch-all for SPA routing - must be last
 urlpatterns += [
-    re_path(r"^(?!api/).*$", TemplateView.as_view(template_name="index.html")),
+    re_path(r"^(?!api/|media/).*$", TemplateView.as_view(template_name="index.html")),
 ]
