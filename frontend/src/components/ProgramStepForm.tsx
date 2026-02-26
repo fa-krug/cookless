@@ -6,9 +6,10 @@ import { MACHINE_PROGRAMS, getProgramDef } from "../constants/machinePrograms";
 interface ProgramStepFormProps {
   step: CookingStepPayload;
   onChange: (step: CookingStepPayload) => void;
+  onSelectFreeText?: () => void;
 }
 
-export default function ProgramStepForm({ step, onChange }: ProgramStepFormProps) {
+export default function ProgramStepForm({ step, onChange, onSelectFreeText }: ProgramStepFormProps) {
   const { t } = useTranslation();
   const program = step.program_type ? getProgramDef(step.program_type) : null;
 
@@ -59,7 +60,10 @@ export default function ProgramStepForm({ step, onChange }: ProgramStepFormProps
         ))}
         <button
           type="button"
-          onClick={clearProgram}
+          onClick={() => {
+            clearProgram();
+            onSelectFreeText?.();
+          }}
           className="flex flex-col items-center gap-1 rounded-md border border-gray-200 px-2 py-2 text-xs hover:border-orange-400 hover:bg-orange-50"
         >
           <PenLine size={18} className="text-gray-600" />

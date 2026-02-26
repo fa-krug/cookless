@@ -1,6 +1,7 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { GripVertical, X } from "lucide-react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { CookingStepPayload } from "../api/types";
 import ProgramStepForm from "./ProgramStepForm";
@@ -21,6 +22,7 @@ export default function SortableStep({
   isMachine,
 }: SortableStepProps) {
   const { t } = useTranslation();
+  const [freeTextMode, setFreeTextMode] = useState(false);
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id,
   });
@@ -31,7 +33,7 @@ export default function SortableStep({
   };
 
   const showProgram = isMachine && step.program_type;
-  const showProgramSelector = isMachine && !step.program_type && !step.instruction;
+  const showProgramSelector = isMachine && !step.program_type && !step.instruction && !freeTextMode;
 
   return (
     <div
@@ -55,7 +57,11 @@ export default function SortableStep({
         {showProgram ? (
           <ProgramStepForm step={step} onChange={onStepChange} />
         ) : showProgramSelector ? (
-          <ProgramStepForm step={step} onChange={onStepChange} />
+          <ProgramStepForm
+            step={step}
+            onChange={onStepChange}
+            onSelectFreeText={() => setFreeTextMode(true)}
+          />
         ) : (
           <div>
             <textarea
@@ -68,7 +74,10 @@ export default function SortableStep({
             {isMachine && (
               <button
                 type="button"
-                onClick={() => onStepChange({ ...step, program_type: null, instruction: "" })}
+                onClick={() => {
+                  setFreeTextMode(false);
+                  onStepChange({ ...step, program_type: null, instruction: "" });
+                }}
                 className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-md border border-dashed border-orange-400 px-3 py-2 text-sm text-orange-500 hover:bg-orange-50"
               >
                 {t("steps.selectProgram")}
