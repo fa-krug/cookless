@@ -7,6 +7,7 @@ from ninja import Schema
 class HouseholdSummaryOut(Schema):
     id: UUID
     name: str
+    settings: dict
 
 
 class HouseholdMemberOut(Schema):
@@ -23,6 +24,7 @@ class HouseholdMemberOut(Schema):
 class HouseholdOut(Schema):
     id: UUID
     name: str
+    settings: dict
     members: list[HouseholdMemberOut]
 
 
@@ -38,7 +40,6 @@ class UserOut(Schema):
     id: UUID
     email: str
     preferred_language: str
-    settings: dict
     active_household: HouseholdSummaryOut | None
     onboarding_step: str
     has_password: bool
@@ -56,8 +57,11 @@ class UserOut(Schema):
 
 class UserUpdateIn(Schema):
     preferred_language: str | None = None
-    settings: dict | None = None
     active_household: UUID | None = None
+
+
+class HouseholdSettingsUpdateIn(Schema):
+    settings: dict
 
 
 class InviteOut(Schema):

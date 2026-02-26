@@ -7,7 +7,7 @@ export type HouseholdRole = "OWNER" | "MEMBER";
 
 // ── Users & Households ───────────────────────────────────────────
 
-export interface UserSettings {
+export interface HouseholdSettings {
   ai_enabled?: boolean;
   gemini_api_key?: string;
 }
@@ -15,13 +15,13 @@ export interface UserSettings {
 export interface HouseholdSummary {
   id: string;
   name: string;
+  settings: HouseholdSettings;
 }
 
 export interface User {
   id: string;
   email: string;
   preferred_language: string;
-  settings: UserSettings;
   active_household: HouseholdSummary | null;
   has_password: boolean;
   has_passkey: boolean;
@@ -39,6 +39,7 @@ export interface HouseholdMember {
 export interface Household {
   id: string;
   name: string;
+  settings: HouseholdSettings;
   members: HouseholdMember[];
 }
 

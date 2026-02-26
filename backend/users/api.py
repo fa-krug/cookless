@@ -19,6 +19,7 @@ from users.permissions import require_household_owner
 from users.schemas import (
     HouseholdCreateIn,
     HouseholdOut,
+    HouseholdSettingsUpdateIn,
     HouseholdUpdateIn,
     InviteOut,
     InviteValidationOut,
@@ -61,8 +62,6 @@ def update_me(request, payload: UserUpdateIn):
     user = request.user
     if payload.preferred_language is not None:
         user.preferred_language = payload.preferred_language
-    if payload.settings is not None:
-        user.settings = payload.settings
     if payload.active_household is not None:
         household = Household.objects.filter(pk=payload.active_household).first()
         if not household:
@@ -183,6 +182,17 @@ def update_household(request, household_id: UUID, payload: HouseholdUpdateIn):
     )
     require_household_owner(request, household)
     household.name = payload.name
+    household.save()
+    return household
+
+
+@router.patch("/households/{household_id}/settings/", response=HouseholdOut, tags=["households"])
+def update_household_settings(request, household_id: UUID, payload: HouseholdSettingsUpdateIn):
+    household = get_object_or_404(
+        Household.objects.filter(members__user=request.user), pk=household_id
+    )
+    require_household_owner(request, household)
+    household.settings = payload.settings
     household.save()
     return household
 

@@ -16,7 +16,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { api } from "../api/client";
-import type { Passkey, User } from "../api/types";
+import type { Household, Passkey, User } from "../api/types";
 import { addPasskey } from "../api/webauthn";
 import { ConfirmDialog } from "../components/ui/ConfirmDialog";
 import ResponsiveOverlay from "../components/ui/ResponsiveOverlay";
@@ -49,8 +49,9 @@ export default function SettingsPage() {
   const [savingPassword, setSavingPassword] = useState(false);
 
   // AI state
-  const [aiEnabled, setAiEnabled] = useState(user?.settings?.ai_enabled ?? false);
-  const [geminiKey, setGeminiKey] = useState(user?.settings?.gemini_api_key ?? "");
+  const householdSettings = user?.active_household?.settings;
+  const [aiEnabled, setAiEnabled] = useState(householdSettings?.ai_enabled ?? false);
+  const [geminiKey, setGeminiKey] = useState(householdSettings?.gemini_api_key ?? "");
   const [verifyingKey, setVerifyingKey] = useState(false);
   const [keyStatus, setKeyStatus] = useState<"idle" | "valid" | "invalid">("idle");
 
@@ -196,10 +197,14 @@ export default function SettingsPage() {
     }
   }
 
-  async function saveSettings(patch: Record<string, unknown>) {
-    const merged = { ...user?.settings, ...patch };
+  async function saveHouseholdSettings(patch: Record<string, unknown>) {
+    if (!user?.active_household) return;
+    const merged = { ...householdSettings, ...patch };
     try {
-      await api.patch<User>("/api/v1/users/me/", { settings: merged });
+      await api.patch<Household>(
+        `/api/v1/households/${user.active_household.id}/settings/`,
+        { settings: merged },
+      );
       await refreshUser();
     } catch {
       addToast(t("errors.settingsSave"), "error");
@@ -209,13 +214,13 @@ export default function SettingsPage() {
   async function handleAiToggle() {
     const next = !aiEnabled;
     setAiEnabled(next);
-    await saveSettings({ ai_enabled: next });
+    await saveHouseholdSettings({ ai_enabled: next });
   }
 
   async function handleGeminiKeyBlur() {
-    if (geminiKey === (user?.settings?.gemini_api_key ?? "")) return;
+    if (geminiKey === (householdSettings?.gemini_api_key ?? "")) return;
     setKeyStatus("idle");
-    await saveSettings({ gemini_api_key: geminiKey });
+    await saveHouseholdSettings({ gemini_api_key: geminiKey });
   }
 
   async function handleVerifyKey() {

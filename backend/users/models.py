@@ -78,9 +78,14 @@ class User(AbstractBaseUser, PermissionsMixin):
         return self.passkey_credentials.exists()
 
 
+def _default_household_settings() -> dict:
+    return {}
+
+
 class Household(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=255)
+    settings = models.JSONField(default=_default_household_settings)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self) -> str:

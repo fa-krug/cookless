@@ -52,7 +52,6 @@ class TestUserMe:
         data = resp.json()
         assert data["email"] == "alice@example.com"
         assert data["preferred_language"] == "en"
-        assert data["settings"] == {}
         assert data["active_household"] is None
 
     def test_get_me_with_active_household(self, api_client, user, household):
@@ -72,18 +71,6 @@ class TestUserMe:
         assert resp.status_code == 200
         user.refresh_from_db()
         assert user.preferred_language == "de"
-
-    def test_patch_me_settings(self, api_client, user):
-        api_client.force_login(user)
-        new_settings = {"theme": "dark"}
-        resp = api_client.patch(
-            "/api/v1/users/me/",
-            json.dumps({"settings": new_settings}),
-            content_type="application/json",
-        )
-        assert resp.status_code == 200
-        user.refresh_from_db()
-        assert user.settings == new_settings
 
     def test_patch_me_active_household_by_uuid(self, api_client, user, household):
         api_client.force_login(user)
