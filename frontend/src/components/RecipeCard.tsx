@@ -1,4 +1,4 @@
-import { Trash2 } from "lucide-react";
+import { Trash2, UtensilsCrossed } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
@@ -27,22 +27,35 @@ export default function RecipeCard({ recipe, onDelete, highlight }: RecipeCardPr
         highlight ? "animate-highlight" : ""
       }`}
     >
-      <Link to={`/recipes/${recipe.id}`} className="min-w-0 flex-1">
-        <h3 className="truncate text-lg font-medium text-gray-900">{recipe.title}</h3>
-        <div className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-sm text-gray-500">
-          {recipe.prep_time_minutes != null && (
+      <Link to={`/recipes/${recipe.id}`} className="flex min-w-0 flex-1 items-center gap-3">
+        {recipe.image ? (
+          <img
+            src={recipe.image}
+            alt={recipe.title}
+            className="h-16 w-16 shrink-0 rounded-lg object-cover"
+          />
+        ) : (
+          <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-lg bg-gray-100">
+            <UtensilsCrossed size={24} className="text-gray-400" />
+          </div>
+        )}
+        <div className="min-w-0">
+          <h3 className="truncate text-lg font-medium text-gray-900">{recipe.title}</h3>
+          <div className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-sm text-gray-500">
+            {recipe.prep_time_minutes != null && (
+              <span>
+                {t("recipes.prepTime")}: {recipe.prep_time_minutes} {t("recipes.minutes")}
+              </span>
+            )}
+            {recipe.cook_time_minutes != null && (
+              <span>
+                {t("recipes.cookTime")}: {recipe.cook_time_minutes} {t("recipes.minutes")}
+              </span>
+            )}
             <span>
-              {t("recipes.prepTime")}: {recipe.prep_time_minutes} {t("recipes.minutes")}
+              {t("recipes.servings")}: {recipe.default_servings}
             </span>
-          )}
-          {recipe.cook_time_minutes != null && (
-            <span>
-              {t("recipes.cookTime")}: {recipe.cook_time_minutes} {t("recipes.minutes")}
-            </span>
-          )}
-          <span>
-            {t("recipes.servings")}: {recipe.default_servings}
-          </span>
+          </div>
         </div>
       </Link>
       <button
