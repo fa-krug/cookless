@@ -329,6 +329,28 @@
       "submit": "Zuhause erstellen"
     }
   },
+  "tags": {
+    "title": "Tags",
+    "DIETARY": "Ernährung",
+    "PROTEIN": "Protein",
+    "CUISINE": "Küche",
+    "MEAL_TYPE": "Mahlzeittyp",
+    "filter": "Filter",
+    "clearFilters": "Filter zurücksetzen",
+    "addTag": "Tag hinzufügen",
+    "editTag": "Tag bearbeiten",
+    "deleteTag": "Tag löschen",
+    "deleteConfirm": "Dieses Tag wird in {{count}} Rezept(en) verwendet. Von allen entfernen?",
+    "nameEn": "Name (Englisch)",
+    "nameDe": "Name (Deutsch)",
+    "category": "Kategorie",
+    "manageTags": "Tags verwalten",
+    "noTags": "Noch keine Tags",
+    "customTag": "Eigenes",
+    "allSelected": "Alle",
+    "noneSelected": "Keine",
+    "excludeFromPlan": "Tags abwählen, um sie vom Plan auszuschließen"
+  },
   "welcome": {
     "title": "Willkommen bei Cookless!",
     "subtitle": "Dein Zuhause ist eingerichtet. Das kannst du jetzt tun:",

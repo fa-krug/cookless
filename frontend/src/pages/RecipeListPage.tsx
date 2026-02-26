@@ -3,14 +3,17 @@ import { BookOpen, Plus, Search } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router-dom";
-import type { ListType, RecipeSummary } from "../api/types";
+import type { ListType, RecipeSummary, TagCategory } from "../api/types";
 import RecipeCard from "../components/RecipeCard";
 import { EmptyState } from "../components/ui/EmptyState";
 import { RecipeListSkeleton } from "../components/ui/RecipeListSkeleton";
 import { SortSelect } from "../components/ui/SortSelect";
 import { Spinner } from "../components/ui/Spinner";
 import { useDeleteRecipe, useRecipes } from "../hooks/useRecipes";
+import { useTags } from "../hooks/useTags";
 import { useToast } from "../hooks/useToast";
+
+const TAG_CATEGORIES: TagCategory[] = ["DIETARY", "PROTEIN", "CUISINE", "MEAL_TYPE"];
 
 type SortOption = "name-asc" | "name-desc" | "newest" | "updated";
 
@@ -57,6 +60,7 @@ export default function RecipeListPage() {
   const [activeTab, setActiveTab] = useState<ListType>("KNOWN");
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<SortOption>(getSavedSort);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [pendingDeletes, setPendingDeletes] = useState<Set<string>>(new Set());
   const timersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
   const loadMoreRef = useRef<HTMLDivElement>(null);
@@ -67,8 +71,11 @@ export default function RecipeListPage() {
     }
   }, [newRecipeId]);
 
-  const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
-    useRecipes(activeTab);
+  const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } = useRecipes(
+    activeTab,
+    selectedTags.length > 0 ? selectedTags : undefined,
+  );
+  const { data: groupedTags } = useTags();
   const deleteRecipe = useDeleteRecipe();
 
   const allRecipes = data?.pages.flatMap((page) => page.items) ?? [];
@@ -210,6 +217,60 @@ export default function RecipeListPage() {
           {t("recipes.newRecipe")}
         </button>
       </div>
+
+      {/* Tag filters */}
+      {groupedTags && (
+        <div className="mt-3 flex flex-wrap gap-2">
+          {TAG_CATEGORIES.map((category) => {
+            const tags = groupedTags[category] || [];
+            const selectedInCategory = tags.filter((t) => selectedTags.includes(t.id));
+            return (
+              <details key={category} className="relative">
+                <summary className="flex cursor-pointer select-none items-center gap-1 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm">
+                  {t(`tags.${category}`)}
+                  {selectedInCategory.length > 0 && (
+                    <span className="ml-1 rounded-full bg-orange-500 px-1.5 text-xs text-white">
+                      {selectedInCategory.length}
+                    </span>
+                  )}
+                </summary>
+                <div className="absolute z-10 mt-1 max-h-60 min-w-48 overflow-y-auto rounded-lg border border-gray-200 bg-white p-2 shadow-lg">
+                  {tags.map((tag) => (
+                    <label
+                      key={tag.id}
+                      className="flex cursor-pointer items-center gap-2 rounded px-2 py-1 hover:bg-gray-50"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedTags.includes(tag.id)}
+                        onChange={(e) => {
+                          setSelectedTags((prev) =>
+                            e.target.checked
+                              ? [...prev, tag.id]
+                              : prev.filter((id) => id !== tag.id),
+                          );
+                        }}
+                        className="rounded accent-orange-500"
+                      />
+                      <span className="text-sm">
+                        {i18n.language === "de" ? tag.name_de : tag.name_en}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </details>
+            );
+          })}
+          {selectedTags.length > 0 && (
+            <button
+              onClick={() => setSelectedTags([])}
+              className="px-2 text-sm text-orange-600 hover:text-orange-700"
+            >
+              {t("tags.clearFilters")}
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Recipe list */}
       <div className="mt-4 space-y-3">

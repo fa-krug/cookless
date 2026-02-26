@@ -329,6 +329,28 @@
       "submit": "Create Home"
     }
   },
+  "tags": {
+    "title": "Tags",
+    "DIETARY": "Dietary",
+    "PROTEIN": "Protein",
+    "CUISINE": "Cuisine",
+    "MEAL_TYPE": "Meal Type",
+    "filter": "Filter",
+    "clearFilters": "Clear filters",
+    "addTag": "Add Tag",
+    "editTag": "Edit Tag",
+    "deleteTag": "Delete Tag",
+    "deleteConfirm": "This tag is used on {{count}} recipe(s). Remove from all?",
+    "nameEn": "Name (English)",
+    "nameDe": "Name (German)",
+    "category": "Category",
+    "manageTags": "Manage Tags",
+    "noTags": "No tags yet",
+    "customTag": "Custom",
+    "allSelected": "All",
+    "noneSelected": "None",
+    "excludeFromPlan": "Uncheck tags to exclude them from this plan"
+  },
   "welcome": {
     "title": "Welcome to Cookless!",
     "subtitle": "Your home is all set up. Here's what you can do:",
