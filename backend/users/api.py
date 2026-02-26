@@ -14,6 +14,7 @@ from ninja import Router
 from ninja.errors import HttpError
 from webauthn.helpers import base64url_to_bytes, bytes_to_base64url, options_to_json
 
+from recipes.tag_defaults import seed_default_tags
 from users.models import Household, HouseholdMember, Invite, PasskeyCredential
 from users.permissions import require_household_owner
 from users.schemas import (
@@ -162,6 +163,7 @@ def list_households(request):
 @router.post("/households/", response={201: HouseholdOut}, tags=["households"])
 def create_household(request, payload: HouseholdCreateIn):
     household = Household.objects.create(name=payload.name)
+    seed_default_tags(household)
     HouseholdMember.objects.create(
         household=household,
         user=request.user,
