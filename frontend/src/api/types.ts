@@ -220,6 +220,52 @@ export interface TagUpdatePayload {
   name_de: string;
 }
 
+// ── AI Recipe Generation ────────────────────────────────────────
+
+export interface GenerateRecipesPayload {
+  count: number;
+  tag_ids: string[];
+  free_text: string;
+  generate_images: boolean;
+}
+
+export interface GeneratedIngredient {
+  name_en: string;
+  name_de: string;
+  category: string;
+  quantity: string;
+  unit_abbreviation: string;
+  order: number;
+}
+
+export interface GeneratedRecipe {
+  title: string;
+  default_servings: number;
+  prep_time_minutes: number | null;
+  cook_time_minutes: number | null;
+  leftover_days: number | null;
+  ingredients: GeneratedIngredient[];
+  manual_steps: CookingStepPayload[];
+  machine_steps: CookingStepPayload[];
+  tag_ids: string[];
+  image_base64?: string;
+}
+
+export interface GenerateStreamEvent {
+  type: "recipe" | "image" | "error" | "done";
+  index?: number;
+  data?: GeneratedRecipe | { image_base64: string } | undefined;
+  message?: string;
+}
+
+export interface BulkCreatePayload {
+  recipes: (GeneratedRecipe & { image_base64?: string })[];
+}
+
+export interface BulkCreateResponse {
+  created_ids: string[];
+}
+
 // ── Pagination ──────────────────────────────────────────────────
 
 export interface PaginatedResponse<T> {

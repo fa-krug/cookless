@@ -249,6 +249,25 @@
     "keyValid": "Gültig",
     "keyInvalid": "Ungültig"
   },
+  "generateRecipes": {
+    "button": "Mit KI erstellen",
+    "title": "Rezepte generieren",
+    "count": "Anzahl Rezepte",
+    "tags": "Tags",
+    "freeText": "Zusätzliche Anweisungen",
+    "freeTextPlaceholder": "z.B. Wohlfühlessen für kalte Tage",
+    "generateImages": "Fotos erstellen",
+    "generate": "Generieren",
+    "preview": "Vorschau",
+    "generating": "Rezepte werden erstellt...",
+    "generatingImages": "Fotos werden erstellt...",
+    "saveCount_one": "{{count}} Rezept speichern",
+    "saveCount_other": "{{count}} Rezepte speichern",
+    "saved": "{{count}} Rezepte zu Ausprobieren hinzugefügt!",
+    "noResults": "Keine Rezepte erstellt. Versuche andere Einstellungen.",
+    "configureAi": "KI zuerst einrichten",
+    "selected": "{{count}} ausgewählt"
+  },
   "recipeImage": {
     "upload": "Foto hochladen",
     "generate": "Mit KI erstellen",
@@ -302,7 +321,8 @@
     "householdUpdate": "Haushalt konnte nicht aktualisiert werden.",
     "householdDelete": "Haushalt konnte nicht gelöscht werden.",
     "householdLeave": "Haushalt konnte nicht verlassen werden.",
-    "ownershipTransfer": "Eigentümerschaft konnte nicht übertragen werden."
+    "ownershipTransfer": "Eigentümerschaft konnte nicht übertragen werden.",
+    "recipeGenerate": "Rezepte konnten nicht erstellt werden. Nochmal?"
   },
   "success": {
     "recipeSaved": "Rezept gespeichert!",

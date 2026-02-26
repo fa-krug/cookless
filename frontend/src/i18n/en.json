@@ -249,6 +249,25 @@
     "keyValid": "Valid",
     "keyInvalid": "Invalid"
   },
+  "generateRecipes": {
+    "button": "Generate with AI",
+    "title": "Generate Recipes",
+    "count": "Number of recipes",
+    "tags": "Tags",
+    "freeText": "Additional instructions",
+    "freeTextPlaceholder": "e.g. comfort food for cold weather",
+    "generateImages": "Generate photos",
+    "generate": "Generate",
+    "preview": "Preview",
+    "generating": "Generating recipes...",
+    "generatingImages": "Generating photos...",
+    "saveCount_one": "Save {{count}} recipe",
+    "saveCount_other": "Save {{count}} recipes",
+    "saved": "{{count}} recipes added to Want to try!",
+    "noResults": "No recipes generated. Try adjusting your settings.",
+    "configureAi": "Set up AI first",
+    "selected": "{{count}} selected"
+  },
   "recipeImage": {
     "upload": "Upload Photo",
     "generate": "Generate with AI",
@@ -302,7 +321,8 @@
     "householdUpdate": "Couldn't update the household.",
     "householdDelete": "Couldn't delete the household.",
     "householdLeave": "Couldn't leave the household.",
-    "ownershipTransfer": "Couldn't transfer ownership."
+    "ownershipTransfer": "Couldn't transfer ownership.",
+    "recipeGenerate": "Couldn't generate recipes. Try again?"
   },
   "success": {
     "recipeSaved": "Recipe saved!",
