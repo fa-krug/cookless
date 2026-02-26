@@ -15,7 +15,7 @@ from ninja.errors import HttpError
 from webauthn.helpers import base64url_to_bytes, bytes_to_base64url, options_to_json
 
 from recipes.tag_defaults import seed_default_tags
-from users.models import Household, HouseholdMember, Invite, PasskeyCredential
+from users.models import Household, HouseholdMember, Invite, PasskeyCredential, PersonalAccessToken
 from users.permissions import require_household_owner
 from users.schemas import (
     HouseholdCreateIn,
@@ -34,10 +34,14 @@ from users.schemas import (
     RegisterPasswordIn,
     RemovePasswordIn,
     SetPasswordIn,
+    TokenCreatedOut,
+    TokenCreateIn,
+    TokenOut,
     UserOut,
     UserUpdateIn,
     VerifyGeminiKeyIn,
 )
+from users.token_utils import generate_token
 from users.webauthn import (
     get_authentication_options,
     get_registration_options,
@@ -404,6 +408,75 @@ def add_passkey_complete(request, payload: RegisterCompleteIn):
         request.user.onboarding_step = "CREATE_HOUSEHOLD"
         request.user.save()
     return credential
+
+
+# ── Personal Access Tokens ──────────────────────────────────────────
+
+ALLOWED_SCOPES = {
+    "recipes:read",
+    "recipes:write",
+    "planner:read",
+    "planner:write",
+    "shopping:read",
+    "shopping:write",
+    "households:read",
+    "households:write",
+}
+
+DURATION_PRESETS = {
+    "30d": timedelta(days=30),
+    "90d": timedelta(days=90),
+    "1y": timedelta(days=365),
+}
+
+
+@router.get("/users/me/tokens/", response=list[TokenOut], tags=["tokens"])
+def list_tokens(request):
+    return PersonalAccessToken.objects.filter(user=request.user)
+
+
+@router.post("/users/me/tokens/", response={201: TokenCreatedOut}, tags=["tokens"])
+def create_token(request, payload: TokenCreateIn):
+    if not payload.name.strip():
+        raise HttpError(400, "Token name is required.")
+
+    invalid = set(payload.scopes) - ALLOWED_SCOPES
+    if invalid:
+        raise HttpError(400, f"Invalid scopes: {', '.join(sorted(invalid))}")
+
+    if not payload.scopes:
+        raise HttpError(400, "At least one scope is required.")
+
+    expires_at = None
+    if payload.duration_preset:
+        delta = DURATION_PRESETS.get(payload.duration_preset)
+        if not delta:
+            raise HttpError(400, f"Invalid duration preset: {payload.duration_preset}")
+        expires_at = timezone.now() + delta
+    elif payload.expires_at:
+        expires_at = payload.expires_at
+
+    raw_token, token_hash = generate_token()
+
+    token = PersonalAccessToken.objects.create(
+        user=request.user,
+        name=payload.name.strip(),
+        token_hash=token_hash,
+        token_prefix=raw_token[:14],
+        scopes=",".join(payload.scopes),
+        expires_at=expires_at,
+    )
+
+    # Return the object with the raw token attached for the response
+    token.token = raw_token  # type: ignore[attr-defined]
+    return 201, token
+
+
+@router.delete("/users/me/tokens/{token_id}/", response={204: None}, tags=["tokens"])
+def delete_token(request, token_id: UUID):
+    token = get_object_or_404(PersonalAccessToken, id=token_id, user=request.user)
+    token.delete()
+    return None
 
 
 # ── Auth ─────────────────────────────────────────────────────────────
