@@ -1,6 +1,6 @@
 import type { InfiniteData } from "@tanstack/react-query";
 import { useQueryClient } from "@tanstack/react-query";
-import { ArrowLeftRight, ArrowLeft, Save, Trash2 } from "lucide-react";
+import { ArrowLeftRight, ArrowLeft, Save, Sparkles, Trash2, Upload, UtensilsCrossed } from "lucide-react";
 import { Spinner } from "../components/ui/Spinner";
 import { useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -10,6 +10,8 @@ import IngredientForm, { type IngredientRow } from "../components/IngredientForm
 import StepEditor, { type StepRow } from "../components/StepEditor";
 import { RecipeDetailSkeleton } from "../components/ui/RecipeDetailSkeleton";
 import { createIngredient, useIngredients } from "../hooks/useIngredients";
+import { useAuth } from "../hooks/useAuth";
+import { useDeleteRecipeImage, useGenerateRecipeImage, useUploadRecipeImage } from "../hooks/useRecipeImage";
 import { useDeleteRecipe, useMoveRecipe, useRecipe, useUpdateRecipe } from "../hooks/useRecipes";
 import { useToast } from "../hooks/useToast";
 import { useUnits } from "../hooks/useUnits";
@@ -88,6 +90,13 @@ function RecipeForm({ recipe, recipeId, allIngredients, allUnits }: RecipeFormPr
   const deleteRecipe = useDeleteRecipe();
   const queryClient = useQueryClient();
   const pendingDeleteRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const uploadImage = useUploadRecipeImage();
+  const generateImage = useGenerateRecipeImage();
+  const deleteImage = useDeleteRecipeImage();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { user } = useAuth();
+  const household = user?.active_household;
+  const imageInProgress = uploadImage.isPending || generateImage.isPending;
 
   const initialIngredients = useMemo(
     () => buildIngredientRows(recipe, allIngredients, nameKey),
@@ -209,6 +218,35 @@ function RecipeForm({ recipe, recipeId, allIngredients, allUnits }: RecipeFormPr
     }, 5000);
   }
 
+  function handleUploadImage(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    uploadImage.mutate(
+      { id: recipeId, file },
+      {
+        onError: () => addToast(t("recipeImage.uploadFailed"), "error"),
+      },
+    );
+    e.target.value = "";
+  }
+
+  function handleGenerateImage() {
+    if (!household?.ai_enabled) return;
+    if (!household?.gemini_api_key) {
+      navigate("/settings");
+      return;
+    }
+    generateImage.mutate(recipeId, {
+      onError: () => addToast(t("recipeImage.generateFailed"), "error"),
+    });
+  }
+
+  function handleDeleteImage() {
+    deleteImage.mutate(recipeId, {
+      onError: () => addToast(t("recipeImage.uploadFailed"), "error"),
+    });
+  }
+
   return (
     <div className="p-4">
       <div className="flex items-center justify-between">
@@ -221,6 +259,64 @@ function RecipeForm({ recipe, recipeId, allIngredients, allUnits }: RecipeFormPr
         >
           <ArrowLeft size={20} />
         </button>
+      </div>
+
+      {/* Image section */}
+      <div className="mt-4">
+        {recipe.image ? (
+          <img
+            src={recipe.image}
+            alt={recipe.title}
+            className="h-48 w-full rounded-lg object-cover"
+          />
+        ) : (
+          <div className="flex h-48 w-full items-center justify-center rounded-lg bg-gray-100">
+            <UtensilsCrossed size={48} className={`text-gray-400 ${generateImage.isPending ? "animate-pulse" : ""}`} />
+          </div>
+        )}
+
+        <div className="mt-2 flex gap-2">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            onChange={handleUploadImage}
+            className="hidden"
+          />
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={imageInProgress}
+            className="flex items-center gap-1 rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+          >
+            {uploadImage.isPending ? <Spinner /> : <Upload size={14} />}
+            {t("recipeImage.upload")}
+          </button>
+
+          {household?.ai_enabled && (
+            <button
+              type="button"
+              onClick={handleGenerateImage}
+              disabled={imageInProgress}
+              className="flex items-center gap-1 rounded-md border border-orange-300 px-3 py-1.5 text-sm text-orange-600 hover:bg-orange-50 disabled:opacity-50"
+            >
+              {generateImage.isPending ? <Spinner /> : <Sparkles size={14} />}
+              {generateImage.isPending ? t("recipeImage.generating") : t("recipeImage.generate")}
+            </button>
+          )}
+
+          {recipe.image && (
+            <button
+              type="button"
+              onClick={handleDeleteImage}
+              disabled={imageInProgress}
+              className="flex items-center gap-1 rounded-md border border-red-300 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 disabled:opacity-50"
+            >
+              <Trash2 size={14} />
+              {t("recipeImage.remove")}
+            </button>
+          )}
+        </div>
       </div>
 
       <form onSubmit={handleSave} className="mt-4 space-y-6">
