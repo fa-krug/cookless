@@ -32,6 +32,7 @@ from recipes.schemas import (
     RecipeOut,
     UnitOut,
 )
+from recipes.tag_defaults import seed_default_tags
 from recipes.tag_schemas import GroupedTagsOut, TagCreateIn, TagOut, TagUpdateIn
 from users.permissions import require_household_member
 
@@ -579,6 +580,19 @@ def create_tag(request, payload: TagCreateIn):
         is_default=False,
     )
     return 201, tag
+
+
+@router.post("/tags/reset/", response=GroupedTagsOut, tags=["tags"])
+def reset_tags(request):
+    require_household_member(request)
+    household = request.user.active_household
+    Tag.objects.filter(household=household).delete()
+    seed_default_tags(household)
+    tags = Tag.objects.filter(household=household)
+    grouped: dict[str, list[Tag]] = {cat.value: [] for cat in TagCategory}
+    for tag in tags:
+        grouped[tag.category].append(tag)
+    return grouped
 
 
 @router.put("/tags/{tag_id}/", response=TagOut, tags=["tags"])

@@ -290,7 +290,13 @@
     "passwordChanged": "Passwort geändert!",
     "passwordRemoved": "Passwort entfernt!",
     "removeConfirm": "Aktuelles Passwort eingeben zum Bestätigen:",
-    "noPasswordSet": "Noch kein Passwort festgelegt."
+    "noPasswordSet": "Noch kein Passwort festgelegt.",
+    "incorrectCurrent": "Das stimmt nicht mit deinem aktuellen Passwort überein. Nochmal versuchen?",
+    "tooShort": "Dein neues Passwort ist zu kurz — mindestens 8 Zeichen bitte.",
+    "tooCommon": "Das Passwort ist zu häufig. Wähl was Ungewöhnlicheres?",
+    "tooSimilar": "Dein neues Passwort ist deiner E-Mail zu ähnlich. Probier was anderes?",
+    "entirelyNumeric": "Dein Passwort darf nicht nur aus Zahlen bestehen. Misch ein paar Buchstaben rein?",
+    "samePassword": "Dein neues Passwort darf nicht dasselbe wie das alte sein. Denk dir ein neues aus?"
   },
   "settings": {
     "title": "Einstellungen",
@@ -327,7 +333,8 @@
     "householdDelete": "Haushalt löschen hat nicht geklappt.",
     "householdLeave": "Haushalt verlassen hat nicht geklappt.",
     "ownershipTransfer": "Eigentümerschaft übertragen hat nicht geklappt.",
-    "recipeGenerate": "Rezepte erstellen hat nicht geklappt. Nochmal?"
+    "recipeGenerate": "Rezepte erstellen hat nicht geklappt. Nochmal?",
+    "tagsReset": "Tags zurücksetzen hat nicht geklappt. Nochmal?"
   },
   "success": {
     "recipeSaved": "Rezept gespeichert!",
@@ -347,6 +354,12 @@
       "confirmPassword": "Neues Passwort bestätigen",
       "submit": "Passwort ändern",
       "mismatch": "Passwörter stimmen nicht überein.",
+      "incorrectCurrent": "Das stimmt nicht mit deinem aktuellen Passwort überein. Nochmal versuchen?",
+      "tooShort": "Dein neues Passwort ist zu kurz — mindestens 8 Zeichen bitte.",
+      "tooCommon": "Das Passwort ist zu häufig. Wähl was Ungewöhnlicheres?",
+      "tooSimilar": "Dein neues Passwort ist deiner E-Mail zu ähnlich. Probier was anderes?",
+      "entirelyNumeric": "Dein Passwort darf nicht nur aus Zahlen bestehen. Misch ein paar Buchstaben rein?",
+      "samePassword": "Dein neues Passwort darf nicht dasselbe wie das alte sein. Denk dir ein neues aus?",
       "success": "Passwort geändert!"
     },
     "addPasskey": {
@@ -383,7 +396,10 @@
     "customTag": "Eigenes",
     "allSelected": "Alle",
     "noneSelected": "Keine",
-    "excludeFromPlan": "Tags abwählen, um sie vom Plan auszuschließen"
+    "excludeFromPlan": "Tags abwählen, um sie vom Plan auszuschließen",
+    "resetToDefaults": "Auf Standard zurücksetzen",
+    "resetConfirm": "Das löscht alle Tags (auch eigene) und entfernt sie von deinen Rezepten. Mit den Standards neu starten?",
+    "resetSuccess": "Tags auf Standard zurückgesetzt!"
   },
   "welcome": {
     "title": "Willkommen bei Cookless!",

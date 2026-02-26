@@ -49,6 +49,8 @@ function StepIndicator({ currentStep }: { currentStep: string }) {
   );
 }
 
+import { extractApiDetail, mapPasswordError } from "../utils/passwordErrors";
+
 function ChangePasswordStep({ onComplete }: { onComplete: () => void }) {
   const { t } = useTranslation();
   const { user } = useAuth();
@@ -75,11 +77,7 @@ function ChangePasswordStep({ onComplete }: { onComplete: () => void }) {
       });
       onComplete();
     } catch (err: unknown) {
-      const message =
-        err && typeof err === "object" && "body" in err
-          ? String((err as { body: unknown }).body)
-          : t("common.error");
-      setError(message);
+      setError(mapPasswordError(extractApiDetail(err), t));
     } finally {
       setSubmitting(false);
     }

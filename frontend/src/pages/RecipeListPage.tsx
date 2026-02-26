@@ -13,6 +13,7 @@ import { SortSelect } from "../components/ui/SortSelect";
 import { Spinner } from "../components/ui/Spinner";
 import { useAuth } from "../hooks/useAuth";
 import { useDeleteRecipe, useRecipes } from "../hooks/useRecipes";
+import { useCloseDetailsOnClickOutside } from "../hooks/useCloseDetailsOnClickOutside";
 import { useTags } from "../hooks/useTags";
 import { useToast } from "../hooks/useToast";
 
@@ -82,6 +83,7 @@ export default function RecipeListPage() {
     selectedTags.length > 0 ? selectedTags : undefined,
   );
   const { data: groupedTags } = useTags();
+  const tagFilterRef = useCloseDetailsOnClickOutside<HTMLDivElement>();
   const deleteRecipe = useDeleteRecipe();
 
   const allRecipes = data?.pages.flatMap((page) => page.items) ?? [];
@@ -222,15 +224,17 @@ export default function RecipeListPage() {
         ))}
       </div>
 
-      {/* Add recipe button + Search + Sort */}
-      <div className="mt-4 flex gap-2">
-        <input
-          type="text"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder={t("common.search")}
-          className="min-w-0 flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
-        />
+      {/* Search */}
+      <input
+        type="text"
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        placeholder={t("common.search")}
+        className="mt-4 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
+      />
+
+      {/* Sort + Add recipe buttons */}
+      <div className="mt-2 flex gap-2">
         <SortSelect
           value={sort}
           onChange={handleSortChange}
@@ -259,7 +263,7 @@ export default function RecipeListPage() {
 
       {/* Tag filters */}
       {groupedTags && (
-        <div className="mt-3 flex flex-wrap gap-2">
+        <div ref={tagFilterRef} className="mt-3 flex flex-wrap gap-2">
           {TAG_CATEGORIES.map((category) => {
             const tags = groupedTags[category] || [];
             const selectedInCategory = tags.filter((t) => selectedTags.includes(t.id));

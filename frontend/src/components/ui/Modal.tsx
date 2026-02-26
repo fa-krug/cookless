@@ -58,7 +58,7 @@ export default function Modal({ open, onClose, title, children, size = "md" }: M
       ref={dialogRef}
       aria-labelledby={titleId}
       onClick={handleBackdropClick}
-      className={`w-full rounded-2xl border-none bg-transparent p-0 backdrop:bg-black/40 ${SIZE_CLASSES[size]}`}
+      className={`m-auto w-full rounded-2xl border-none bg-transparent p-0 backdrop:bg-black/40 ${SIZE_CLASSES[size]}`}
     >
       <div className="rounded-2xl bg-white p-6 shadow-xl">
         <div className="mb-4 flex items-center justify-between">

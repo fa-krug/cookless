@@ -1,25 +1,37 @@
 import {
+  ArrowLeftRight,
   Check,
   Clipboard,
   Link,
   LogOut,
   Pencil,
   Plus,
+  RotateCcw,
   Shield,
   Sparkles,
+  Tags,
+  Trash2,
   UserMinus,
   UserPlus,
   X,
 } from "lucide-react";
+import ResponsiveOverlay from "../components/ui/ResponsiveOverlay";
 import { Spinner } from "../components/ui/Spinner";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { api } from "../api/client";
-import type { Household, Invite } from "../api/types";
+import { TAG_CATEGORIES, type Household, type Invite, type TagCategory } from "../api/types";
 import { ConfirmDialog } from "../components/ui/ConfirmDialog";
 import { useToast } from "../hooks/useToast";
 import { useAuth } from "../hooks/useAuth";
 import { useConfirm } from "../hooks/useConfirm";
+import {
+  useCreateTag,
+  useDeleteTag,
+  useResetTags,
+  useTags,
+  useUpdateTag,
+} from "../hooks/useTags";
 import {
   useAcceptInvite,
   useCreateHousehold,
@@ -89,7 +101,7 @@ function MembersList({
   }
 
   return (
-    <div className="rounded-lg bg-white p-4 shadow-sm">
+    <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
       <h2 className="mb-3 text-lg font-semibold text-gray-900">{t("household.members")}</h2>
       <ul className="divide-y divide-gray-100">
         {household.members.map((member) => (
@@ -161,7 +173,7 @@ function InviteSection({ householdId }: { householdId: string }) {
   }
 
   return (
-    <div className="rounded-lg bg-white p-4 shadow-sm">
+    <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
       <h2 className="mb-3 text-lg font-semibold text-gray-900">{t("household.generateInvite")}</h2>
       <button
         onClick={handleGenerate}
@@ -218,7 +230,7 @@ function JoinHouseholdSection() {
   }
 
   return (
-    <div className="rounded-lg bg-white p-4 shadow-sm">
+    <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
       <h2 className="mb-3 text-lg font-semibold text-gray-900">{t("household.joinHousehold")}</h2>
       <form onSubmit={handleJoin} className="flex gap-2">
         <input
@@ -261,7 +273,7 @@ function CreateHouseholdSection() {
   }
 
   return (
-    <div className="rounded-lg bg-white p-4 shadow-sm">
+    <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
       <h2 className="mb-3 text-lg font-semibold text-gray-900">
         {t("household.createHousehold")}
       </h2>
@@ -287,7 +299,7 @@ function CreateHouseholdSection() {
 }
 
 export default function HouseholdPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { addToast } = useToast();
   const { user, refreshUser } = useAuth();
   const { confirm, dialogProps } = useConfirm();
@@ -297,10 +309,24 @@ export default function HouseholdPage() {
   const deleteHousehold = useDeleteHousehold();
   const leaveHousehold = useLeaveHousehold();
 
+  const [switchDrawerOpen, setSwitchDrawerOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState("");
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteConfirmName, setDeleteConfirmName] = useState("");
+
+  // Tag state
+  const { data: groupedTags } = useTags();
+  const createTag = useCreateTag();
+  const updateTag = useUpdateTag();
+  const deleteTag = useDeleteTag();
+  const resetTags = useResetTags();
+  const [editingTag, setEditingTag] = useState<string | null>(null);
+  const [editNameEn, setEditNameEn] = useState("");
+  const [editNameDe, setEditNameDe] = useState("");
+  const [addingCategory, setAddingCategory] = useState<TagCategory | null>(null);
+  const [newTagEn, setNewTagEn] = useState("");
+  const [newTagDe, setNewTagDe] = useState("");
 
   // AI state
   const household = user?.active_household;
@@ -319,11 +345,11 @@ export default function HouseholdPage() {
       (m) => m.email === currentUserEmail && m.role === "OWNER",
     ) ?? false;
 
-  function handleSwitch(e: React.ChangeEvent<HTMLSelectElement>) {
-    const id = e.target.value;
+  function handleSwitch(id: string) {
     if (!id || id === activeHouseholdId) return;
     switchHousehold.mutate(id, {
       onSuccess: async () => {
+        setSwitchDrawerOpen(false);
         setIsEditing(false);
         setShowDeleteConfirm(false);
         setDeleteConfirmName("");
@@ -393,7 +419,18 @@ export default function HouseholdPage() {
 
   return (
     <div className="p-4">
-      <h1 className="mb-4 text-2xl font-bold text-gray-900">{t("household.title")}</h1>
+      <div className="mb-4 flex items-center justify-between">
+        <h1 className="text-2xl font-bold text-gray-900">{t("household.title")}</h1>
+        {households && households.length > 1 && (
+          <button
+            onClick={() => setSwitchDrawerOpen(true)}
+            className="rounded-lg p-2 text-gray-500 hover:bg-gray-100"
+            aria-label={t("household.switchHousehold")}
+          >
+            <ArrowLeftRight size={20} />
+          </button>
+        )}
+      </div>
 
       {isLoading && <p className="text-sm text-gray-500">{t("common.loading")}</p>}
 
@@ -403,30 +440,9 @@ export default function HouseholdPage() {
         </div>
       )}
 
-      {/* Switch household dropdown */}
-      {households && households.length > 1 && (
-        <div className="mb-4 rounded-lg bg-white p-4 shadow-sm">
-          <label className="mb-1 block text-sm font-medium text-gray-700">
-            {t("household.switchHousehold")}
-          </label>
-          <select
-            value={activeHouseholdId ?? ""}
-            onChange={handleSwitch}
-            disabled={switchHousehold.isPending}
-            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
-          >
-            {households.map((h) => (
-              <option key={h.id} value={h.id}>
-                {h.name}
-              </option>
-            ))}
-          </select>
-        </div>
-      )}
-
       {/* Current household info */}
       {activeHousehold && (
-        <div className="mb-4 rounded-lg bg-white p-4 shadow-sm">
+        <div className="mb-4 rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
           <h2 className="mb-2 text-lg font-semibold text-gray-900">
             {t("household.currentHousehold")}
           </h2>
@@ -446,29 +462,31 @@ export default function HouseholdPage() {
                   },
                 );
               }}
-              className="flex gap-2"
+              className="space-y-2"
             >
               <input
                 type="text"
                 value={editName}
                 onChange={(e) => setEditName(e.target.value)}
-                className="flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
+                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
                 autoFocus
               />
-              <button
-                type="submit"
-                disabled={!editName.trim() || updateHousehold.isPending}
-                className="rounded-md bg-orange-500 px-3 py-2 text-sm font-medium text-white hover:bg-orange-600 disabled:opacity-50"
-              >
-                {updateHousehold.isPending ? t("common.loading") : t("common.save")}
-              </button>
-              <button
-                type="button"
-                onClick={() => setIsEditing(false)}
-                className="rounded-md bg-gray-200 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-300"
-              >
-                {t("common.cancel")}
-              </button>
+              <div className="flex gap-2">
+                <button
+                  type="submit"
+                  disabled={!editName.trim() || updateHousehold.isPending}
+                  className="rounded-md bg-orange-500 px-3 py-2 text-sm font-medium text-white hover:bg-orange-600 disabled:opacity-50"
+                >
+                  {updateHousehold.isPending ? t("common.loading") : t("common.save")}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsEditing(false)}
+                  className="rounded-md bg-gray-200 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-300"
+                >
+                  {t("common.cancel")}
+                </button>
+              </div>
             </form>
           ) : (
             <div className="flex items-center gap-2">
@@ -524,7 +542,7 @@ export default function HouseholdPage() {
 
       {/* AI Settings (owner only) */}
       {activeHousehold && isOwner && (
-        <div className="mb-4 rounded-lg bg-white p-4 shadow-sm">
+        <div className="mb-4 rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
           <div className="mb-3 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Sparkles size={20} className="text-gray-400" />
@@ -597,9 +615,214 @@ export default function HouseholdPage() {
         </div>
       )}
 
+      {/* Manage Tags */}
+      {activeHousehold && (
+        <div className="mb-4 rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
+          <div className="mb-3 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Tags size={20} className="text-gray-400" />
+              <h2 className="text-lg font-semibold text-gray-900">{t("tags.manageTags")}</h2>
+            </div>
+            <button
+              onClick={async () => {
+                const confirmed = await confirm({
+                  title: t("tags.resetToDefaults"),
+                  message: t("tags.resetConfirm"),
+                  confirmVariant: "danger",
+                  cancelLabel: t("common.cancel"),
+                });
+                if (confirmed) {
+                  resetTags.mutate(undefined, {
+                    onSuccess: () => addToast(t("tags.resetSuccess"), "success"),
+                    onError: () => addToast(t("errors.tagsReset"), "error"),
+                  });
+                }
+              }}
+              disabled={resetTags.isPending}
+              className="flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-100 disabled:opacity-50"
+            >
+              {resetTags.isPending ? <Spinner /> : <RotateCcw size={14} />}
+              {t("tags.resetToDefaults")}
+            </button>
+          </div>
+          <div className="space-y-3">
+            {groupedTags &&
+              TAG_CATEGORIES.map((category) => {
+                const tags = groupedTags[category] || [];
+                return (
+                  <details key={category} className="rounded-lg border">
+                    <summary className="cursor-pointer rounded-lg bg-gray-50 px-4 py-2 font-medium">
+                      {t(`tags.${category}`)}
+                      <span className="ml-2 text-sm text-gray-500">({tags.length})</span>
+                    </summary>
+                    <div className="space-y-1 p-3">
+                      {tags.length === 0 && (
+                        <p className="text-sm text-gray-400">{t("tags.noTags")}</p>
+                      )}
+                      {tags.map((tag) => (
+                        <div
+                          key={tag.id}
+                          className="flex items-center justify-between rounded px-2 py-1 hover:bg-gray-50"
+                        >
+                          {editingTag === tag.id ? (
+                            <div className="flex flex-1 items-center justify-between gap-2">
+                              <div className="flex min-w-0 flex-1 items-center gap-2">
+                                <input
+                                  value={editNameEn}
+                                  onChange={(e) => setEditNameEn(e.target.value)}
+                                  className="w-28 rounded border px-2 py-0.5 text-sm"
+                                  placeholder={t("tags.nameEn")}
+                                />
+                                <input
+                                  value={editNameDe}
+                                  onChange={(e) => setEditNameDe(e.target.value)}
+                                  className="w-28 rounded border px-2 py-0.5 text-sm"
+                                  placeholder={t("tags.nameDe")}
+                                />
+                              </div>
+                              <div className="flex gap-1">
+                                <button
+                                  type="button"
+                                  onClick={async () => {
+                                    await updateTag.mutateAsync({
+                                      id: tag.id,
+                                      payload: { name_en: editNameEn, name_de: editNameDe },
+                                    });
+                                    setEditingTag(null);
+                                  }}
+                                  className="rounded-md p-1.5 text-green-600 hover:bg-green-50"
+                                  aria-label={t("common.save")}
+                                >
+                                  <Check size={14} />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => setEditingTag(null)}
+                                  className="rounded-md p-1.5 text-gray-400 hover:bg-gray-100"
+                                  aria-label={t("common.cancel")}
+                                >
+                                  <X size={14} />
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <>
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm">
+                                  {i18n.language === "de" ? tag.name_de : tag.name_en}
+                                </span>
+                                {tag.is_default && (
+                                  <span className="rounded bg-gray-100 px-1.5 py-0.5 text-xs text-gray-400">
+                                    default
+                                  </span>
+                                )}
+                              </div>
+                              <div className="flex gap-1">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setEditingTag(tag.id);
+                                    setEditNameEn(tag.name_en);
+                                    setEditNameDe(tag.name_de);
+                                  }}
+                                  className="rounded-md p-1.5 text-gray-400 hover:bg-gray-100 hover:text-orange-600"
+                                  aria-label={t("tags.editTag")}
+                                >
+                                  <Pencil size={14} />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={async () => {
+                                    const confirmed = await confirm({
+                                      title: t("tags.deleteTag"),
+                                      message: t("tags.deleteConfirm", { count: 0 }),
+                                      confirmVariant: "danger",
+                                      cancelLabel: t("common.cancel"),
+                                    });
+                                    if (confirmed) {
+                                      deleteTag.mutate(tag.id);
+                                    }
+                                  }}
+                                  className="rounded-md p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-600"
+                                  aria-label={t("tags.deleteTag")}
+                                >
+                                  <Trash2 size={14} />
+                                </button>
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      ))}
+                      {addingCategory === category ? (
+                        <div className="mt-2 flex items-center justify-between gap-2 border-t pt-2">
+                          <div className="flex min-w-0 flex-1 items-center gap-2">
+                            <input
+                              value={newTagEn}
+                              onChange={(e) => setNewTagEn(e.target.value)}
+                              className="w-28 rounded border px-2 py-0.5 text-sm"
+                              placeholder={t("tags.nameEn")}
+                            />
+                            <input
+                              value={newTagDe}
+                              onChange={(e) => setNewTagDe(e.target.value)}
+                              className="w-28 rounded border px-2 py-0.5 text-sm"
+                              placeholder={t("tags.nameDe")}
+                            />
+                          </div>
+                          <div className="flex gap-1">
+                            <button
+                              type="button"
+                              onClick={async () => {
+                                if (newTagEn.trim() && newTagDe.trim()) {
+                                  await createTag.mutateAsync({
+                                    category,
+                                    name_en: newTagEn.trim(),
+                                    name_de: newTagDe.trim(),
+                                  });
+                                  setNewTagEn("");
+                                  setNewTagDe("");
+                                  setAddingCategory(null);
+                                }
+                              }}
+                              className="rounded-md p-1.5 text-green-600 hover:bg-green-50"
+                              aria-label={t("common.save")}
+                            >
+                              <Check size={14} />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setAddingCategory(null);
+                                setNewTagEn("");
+                                setNewTagDe("");
+                              }}
+                              className="rounded-md p-1.5 text-gray-400 hover:bg-gray-100"
+                              aria-label={t("common.cancel")}
+                            >
+                              <X size={14} />
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => setAddingCategory(category)}
+                          className="mt-2 w-full border-t pt-2 text-left text-sm text-orange-600 hover:text-orange-700"
+                        >
+                          + {t("tags.addTag")}
+                        </button>
+                      )}
+                    </div>
+                  </details>
+                );
+              })}
+          </div>
+        </div>
+      )}
+
       {/* Leave household (non-owner only) */}
       {activeHousehold && !isOwner && (
-        <div className="mb-4 rounded-lg bg-white p-4 shadow-sm">
+        <div className="mb-4 rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
           <button
             onClick={handleLeave}
             disabled={leaveHousehold.isPending}
@@ -613,8 +836,8 @@ export default function HouseholdPage() {
 
       {/* Delete household (owner only, danger zone) */}
       {activeHousehold && isOwner && (
-        <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-4">
-          <h2 className="mb-2 text-lg font-semibold text-red-900">
+        <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-950/50">
+          <h2 className="mb-2 text-lg font-semibold text-red-900 dark:text-red-300">
             {t("household.deleteHousehold")}
           </h2>
           {!showDeleteConfirm ? (
@@ -626,7 +849,7 @@ export default function HouseholdPage() {
             </button>
           ) : (
             <div>
-              <p className="mb-2 text-sm text-red-800">
+              <p className="mb-2 text-sm text-red-800 dark:text-red-300">
                 {t("household.deleteConfirm", { name: activeHousehold.name })}
               </p>
               <div className="flex gap-2">
@@ -635,7 +858,7 @@ export default function HouseholdPage() {
                   value={deleteConfirmName}
                   onChange={(e) => setDeleteConfirmName(e.target.value)}
                   placeholder={t("household.deleteConfirmPlaceholder")}
-                  className="flex-1 rounded-md border border-red-300 px-3 py-2 text-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
+                  className="flex-1 rounded-md border border-red-300 px-3 py-2 text-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500 dark:border-red-700 dark:bg-red-950 dark:text-red-200 dark:placeholder-red-400"
                 />
                 <button
                   onClick={() => {
@@ -661,7 +884,7 @@ export default function HouseholdPage() {
                     setShowDeleteConfirm(false);
                     setDeleteConfirmName("");
                   }}
-                  className="rounded-md bg-gray-200 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-300"
+                  className="rounded-md bg-gray-200 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
                 >
                   {t("common.cancel")}
                 </button>
@@ -672,6 +895,34 @@ export default function HouseholdPage() {
       )}
 
       {dialogProps && <ConfirmDialog {...dialogProps} />}
+
+      {/* Switch household drawer */}
+      <ResponsiveOverlay
+        open={switchDrawerOpen}
+        onClose={() => setSwitchDrawerOpen(false)}
+        title={t("household.switchHousehold")}
+        size="sm"
+      >
+        <div className="space-y-2">
+          {households?.map((h) => (
+            <button
+              key={h.id}
+              onClick={() => handleSwitch(h.id)}
+              disabled={switchHousehold.isPending}
+              className={`w-full rounded-lg px-4 py-3 text-left text-sm font-medium transition ${
+                h.id === activeHouseholdId
+                  ? "bg-orange-50 text-orange-700 ring-1 ring-orange-300"
+                  : "bg-gray-50 text-gray-700 hover:bg-gray-100"
+              } disabled:opacity-50`}
+            >
+              {h.name}
+              {h.id === activeHouseholdId && (
+                <Check size={16} className="float-right mt-0.5 text-orange-500" />
+              )}
+            </button>
+          ))}
+        </div>
+      </ResponsiveOverlay>
     </div>
   );
 }

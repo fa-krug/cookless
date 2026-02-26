@@ -80,6 +80,9 @@ export default defineConfig({
       '/api': {
         target: 'http://localhost:8000',
       },
+      '/media': {
+        target: 'http://localhost:8000',
+      },
     },
   },
 })

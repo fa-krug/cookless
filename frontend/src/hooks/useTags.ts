@@ -40,3 +40,14 @@ export function useDeleteTag() {
     },
   });
 }
+
+export function useResetTags() {
+  const queryClient = useQueryClient();
+  return useMutation<GroupedTags, Error, void>({
+    mutationFn: () => api.post("/api/v1/tags/reset/"),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["tags"] });
+      queryClient.invalidateQueries({ queryKey: ["recipes"] });
+    },
+  });
+}

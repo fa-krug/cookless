@@ -290,7 +290,13 @@
     "passwordChanged": "Password changed!",
     "passwordRemoved": "Password removed!",
     "removeConfirm": "Enter your current password to confirm:",
-    "noPasswordSet": "No password set yet."
+    "noPasswordSet": "No password set yet.",
+    "incorrectCurrent": "That doesn't match your current password. Try again?",
+    "tooShort": "Your new password is too short — use at least 8 characters.",
+    "tooCommon": "That password is too common. Pick something less guessable?",
+    "tooSimilar": "Your new password is too similar to your email. Try something different?",
+    "entirelyNumeric": "Your password can't be all numbers. Mix in some letters?",
+    "samePassword": "Your new password can't be the same as the old one. Pick a fresh one?"
   },
   "settings": {
     "title": "Settings",
@@ -327,7 +333,8 @@
     "householdDelete": "Couldn't delete the household.",
     "householdLeave": "Couldn't leave the household.",
     "ownershipTransfer": "Couldn't transfer ownership.",
-    "recipeGenerate": "Couldn't generate recipes. Try again?"
+    "recipeGenerate": "Couldn't generate recipes. Try again?",
+    "tagsReset": "Couldn't reset tags. Try again?"
   },
   "success": {
     "recipeSaved": "Recipe saved!",
@@ -347,6 +354,12 @@
       "confirmPassword": "Confirm new password",
       "submit": "Change Password",
       "mismatch": "Passwords don't match.",
+      "incorrectCurrent": "That doesn't match your current password. Try again?",
+      "tooShort": "Your new password is too short — use at least 8 characters.",
+      "tooCommon": "That password is too common. Pick something less guessable?",
+      "tooSimilar": "Your new password is too similar to your email. Try something different?",
+      "entirelyNumeric": "Your password can't be all numbers. Mix in some letters?",
+      "samePassword": "Your new password can't be the same as the old one. Pick a fresh one?",
       "success": "Password changed!"
     },
     "addPasskey": {
@@ -383,7 +396,10 @@
     "customTag": "Custom",
     "allSelected": "All",
     "noneSelected": "None",
-    "excludeFromPlan": "Uncheck tags to exclude them from this plan"
+    "excludeFromPlan": "Uncheck tags to exclude them from this plan",
+    "resetToDefaults": "Reset to Defaults",
+    "resetConfirm": "This will delete all tags (including custom ones) and remove them from your recipes. Start fresh with the defaults?",
+    "resetSuccess": "Tags reset to defaults!"
   },
   "welcome": {
     "title": "Welcome to Cookless!",

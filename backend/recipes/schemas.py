@@ -58,10 +58,9 @@ class RecipeListOut(Schema):
     tags: list[TagOut] = []
 
     @staticmethod
-    def resolve_image(obj, context):
+    def resolve_image(obj):
         if obj.image:
-            request = context["request"]
-            return request.build_absolute_uri(obj.image.url)
+            return obj.image.url
         return None
 
 
@@ -93,10 +92,9 @@ class RecipeOut(Schema):
     tags: list[TagOut] = []
 
     @staticmethod
-    def resolve_image(obj, context):
+    def resolve_image(obj):
         if obj.image:
-            request = context["request"]
-            return request.build_absolute_uri(obj.image.url)
+            return obj.image.url
         return None
 
     @staticmethod

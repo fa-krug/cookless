@@ -250,3 +250,55 @@ def test_filter_recipes_by_tags(auth_client):
     items = response.json()["items"]
     assert len(items) == 1
     assert items[0]["title"] == "Salad"
+
+
+@pytest.mark.django_db
+def test_reset_tags_deletes_all_and_reseeds(auth_client):
+    client, household = auth_client
+    # Add a custom tag
+    Tag.objects.create(
+        household=household,
+        category=TagCategory.CUISINE,
+        name_en="Korean",
+        name_de="Koreanisch",
+        is_default=False,
+    )
+    # Delete a default tag
+    Tag.objects.filter(household=household, name_en="Paleo").delete()
+    # Rename a default tag
+    tag = Tag.objects.filter(household=household, name_en="Vegan").first()
+    assert tag is not None
+    tag.name_en = "Strict Vegan"
+    tag.save()
+
+    response = client.post("/api/v1/tags/reset/")
+    assert response.status_code == 200
+    data = response.json()
+
+    # All defaults restored, custom tag gone
+    tags = Tag.objects.filter(household=household)
+    assert tags.count() == 37
+    assert all(t.is_default for t in tags)
+    assert not tags.filter(name_en="Korean").exists()
+    assert tags.filter(name_en="Vegan").exists()
+    assert not tags.filter(name_en="Strict Vegan").exists()
+
+    # Response is grouped tags
+    assert "DIETARY" in data
+    assert len(data["DIETARY"]) == 10
+
+
+@pytest.mark.django_db
+def test_reset_tags_clears_recipe_associations(auth_client):
+    client, household = auth_client
+    tag = Tag.objects.filter(household=household, name_en="Vegan").first()
+    assert tag is not None
+    recipe = Recipe.objects.create(
+        household=household, title="Salad", list_type="KNOWN", default_servings=2
+    )
+    recipe.tags.add(tag)
+
+    response = client.post("/api/v1/tags/reset/")
+    assert response.status_code == 200
+    recipe.refresh_from_db()
+    assert recipe.tags.count() == 0

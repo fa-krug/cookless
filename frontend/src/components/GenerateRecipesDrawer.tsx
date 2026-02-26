@@ -2,7 +2,8 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Sparkles } from "lucide-react";
 
-import Drawer from "./ui/Drawer";
+import ResponsiveOverlay from "./ui/ResponsiveOverlay";
+import { useCloseDetailsOnClickOutside } from "../hooks/useCloseDetailsOnClickOutside";
 import { useTags } from "../hooks/useTags";
 import { TAG_CATEGORIES } from "../api/types";
 
@@ -24,6 +25,7 @@ export default function GenerateRecipesDrawer({
 }: GenerateRecipesDrawerProps) {
   const { t, i18n } = useTranslation();
   const { data: groupedTags } = useTags();
+  const tagSectionRef = useCloseDetailsOnClickOutside<HTMLDivElement>();
 
   const [count, setCount] = useState(10);
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
@@ -40,7 +42,7 @@ export default function GenerateRecipesDrawer({
   }
 
   return (
-    <Drawer open={isOpen} onClose={onClose} title={t("generateRecipes.title")}>
+    <ResponsiveOverlay open={isOpen} onClose={onClose} title={t("generateRecipes.title")} size="md">
       <div className="space-y-5">
         {/* Count slider */}
         <div>
@@ -62,7 +64,7 @@ export default function GenerateRecipesDrawer({
 
         {/* Tags */}
         {groupedTags && (
-          <div>
+          <div ref={tagSectionRef}>
             <label className="text-sm font-medium text-gray-700">
               {t("generateRecipes.tags")}
             </label>
@@ -150,6 +152,6 @@ export default function GenerateRecipesDrawer({
           {t("generateRecipes.generate")}
         </button>
       </div>
-    </Drawer>
+    </ResponsiveOverlay>
   );
 }

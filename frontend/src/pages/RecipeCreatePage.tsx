@@ -9,6 +9,7 @@ import IngredientForm, { type IngredientRow } from "../components/IngredientForm
 import StepEditor, { type StepRow } from "../components/StepEditor";
 import { createIngredient, useIngredients } from "../hooks/useIngredients";
 import { useCreateRecipe } from "../hooks/useRecipes";
+import { useCloseDetailsOnClickOutside } from "../hooks/useCloseDetailsOnClickOutside";
 import { useCreateTag, useTags } from "../hooks/useTags";
 import { useToast } from "../hooks/useToast";
 import { useUnits } from "../hooks/useUnits";
@@ -27,6 +28,7 @@ export default function RecipeCreatePage() {
   const { data: groupedTags } = useTags();
   const createRecipe = useCreateRecipe();
   const createTag = useCreateTag();
+  const tagSectionRef = useCloseDetailsOnClickOutside<HTMLDivElement>();
 
   const [title, setTitle] = useState("");
   const [defaultServings, setDefaultServings] = useState(2);
@@ -174,7 +176,7 @@ export default function RecipeCreatePage() {
 
         {/* Tags Section */}
         {groupedTags && (
-          <div className="space-y-2">
+          <div ref={tagSectionRef} className="space-y-2">
             <h3 className="text-sm font-medium text-gray-700">{t("tags.title")}</h3>
             <div className="flex flex-wrap gap-2">
               {TAG_CATEGORIES.map((category) => {

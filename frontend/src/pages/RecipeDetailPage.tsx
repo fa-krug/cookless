@@ -21,6 +21,7 @@ import { createIngredient, useIngredients } from "../hooks/useIngredients";
 import { useAuth } from "../hooks/useAuth";
 import { useDeleteRecipeImage, useGenerateRecipeImage, useUploadRecipeImage } from "../hooks/useRecipeImage";
 import { useDeleteRecipe, useMoveRecipe, useRecipe, useUpdateRecipe } from "../hooks/useRecipes";
+import { useCloseDetailsOnClickOutside } from "../hooks/useCloseDetailsOnClickOutside";
 import { useCreateTag, useTags } from "../hooks/useTags";
 import { useToast } from "../hooks/useToast";
 import { useUnits } from "../hooks/useUnits";
@@ -108,6 +109,7 @@ function RecipeForm({ recipe, recipeId, allIngredients, allUnits }: RecipeFormPr
   const imageInProgress = uploadImage.isPending || generateImage.isPending;
   const { data: groupedTags } = useTags();
   const createTag = useCreateTag();
+  const tagSectionRef = useCloseDetailsOnClickOutside<HTMLDivElement>();
 
   const initialIngredients = useMemo(
     () => buildIngredientRows(recipe, allIngredients, nameKey),
@@ -409,7 +411,7 @@ function RecipeForm({ recipe, recipeId, allIngredients, allUnits }: RecipeFormPr
 
         {/* Tags Section */}
         {groupedTags && (
-          <div className="space-y-2">
+          <div ref={tagSectionRef} className="space-y-2">
             <h3 className="text-sm font-medium text-gray-700">{t("tags.title")}</h3>
             <div className="flex flex-wrap gap-2">
               {TAG_CATEGORIES.map((category) => {

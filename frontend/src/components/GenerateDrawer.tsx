@@ -7,7 +7,7 @@ import { TAG_CATEGORIES, type MealPlan } from "../api/types";
 import { useSetupPlan } from "../hooks/useMealPlan";
 import { useTags } from "../hooks/useTags";
 import { useToast } from "../hooks/useToast";
-import Drawer from "./ui/Drawer";
+import ResponsiveOverlay from "./ui/ResponsiveOverlay";
 
 interface GenerateDrawerProps {
   isOpen: boolean;
@@ -310,16 +310,17 @@ export default function GenerateDrawer({
   const isUpdate = !!existingPlan;
 
   return (
-    <Drawer
+    <ResponsiveOverlay
       open={isOpen}
       onClose={onClose}
       title={isUpdate ? t("plan.updateConfig") : t("plan.setup")}
+      size="md"
     >
       <DrawerForm
         key={openCount}
         existingPlan={existingPlan}
         onClose={onClose}
       />
-    </Drawer>
+    </ResponsiveOverlay>
   );
 }
