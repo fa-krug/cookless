@@ -5,13 +5,14 @@ import { Spinner } from "../components/ui/Spinner";
 import { useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
-import type {
-  Ingredient,
-  PaginatedResponse,
-  Recipe,
-  RecipeSummary,
-  RecipeUpdatePayload,
-  TagCategory,
+import {
+  TAG_CATEGORIES,
+  type Ingredient,
+  type PaginatedResponse,
+  type Recipe,
+  type RecipeSummary,
+  type RecipeUpdatePayload,
+  type TagCategory,
 } from "../api/types";
 import IngredientForm, { type IngredientRow } from "../components/IngredientForm";
 import StepEditor, { type StepRow } from "../components/StepEditor";
@@ -21,8 +22,6 @@ import { useDeleteRecipe, useMoveRecipe, useRecipe, useUpdateRecipe } from "../h
 import { useCreateTag, useTags } from "../hooks/useTags";
 import { useToast } from "../hooks/useToast";
 import { useUnits } from "../hooks/useUnits";
-
-const TAG_CATEGORIES: TagCategory[] = ["DIETARY", "PROTEIN", "CUISINE", "MEAL_TYPE"];
 
 export default function RecipeDetailPage() {
   const { id } = useParams<{ id: string }>();

@@ -3,7 +3,7 @@ import { BookOpen, Plus, Search } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router-dom";
-import type { ListType, RecipeSummary, TagCategory } from "../api/types";
+import { TAG_CATEGORIES, type ListType, type RecipeSummary } from "../api/types";
 import RecipeCard from "../components/RecipeCard";
 import { EmptyState } from "../components/ui/EmptyState";
 import { RecipeListSkeleton } from "../components/ui/RecipeListSkeleton";
@@ -12,8 +12,6 @@ import { Spinner } from "../components/ui/Spinner";
 import { useDeleteRecipe, useRecipes } from "../hooks/useRecipes";
 import { useTags } from "../hooks/useTags";
 import { useToast } from "../hooks/useToast";
-
-const TAG_CATEGORIES: TagCategory[] = ["DIETARY", "PROTEIN", "CUISINE", "MEAL_TYPE"];
 
 type SortOption = "name-asc" | "name-desc" | "newest" | "updated";
 

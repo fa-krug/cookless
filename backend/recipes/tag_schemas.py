@@ -1,3 +1,4 @@
+from typing import Literal
 from uuid import UUID
 
 from ninja import Schema
@@ -12,7 +13,7 @@ class TagOut(Schema):
 
 
 class TagCreateIn(Schema):
-    category: str
+    category: Literal["DIETARY", "PROTEIN", "CUISINE", "MEAL_TYPE"]
     name_en: str
     name_de: str
 

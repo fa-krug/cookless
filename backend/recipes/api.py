@@ -257,7 +257,7 @@ def update_tag(request, tag_id: UUID, payload: TagUpdateIn):
     tag = get_object_or_404(Tag, pk=tag_id, household=request.user.active_household)
     tag.name_en = payload.name_en
     tag.name_de = payload.name_de
-    tag.save()
+    tag.save(update_fields=["name_en", "name_de"])
     return tag
 
 

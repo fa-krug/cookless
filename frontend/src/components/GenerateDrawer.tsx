@@ -3,13 +3,11 @@ import { Spinner } from "./ui/Spinner";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ApiError } from "../api/client";
-import type { MealPlan, TagCategory } from "../api/types";
+import { TAG_CATEGORIES, type MealPlan } from "../api/types";
 import { useSetupPlan } from "../hooks/useMealPlan";
 import { useTags } from "../hooks/useTags";
 import { useToast } from "../hooks/useToast";
 import Drawer from "./ui/Drawer";
-
-const TAG_CATEGORIES: TagCategory[] = ["DIETARY", "PROTEIN", "CUISINE", "MEAL_TYPE"];
 
 interface GenerateDrawerProps {
   isOpen: boolean;

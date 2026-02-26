@@ -54,6 +54,4 @@ class MealPlanOut(Schema):
 
     @staticmethod
     def resolve_excluded_tag_ids(obj):
-        if hasattr(obj, "_prefetched_excluded_tag_ids"):
-            return obj._prefetched_excluded_tag_ids
-        return list(obj.excluded_tags.values_list("id", flat=True))
+        return [tag.id for tag in obj.excluded_tags.all()]

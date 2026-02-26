@@ -16,7 +16,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { api } from "../api/client";
-import type { Household, Passkey, TagCategory, User } from "../api/types";
+import { TAG_CATEGORIES, type Household, type Passkey, type TagCategory, type User } from "../api/types";
 import { addPasskey } from "../api/webauthn";
 import { ConfirmDialog } from "../components/ui/ConfirmDialog";
 import ResponsiveOverlay from "../components/ui/ResponsiveOverlay";
@@ -50,7 +50,6 @@ export default function SettingsPage() {
   const [savingPassword, setSavingPassword] = useState(false);
 
   // Tag state
-  const TAG_CATEGORIES: TagCategory[] = ["DIETARY", "PROTEIN", "CUISINE", "MEAL_TYPE"];
   const { data: groupedTags } = useTags();
   const createTag = useCreateTag();
   const updateTag = useUpdateTag();

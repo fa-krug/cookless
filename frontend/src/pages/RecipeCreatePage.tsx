@@ -4,7 +4,7 @@ import { Spinner } from "../components/ui/Spinner";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import type { ListType, RecipeUpdatePayload, TagCategory } from "../api/types";
+import { TAG_CATEGORIES, type ListType, type RecipeUpdatePayload, type TagCategory } from "../api/types";
 import IngredientForm, { type IngredientRow } from "../components/IngredientForm";
 import StepEditor, { type StepRow } from "../components/StepEditor";
 import { createIngredient, useIngredients } from "../hooks/useIngredients";
@@ -12,8 +12,6 @@ import { useCreateRecipe } from "../hooks/useRecipes";
 import { useCreateTag, useTags } from "../hooks/useTags";
 import { useToast } from "../hooks/useToast";
 import { useUnits } from "../hooks/useUnits";
-
-const TAG_CATEGORIES: TagCategory[] = ["DIETARY", "PROTEIN", "CUISINE", "MEAL_TYPE"];
 
 export default function RecipeCreatePage() {
   const { t, i18n } = useTranslation();

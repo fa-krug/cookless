@@ -5,6 +5,7 @@ export type MealType = "BREAKFAST" | "LUNCH" | "DINNER" | "SNACK";
 export type IngredientCategory = "PRODUCE" | "DAIRY" | "MEAT" | "PANTRY" | "FROZEN" | "OTHER";
 export type HouseholdRole = "OWNER" | "MEMBER";
 export type TagCategory = "DIETARY" | "PROTEIN" | "CUISINE" | "MEAL_TYPE";
+export const TAG_CATEGORIES: TagCategory[] = ["DIETARY", "PROTEIN", "CUISINE", "MEAL_TYPE"];
 
 // ── Users & Households ───────────────────────────────────────────
 
