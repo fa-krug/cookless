@@ -114,7 +114,44 @@
     "description": "Description",
     "duration": "Duration",
     "noSteps": "No steps yet",
-    "reorder": "Reorder step"
+    "reorder": "Reorder step",
+    "freeText": "Free text",
+    "selectProgram": "Select program",
+    "changeProgram": "Change",
+    "programs": {
+      "MANUAL_COOKING": "Manual Cooking",
+      "CHOPPING": "Chopping",
+      "KNEADING": "Kneading",
+      "STEAMING": "Steaming",
+      "BLENDING": "Blending",
+      "SEARING": "Searing",
+      "SLOW_COOKING": "Slow Cooking",
+      "SOUS_VIDE": "Sous Vide",
+      "WEIGHING": "Weighing",
+      "TURBO": "Turbo",
+      "EGG_COOKING": "Egg Cooking",
+      "FERMENTATION": "Fermentation",
+      "PRE_CLEANING": "Pre-Cleaning"
+    },
+    "params": {
+      "temperature": "Temp",
+      "duration": "Time",
+      "speed": "Speed",
+      "direction": "Direction",
+      "weight": "Weight",
+      "turbo": "Turbo"
+    },
+    "directions": {
+      "LEFT": "Left",
+      "RIGHT": "Right"
+    },
+    "units": {
+      "celsius": "°C",
+      "grams": "g",
+      "seconds": "s",
+      "minutes": "min",
+      "hours": "h"
+    }
   },
   "plan": {
     "title": "Meal Plan",

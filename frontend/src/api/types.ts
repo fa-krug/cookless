@@ -72,10 +72,34 @@ export interface RecipeIngredient {
   order: number;
 }
 
+export type ProgramType =
+  | "MANUAL_COOKING"
+  | "CHOPPING"
+  | "KNEADING"
+  | "STEAMING"
+  | "BLENDING"
+  | "SEARING"
+  | "SLOW_COOKING"
+  | "SOUS_VIDE"
+  | "WEIGHING"
+  | "TURBO"
+  | "EGG_COOKING"
+  | "FERMENTATION"
+  | "PRE_CLEANING";
+
+export type Direction = "LEFT" | "RIGHT";
+
 export interface CookingStep {
   id: number;
   step_number: number;
   instruction: string;
+  program_type: ProgramType | null;
+  temperature: number | null;
+  duration_seconds: number | null;
+  speed: number | null;
+  turbo: boolean;
+  direction: Direction | null;
+  weight_grams: number | null;
 }
 
 export interface RecipeSummary {
@@ -119,6 +143,13 @@ export interface RecipeIngredientPayload {
 export interface CookingStepPayload {
   step_number: number;
   instruction: string;
+  program_type?: ProgramType | null;
+  temperature?: number | null;
+  duration_seconds?: number | null;
+  speed?: number | null;
+  turbo?: boolean;
+  direction?: Direction | null;
+  weight_grams?: number | null;
 }
 
 export interface RecipeUpdatePayload {

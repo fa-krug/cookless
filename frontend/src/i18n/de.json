@@ -114,7 +114,44 @@
     "description": "Beschreibung",
     "duration": "Dauer",
     "noSteps": "Noch keine Schritte",
-    "reorder": "Schritt neu anordnen"
+    "reorder": "Schritt neu anordnen",
+    "freeText": "Freitext",
+    "selectProgram": "Programm wählen",
+    "changeProgram": "Ändern",
+    "programs": {
+      "MANUAL_COOKING": "Manuelles Kochen",
+      "CHOPPING": "Zerkleinern",
+      "KNEADING": "Kneten",
+      "STEAMING": "Dampfgaren",
+      "BLENDING": "Mixen",
+      "SEARING": "Anbraten",
+      "SLOW_COOKING": "Schmoren",
+      "SOUS_VIDE": "Sous Vide",
+      "WEIGHING": "Waage",
+      "TURBO": "Turbo",
+      "EGG_COOKING": "Eier kochen",
+      "FERMENTATION": "Fermentieren",
+      "PRE_CLEANING": "Vorreinigen"
+    },
+    "params": {
+      "temperature": "Temp",
+      "duration": "Zeit",
+      "speed": "Stufe",
+      "direction": "Richtung",
+      "weight": "Gewicht",
+      "turbo": "Turbo"
+    },
+    "directions": {
+      "LEFT": "Links",
+      "RIGHT": "Rechts"
+    },
+    "units": {
+      "celsius": "°C",
+      "grams": "g",
+      "seconds": "Sek.",
+      "minutes": "Min.",
+      "hours": "Std."
+    }
   },
   "plan": {
     "title": "Essensplan",
