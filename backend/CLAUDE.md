@@ -73,6 +73,9 @@ Four routers registered in `cookless/api.py` (all mounted at empty prefix):
 | PATCH | `/recipes/{id}/` | Update recipe (same as PUT -- replaces all ingredients + steps) |
 | DELETE | `/recipes/{id}/` | Delete recipe |
 | POST | `/recipes/{id}/move/` | Toggle list_type (KNOWN <-> TO_TRY) |
+| POST | `/recipes/{id}/image/upload/` | Upload recipe image (multipart) |
+| POST | `/recipes/{id}/image/generate/` | AI-generate recipe image |
+| DELETE | `/recipes/{id}/image/` | Remove recipe image |
 | GET | `/recipes/{id}/steps/` | List steps (`?method=MANUAL\|MACHINE`) |
 | GET | `/ingredients/` | List all ingredients (global) |
 | POST | `/ingredients/` | Create ingredient |

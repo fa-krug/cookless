@@ -65,6 +65,7 @@ src/
   hooks/
     useAuth.ts          # re-exports from AuthContext
     useRecipes.ts       # useRecipes, useRecipe, useCreateRecipe, useUpdateRecipe, useMoveRecipe, useDeleteRecipe
+    useRecipeImage.ts    # useUploadRecipeImage, useGenerateRecipeImage, useDeleteRecipeImage
     useIngredients.ts   # useIngredients (staleTime 5min), createIngredient (standalone async fn)
     useUnits.ts         # useUnits (staleTime Infinity)
     useMealPlan.ts      # useMealPlans, useMealPlan, useSetupPlan, useRenewIteration, useNextIteration
@@ -252,7 +253,7 @@ Each major page has a dedicated skeleton component (`RecipeListSkeleton`, `Recip
 - Languages: `en`, `de`. Fallback: `en`.
 - Detection: `localStorage` -> `navigator`. Cached to `localStorage`.
 - Resources bundled as JSON imports (not async).
-- Top-level keys: `common`, `nav`, `auth`, `invite`, `passkeys`, `recipes`, `ingredients`, `steps`, `plan`, `shopping`, `cooking`, `household`, `install`, `ai`, `password`, `settings`, `errors`, `success`, `setup`, `welcome`
+- Top-level keys: `common`, `nav`, `auth`, `invite`, `passkeys`, `recipes`, `recipeImage`, `ingredients`, `steps`, `plan`, `shopping`, `cooking`, `household`, `install`, `ai`, `password`, `settings`, `errors`, `success`, `setup`, `welcome`
 - `plan.weekdays` is an array accessed with `{ returnObjects: true }`.
 
 ## Vite Config
