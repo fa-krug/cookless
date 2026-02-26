@@ -228,6 +228,22 @@ export interface Passkey {
   created_at: string;
 }
 
+// ── Access Tokens ──────────────────────────────────────────────────
+
+export interface AccessToken {
+  id: string;
+  name: string;
+  token_prefix: string;
+  scopes: string[];
+  expires_at: string | null;
+  last_used_at: string | null;
+  created_at: string;
+}
+
+export interface AccessTokenCreated extends AccessToken {
+  token: string;
+}
+
 // ── Tags ──────────────────────────────────────────────────────────
 
 export interface Tag {
