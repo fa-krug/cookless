@@ -125,32 +125,41 @@ function IngredientRowInput({
   }
 
   return (
-    <div className="flex items-start gap-1.5">
-      {/* Quantity */}
-      <Input
-        type="text"
-        inputMode="decimal"
-        value={row.quantity}
-        onChange={(e) => onUpdate(index, { quantity: e.target.value })}
-        placeholder={t("ingredients.quantity")}
-        className="w-16 shrink-0"
-      />
+    <div className="rounded-lg border border-gray-200 p-2">
+      {/* Top row: quantity, unit, remove */}
+      <div className="flex items-center gap-2">
+        <Input
+          type="text"
+          inputMode="decimal"
+          value={row.quantity}
+          onChange={(e) => onUpdate(index, { quantity: e.target.value })}
+          placeholder={t("ingredients.quantity")}
+          className="w-20 shrink-0"
+        />
+        <Select
+          value={row.unit}
+          onChange={(e) => onUpdate(index, { unit: Number(e.target.value) })}
+          className="shrink-0"
+        >
+          {allUnits.map((u) => (
+            <option key={u.id} value={u.id}>
+              {u.abbreviation || u[nameKey]}
+            </option>
+          ))}
+        </Select>
+        <div className="flex-1" />
+        <button
+          type="button"
+          onClick={() => onRemove(index)}
+          className="shrink-0 rounded-md p-1.5 text-red-600 hover:bg-red-50"
+          aria-label={t("common.remove")}
+        >
+          <X size={18} />
+        </button>
+      </div>
 
-      {/* Unit */}
-      <Select
-        value={row.unit}
-        onChange={(e) => onUpdate(index, { unit: Number(e.target.value) })}
-        className="w-20 shrink-0"
-      >
-        {allUnits.map((u) => (
-          <option key={u.id} value={u.id}>
-            {u.abbreviation || u[nameKey]}
-          </option>
-        ))}
-      </Select>
-
-      {/* Ingredient autocomplete */}
-      <div className="relative min-w-0 flex-1" ref={wrapperRef}>
+      {/* Bottom row: ingredient name */}
+      <div className="relative mt-1.5" ref={wrapperRef}>
         <Input
           type="text"
           value={search}
@@ -182,16 +191,6 @@ function IngredientRowInput({
           </ul>
         )}
       </div>
-
-      {/* Remove */}
-      <button
-        type="button"
-        onClick={() => onRemove(index)}
-        className="shrink-0 rounded-md p-1.5 text-red-600 hover:bg-red-50"
-        aria-label={t("common.remove")}
-      >
-        <X size={18} />
-      </button>
     </div>
   );
 }
