@@ -40,61 +40,67 @@ export default function SortableStep({
     <div
       ref={setNodeRef}
       style={style}
-      className={`flex items-start gap-2 rounded-lg border ${showProgram ? "border-orange-500/20 bg-orange-50 p-3" : "border-transparent p-1"} ${isDragging ? "z-10 scale-105 bg-white shadow-lg" : ""}`}
+      className={`flex items-start gap-2 rounded-lg border ${showProgram ? "border-orange-500/20 bg-orange-50 p-3" : "border-gray-200 p-2"} ${isDragging ? "z-10 scale-105 bg-white shadow-lg" : ""}`}
     >
       <button
         type="button"
-        className="shrink-0 cursor-grab touch-none pt-1.5 text-gray-400 hover:text-gray-600 active:cursor-grabbing"
+        className="shrink-0 cursor-grab touch-none pt-1 text-gray-400 hover:text-gray-600 active:cursor-grabbing"
         aria-label={t("steps.reorder")}
         {...attributes}
         {...listeners}
       >
         <GripVertical size={18} />
       </button>
-      <span className="shrink-0 pt-1.5 text-sm font-medium text-gray-500">
-        {t("steps.stepNumber", { number: step.step_number })}
-      </span>
       <div className="min-w-0 flex-1">
-        {showProgram ? (
-          <ProgramStepForm step={step} onChange={onStepChange} />
-        ) : showProgramSelector ? (
-          <ProgramStepForm
-            step={step}
-            onChange={onStepChange}
-            onSelectFreeText={() => setFreeTextMode(true)}
-          />
-        ) : (
-          <div>
-            <Textarea
-              value={step.instruction}
-              onChange={(e) => onStepChange({ ...step, instruction: e.target.value })}
-              placeholder={t("steps.instruction")}
-              rows={2}
-              className="text-sm"
+        {/* Header: step label + remove */}
+        <div className="flex items-center justify-between">
+          <span className="text-sm font-medium text-gray-500">
+            {t("steps.stepNumber", { number: step.step_number })}
+          </span>
+          <button
+            type="button"
+            onClick={onRemove}
+            className="shrink-0 rounded-md p-1 text-red-600 hover:bg-red-50"
+            aria-label={t("common.remove")}
+          >
+            <X size={16} />
+          </button>
+        </div>
+        {/* Content */}
+        <div className="mt-1.5">
+          {showProgram ? (
+            <ProgramStepForm step={step} onChange={onStepChange} />
+          ) : showProgramSelector ? (
+            <ProgramStepForm
+              step={step}
+              onChange={onStepChange}
+              onSelectFreeText={() => setFreeTextMode(true)}
             />
-            {isMachine && (
-              <button
-                type="button"
-                onClick={() => {
-                  setFreeTextMode(false);
-                  onStepChange({ ...step, program_type: null, instruction: "" });
-                }}
-                className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-md border border-dashed border-orange-400 px-3 py-2 text-sm text-orange-500 hover:bg-orange-50"
-              >
-                {t("steps.selectProgram")}
-              </button>
-            )}
-          </div>
-        )}
+          ) : (
+            <div>
+              <Textarea
+                value={step.instruction}
+                onChange={(e) => onStepChange({ ...step, instruction: e.target.value })}
+                placeholder={t("steps.instruction")}
+                rows={3}
+                className="text-sm"
+              />
+              {isMachine && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFreeTextMode(false);
+                    onStepChange({ ...step, program_type: null, instruction: "" });
+                  }}
+                  className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-md border border-dashed border-orange-400 px-3 py-2 text-sm text-orange-500 hover:bg-orange-50"
+                >
+                  {t("steps.selectProgram")}
+                </button>
+              )}
+            </div>
+          )}
+        </div>
       </div>
-      <button
-        type="button"
-        onClick={onRemove}
-        className="shrink-0 rounded-md p-1.5 text-red-600 hover:bg-red-50"
-        aria-label={t("common.remove")}
-      >
-        <X size={18} />
-      </button>
     </div>
   );
 }
