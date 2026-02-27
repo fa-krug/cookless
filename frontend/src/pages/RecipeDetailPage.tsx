@@ -236,7 +236,7 @@ function RecipeForm({ recipe, recipeId, allIngredients, allUnits }: RecipeFormPr
             className="flex items-center gap-1 rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50"
           >
             {uploadImage.isPending ? <Spinner /> : <Upload size={14} />}
-            {t("recipeImage.upload")}
+            <span className="hidden sm:inline">{t("recipeImage.upload")}</span>
           </button>
 
           {household?.ai_enabled && (
@@ -247,7 +247,7 @@ function RecipeForm({ recipe, recipeId, allIngredients, allUnits }: RecipeFormPr
               className="flex items-center gap-1 rounded-md border border-orange-300 px-3 py-1.5 text-sm text-orange-600 hover:bg-orange-50 disabled:opacity-50"
             >
               {generateImage.isPending ? <Spinner /> : <Sparkles size={14} />}
-              {generateImage.isPending ? t("recipeImage.generating") : t("recipeImage.generate")}
+              <span className="hidden sm:inline">{generateImage.isPending ? t("recipeImage.generating") : t("recipeImage.generate")}</span>
             </button>
           )}
 
@@ -259,7 +259,7 @@ function RecipeForm({ recipe, recipeId, allIngredients, allUnits }: RecipeFormPr
               className="flex items-center gap-1 rounded-md border border-red-300 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 disabled:opacity-50"
             >
               <Trash2 size={14} />
-              {t("recipeImage.remove")}
+              <span className="hidden sm:inline">{t("recipeImage.remove")}</span>
             </button>
           )}
         </div>
