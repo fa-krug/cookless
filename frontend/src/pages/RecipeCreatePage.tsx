@@ -9,6 +9,7 @@ import Input from "../components/ui/Input";
 import IngredientForm, { type IngredientRow } from "../components/IngredientForm";
 import StepEditor, { type StepRow } from "../components/StepEditor";
 import { createIngredient, useIngredients } from "../hooks/useIngredients";
+import { queryKeys } from "../hooks/queryKeys";
 import { useCreateRecipe } from "../hooks/useRecipes";
 import { useCloseDetailsOnClickOutside } from "../hooks/useCloseDetailsOnClickOutside";
 import { useDropUp } from "../hooks/useDropUp";
@@ -95,7 +96,7 @@ export default function RecipeCreatePage() {
 
     createRecipe.mutate(payload, {
       onSuccess: (newRecipe) => {
-        queryClient.invalidateQueries({ queryKey: ["ingredients"] });
+        queryClient.invalidateQueries({ queryKey: queryKeys.ingredients });
         addToast(t("success.recipeSaved"), "success");
         navigate("/recipes", { state: { newRecipeId: newRecipe.id } });
       },

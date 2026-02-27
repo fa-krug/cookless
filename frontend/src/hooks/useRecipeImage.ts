@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "../api/client";
 import type { Recipe } from "../api/types";
+import { queryKeys } from "./queryKeys";
 
 export function useUploadRecipeImage() {
   const queryClient = useQueryClient();
@@ -9,8 +10,8 @@ export function useUploadRecipeImage() {
     mutationFn: ({ id, file }: { id: string; file: File }) =>
       api.uploadFile<Recipe>(`/api/v1/recipes/${id}/image/upload/`, file),
     onSuccess: (_data, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["recipes"] });
-      queryClient.invalidateQueries({ queryKey: ["recipes", variables.id] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.recipes });
+      queryClient.invalidateQueries({ queryKey: queryKeys.recipe(variables.id) });
     },
   });
 }
@@ -22,8 +23,8 @@ export function useGenerateRecipeImage() {
     mutationFn: (id: string) =>
       api.post<Recipe>(`/api/v1/recipes/${id}/image/generate/`),
     onSuccess: (_data, id) => {
-      queryClient.invalidateQueries({ queryKey: ["recipes"] });
-      queryClient.invalidateQueries({ queryKey: ["recipes", id] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.recipes });
+      queryClient.invalidateQueries({ queryKey: queryKeys.recipe(id) });
     },
   });
 }
@@ -35,8 +36,8 @@ export function useDeleteRecipeImage() {
     mutationFn: (id: string) =>
       api.delete<Recipe>(`/api/v1/recipes/${id}/image/`),
     onSuccess: (_data, id) => {
-      queryClient.invalidateQueries({ queryKey: ["recipes"] });
-      queryClient.invalidateQueries({ queryKey: ["recipes", id] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.recipes });
+      queryClient.invalidateQueries({ queryKey: queryKeys.recipe(id) });
     },
   });
 }

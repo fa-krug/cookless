@@ -1,5 +1,6 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
+import { queryKeys } from "./queryKeys";
 
 /**
  * Listens for the browser coming back online and triggers replay of
@@ -16,7 +17,7 @@ export function useOnlineSync() {
 
     function handleMessage(event: MessageEvent) {
       if (event.data?.type === "SYNC_COMPLETE") {
-        queryClient.invalidateQueries({ queryKey: ["shopping-lists"] });
+        queryClient.invalidateQueries({ queryKey: queryKeys.shoppingLists });
       }
     }
 

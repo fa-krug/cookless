@@ -1,17 +1,18 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "../api/client";
 import type { ShoppingList, ShoppingListItem } from "../api/types";
+import { queryKeys } from "./queryKeys";
 
 export function useShoppingLists() {
   return useQuery<ShoppingList[]>({
-    queryKey: ["shopping-lists"],
+    queryKey: queryKeys.shoppingLists,
     queryFn: () => api.get<ShoppingList[]>("/api/v1/shopping-lists/"),
   });
 }
 
 export function useShoppingList(id: string | undefined) {
   return useQuery<ShoppingList>({
-    queryKey: ["shopping-lists", id],
+    queryKey: queryKeys.shoppingList(id!),
     queryFn: () => api.get<ShoppingList>(`/api/v1/shopping-lists/${id}/`),
     enabled: !!id,
   });
@@ -24,7 +25,7 @@ export function useToggleItem() {
     mutationFn: (itemId: string) =>
       api.patch<ShoppingListItem>(`/api/v1/shopping-lists/items/${itemId}/toggle/`),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["shopping-lists"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.shoppingLists });
     },
   });
 }
@@ -41,7 +42,7 @@ export function useBulkToggle() {
     mutationFn: (data: BulkTogglePayload) =>
       api.patch<ShoppingListItem[]>("/api/v1/shopping-lists/items/bulk-toggle/", data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["shopping-lists"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.shoppingLists });
     },
   });
 }

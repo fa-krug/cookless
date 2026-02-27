@@ -1,10 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "../api/client";
 import type { AccessToken, AccessTokenCreated } from "../api/types";
+import { queryKeys } from "./queryKeys";
 
 export function useTokens() {
   return useQuery<AccessToken[]>({
-    queryKey: ["tokens"],
+    queryKey: queryKeys.tokens,
     queryFn: () => api.get<AccessToken[]>("/api/v1/users/me/tokens/"),
   });
 }
@@ -19,7 +20,7 @@ export function useCreateToken() {
       duration_preset?: string | null;
     }) => api.post<AccessTokenCreated>("/api/v1/users/me/tokens/", payload),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["tokens"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tokens });
     },
   });
 }
@@ -29,7 +30,7 @@ export function useDeleteToken() {
   return useMutation({
     mutationFn: (id: string) => api.delete(`/api/v1/users/me/tokens/${id}/`),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["tokens"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tokens });
     },
   });
 }

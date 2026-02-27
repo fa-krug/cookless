@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "../api/client";
 import type { MealPlan, PlanIteration } from "../api/types";
+import { queryKeys } from "./queryKeys";
 
 interface SetupPlanPayload {
   iteration_weeks: number;
@@ -13,14 +14,14 @@ interface SetupPlanPayload {
 
 export function useMealPlans() {
   return useQuery<MealPlan[]>({
-    queryKey: ["meal-plans"],
+    queryKey: queryKeys.mealPlans,
     queryFn: () => api.get<MealPlan[]>("/api/v1/meal-plans/"),
   });
 }
 
 export function useMealPlan(id: string | undefined) {
   return useQuery<MealPlan>({
-    queryKey: ["meal-plans", id],
+    queryKey: queryKeys.mealPlan(id!),
     queryFn: () => api.get<MealPlan>(`/api/v1/meal-plans/${id}/`),
     enabled: !!id,
   });
@@ -32,8 +33,8 @@ export function useSetupPlan() {
     mutationFn: (data: SetupPlanPayload) =>
       api.post<MealPlan>("/api/v1/meal-plans/setup/", data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["meal-plans"] });
-      queryClient.invalidateQueries({ queryKey: ["shopping-lists"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.mealPlans });
+      queryClient.invalidateQueries({ queryKey: queryKeys.shoppingLists });
     },
   });
 }
@@ -44,8 +45,8 @@ export function useRenewIteration() {
     mutationFn: (iterationId: string) =>
       api.post<PlanIteration>(`/api/v1/meal-plans/iterations/${iterationId}/renew/`),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["meal-plans"] });
-      queryClient.invalidateQueries({ queryKey: ["shopping-lists"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.mealPlans });
+      queryClient.invalidateQueries({ queryKey: queryKeys.shoppingLists });
     },
   });
 }
@@ -55,8 +56,8 @@ export function useNextIteration() {
   return useMutation({
     mutationFn: () => api.post<PlanIteration>("/api/v1/meal-plans/iterations/next/"),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["meal-plans"] });
-      queryClient.invalidateQueries({ queryKey: ["shopping-lists"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.mealPlans });
+      queryClient.invalidateQueries({ queryKey: queryKeys.shoppingLists });
     },
   });
 }

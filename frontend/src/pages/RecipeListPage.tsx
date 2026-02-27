@@ -12,6 +12,7 @@ import { RecipeListSkeleton } from "../components/ui/RecipeListSkeleton";
 import { SortSelect } from "../components/ui/SortSelect";
 import { Spinner } from "../components/ui/Spinner";
 import { useAuth } from "../hooks/useAuth";
+import { queryKeys } from "../hooks/queryKeys";
 import { useDeleteRecipe, useRecipes } from "../hooks/useRecipes";
 import { useCloseDetailsOnClickOutside } from "../hooks/useCloseDetailsOnClickOutside";
 import { useDropUp } from "../hooks/useDropUp";
@@ -172,7 +173,7 @@ export default function RecipeListPage() {
       if (!undone) {
         deleteRecipe.mutate(id, {
           onError: () => {
-            queryClient.invalidateQueries({ queryKey: ["recipes"] });
+            queryClient.invalidateQueries({ queryKey: queryKeys.recipes });
             addToast(t("errors.recipeDelete"), "error");
           },
         });

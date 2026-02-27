@@ -1,10 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "../api/client";
 import type { Household, Invite, MessageOut } from "../api/types";
+import { queryKeys } from "./queryKeys";
 
 export function useHouseholds() {
   return useQuery<Household[]>({
-    queryKey: ["households"],
+    queryKey: queryKeys.households,
     queryFn: () => api.get<Household[]>("/api/v1/households/"),
   });
 }
@@ -16,7 +17,7 @@ export function useCreateHousehold() {
     mutationFn: (name: string) =>
       api.post<Household>("/api/v1/households/", { name }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["households"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.households });
     },
   });
 }
@@ -28,7 +29,7 @@ export function useSwitchHousehold() {
     mutationFn: (id: string) =>
       api.post<MessageOut>(`/api/v1/households/${id}/switch/`),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["households"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.households });
     },
   });
 }
@@ -47,7 +48,7 @@ export function useAcceptInvite() {
     mutationFn: (code: string) =>
       api.post<MessageOut>(`/api/v1/invites/${code}/accept/`),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["households"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.households });
     },
   });
 }
@@ -59,7 +60,7 @@ export function useRemoveMember() {
     mutationFn: ({ householdId, memberId }: { householdId: string; memberId: number }) =>
       api.delete(`/api/v1/households/${householdId}/members/${memberId}/`),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["households"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.households });
     },
   });
 }
@@ -71,7 +72,7 @@ export function useUpdateHousehold() {
     mutationFn: ({ id, name }: { id: string; name: string }) =>
       api.patch<Household>(`/api/v1/households/${id}/`, { name }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["households"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.households });
     },
   });
 }
@@ -82,7 +83,7 @@ export function useDeleteHousehold() {
   return useMutation({
     mutationFn: (id: string) => api.delete(`/api/v1/households/${id}/`),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["households"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.households });
     },
   });
 }
@@ -94,7 +95,7 @@ export function useLeaveHousehold() {
     mutationFn: (id: string) =>
       api.post<MessageOut>(`/api/v1/households/${id}/leave/`),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["households"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.households });
     },
   });
 }
@@ -114,7 +115,7 @@ export function useTransferOwnership() {
         `/api/v1/households/${householdId}/members/${memberId}/transfer-ownership/`,
       ),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["households"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.households });
     },
   });
 }

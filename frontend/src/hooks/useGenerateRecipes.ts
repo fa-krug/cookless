@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "../api/client";
+import { queryKeys } from "./queryKeys";
 import type {
   BulkCreatePayload,
   BulkCreateResponse,
@@ -73,7 +74,7 @@ export function useBulkCreateRecipes() {
     mutationFn: (data: BulkCreatePayload) =>
       api.post<BulkCreateResponse>("/api/v1/recipes/bulk-create/", data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["recipes"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.recipes });
     },
   });
 }

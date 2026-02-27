@@ -19,6 +19,7 @@ import IngredientForm, { type IngredientRow } from "../components/IngredientForm
 import StepEditor, { type StepRow } from "../components/StepEditor";
 import { RecipeDetailSkeleton } from "../components/ui/RecipeDetailSkeleton";
 import { createIngredient, useIngredients } from "../hooks/useIngredients";
+import { queryKeys } from "../hooks/queryKeys";
 import { useAuth } from "../hooks/useAuth";
 import { useDeleteRecipeImage, useGenerateRecipeImage, useUploadRecipeImage } from "../hooks/useRecipeImage";
 import { useDeleteRecipe, useMoveRecipe, useRecipe, useUpdateRecipe } from "../hooks/useRecipes";
@@ -195,7 +196,7 @@ function RecipeForm({ recipe, recipeId, allIngredients, allUnits }: RecipeFormPr
 
     updateRecipe.mutate({ id: recipeId, data: payload }, {
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["ingredients"] });
+        queryClient.invalidateQueries({ queryKey: queryKeys.ingredients });
         addToast(t("success.recipeSaved"), "success");
         navigate("/recipes");
       },
@@ -214,7 +215,7 @@ function RecipeForm({ recipe, recipeId, allIngredients, allUnits }: RecipeFormPr
     type InfiniteRecipes = InfiniteData<PaginatedResponse<RecipeSummary>>;
 
     // Optimistically remove from list cache
-    const listQueryKey = ["recipes", recipe.list_type];
+    const listQueryKey = [...queryKeys.recipes, recipe.list_type];
     const previousRecipes = queryClient.getQueryData<InfiniteRecipes>(listQueryKey);
     queryClient.setQueryData<InfiniteRecipes>(listQueryKey, (old) => {
       if (!old) return old;
