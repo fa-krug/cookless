@@ -3,6 +3,7 @@ import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { Ingredient, Unit } from "../api/types";
 import Input from "./ui/Input";
+import ResponsiveOverlay from "./ui/ResponsiveOverlay";
 import Select from "./ui/Select";
 
 export interface IngredientRow {
@@ -28,8 +29,10 @@ export default function IngredientForm({
 }: IngredientFormProps) {
   const { t, i18n } = useTranslation();
   const lang = i18n.language === "de" ? "de" : "en";
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
 
   function addRow() {
+    const newIndex = ingredients.length;
     onChange([
       ...ingredients,
       {
@@ -37,12 +40,14 @@ export default function IngredientForm({
         ingredientName: "",
         quantity: "",
         unit: allUnits.length > 0 ? allUnits[0].id : 0,
-        order: ingredients.length,
+        order: newIndex,
       },
     ]);
+    setEditingIndex(newIndex);
   }
 
   function removeRow(index: number) {
+    setEditingIndex(null);
     const updated = ingredients.filter((_, i) => i !== index);
     onChange(updated.map((row, i) => ({ ...row, order: i })));
   }
@@ -51,6 +56,8 @@ export default function IngredientForm({
     const updated = ingredients.map((row, i) => (i === index ? { ...row, ...partial } : row));
     onChange(updated);
   }
+
+  const nameKey = lang === "de" ? "name_de" : "name_en";
 
   return (
     <div>
@@ -70,43 +77,84 @@ export default function IngredientForm({
         <p className="mt-2 text-sm text-gray-500">{t("ingredients.noIngredients")}</p>
       )}
 
-      <div className="mt-3 space-y-3">
-        {ingredients.map((row, index) => (
-          <IngredientRowInput
-            key={index}
-            row={row}
-            index={index}
-            lang={lang}
-            allIngredients={allIngredients}
-            allUnits={allUnits}
-            onUpdate={updateRow}
-            onRemove={removeRow}
-          />
-        ))}
+      <div className="mt-3 space-y-2">
+        {ingredients.map((row, index) => {
+          const unitObj = allUnits.find((u) => u.id === row.unit);
+          const unitLabel = unitObj?.abbreviation || unitObj?.[nameKey] || "";
+          const displayText = row.ingredientName
+            ? `${row.quantity ? row.quantity + " " : ""}${unitLabel ? unitLabel + " " : ""}${row.ingredientName}`
+            : t("ingredients.search");
+          const isEmpty = !row.ingredientName;
+
+          return (
+            <div
+              key={index}
+              className="flex cursor-pointer items-center gap-2 rounded-lg border border-gray-200 px-3 py-2.5"
+              onClick={() => setEditingIndex(index)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  setEditingIndex(index);
+                }
+              }}
+            >
+              <span
+                className={`min-w-0 flex-1 truncate text-sm ${isEmpty ? "italic text-gray-400" : ""}`}
+              >
+                {displayText}
+              </span>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  removeRow(index);
+                }}
+                className="shrink-0 rounded-md p-1 text-red-600 hover:bg-red-50"
+                aria-label={t("common.remove")}
+              >
+                <X size={16} />
+              </button>
+            </div>
+          );
+        })}
       </div>
+
+      {editingIndex !== null && ingredients[editingIndex] && (
+        <IngredientEditDrawer
+          row={ingredients[editingIndex]}
+          index={editingIndex}
+          lang={lang}
+          allIngredients={allIngredients}
+          allUnits={allUnits}
+          onUpdate={updateRow}
+          onClose={() => setEditingIndex(null)}
+        />
+      )}
     </div>
   );
 }
 
-interface IngredientRowInputProps {
+interface IngredientEditDrawerProps {
   row: IngredientRow;
   index: number;
   lang: "en" | "de";
   allIngredients: Ingredient[];
   allUnits: Unit[];
   onUpdate: (index: number, partial: Partial<IngredientRow>) => void;
-  onRemove: (index: number) => void;
+  onClose: () => void;
 }
 
-function IngredientRowInput({
+function IngredientEditDrawer({
   row,
   index,
   lang,
   allIngredients,
   allUnits,
   onUpdate,
-  onRemove,
-}: IngredientRowInputProps) {
+  onClose,
+}: IngredientEditDrawerProps) {
   const { t } = useTranslation();
   const [search, setSearch] = useState(row.ingredientName);
   const [showDropdown, setShowDropdown] = useState(false);
@@ -125,72 +173,73 @@ function IngredientRowInput({
   }
 
   return (
-    <div className="rounded-lg border border-gray-200 p-2">
-      {/* Top row: quantity, unit, remove */}
-      <div className="flex items-center gap-2">
-        <Input
-          type="text"
-          inputMode="decimal"
-          value={row.quantity}
-          onChange={(e) => onUpdate(index, { quantity: e.target.value })}
-          placeholder={t("ingredients.quantity")}
-          className="w-20 shrink-0"
-        />
-        <Select
-          value={row.unit}
-          onChange={(e) => onUpdate(index, { unit: Number(e.target.value) })}
-          className="shrink-0"
-        >
-          {allUnits.map((u) => (
-            <option key={u.id} value={u.id}>
-              {u.abbreviation || u[nameKey]}
-            </option>
-          ))}
-        </Select>
-        <div className="flex-1" />
-        <button
-          type="button"
-          onClick={() => onRemove(index)}
-          className="shrink-0 rounded-md p-1.5 text-red-600 hover:bg-red-50"
-          aria-label={t("common.remove")}
-        >
-          <X size={18} />
-        </button>
-      </div>
+    <ResponsiveOverlay open={true} onClose={onClose} title={t("ingredients.name")} size="sm">
+      <div className="space-y-4">
+        <div className="flex gap-3">
+          <div className="flex-1">
+            <label className="mb-1 block text-sm font-medium text-gray-700">
+              {t("ingredients.quantity")}
+            </label>
+            <Input
+              type="text"
+              inputMode="decimal"
+              value={row.quantity}
+              onChange={(e) => onUpdate(index, { quantity: e.target.value })}
+              placeholder={t("ingredients.quantity")}
+            />
+          </div>
+          <div className="flex-1">
+            <label className="mb-1 block text-sm font-medium text-gray-700">
+              {t("ingredients.unit")}
+            </label>
+            <Select
+              value={row.unit}
+              onChange={(e) => onUpdate(index, { unit: Number(e.target.value) })}
+            >
+              {allUnits.map((u) => (
+                <option key={u.id} value={u.id}>
+                  {u.abbreviation || u[nameKey]}
+                </option>
+              ))}
+            </Select>
+          </div>
+        </div>
 
-      {/* Bottom row: ingredient name */}
-      <div className="relative mt-1.5" ref={wrapperRef}>
-        <Input
-          type="text"
-          value={search}
-          onChange={(e) => {
-            setSearch(e.target.value);
-            setShowDropdown(true);
-          }}
-          onFocus={() => setShowDropdown(true)}
-          onBlur={() => {
-            // Delay to allow click on dropdown item
-            setTimeout(() => setShowDropdown(false), 200);
-          }}
-          placeholder={t("ingredients.search")}
-        />
-        {showDropdown && filtered.length > 0 && (
-          <ul className="absolute z-10 mt-1 max-h-40 w-full overflow-y-auto rounded-md border border-gray-200 bg-white shadow-lg">
-            {filtered.slice(0, 20).map((ing) => (
-              <li key={ing.id}>
-                <button
-                  type="button"
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={() => selectIngredient(ing)}
-                  className="w-full px-3 py-1.5 text-left text-sm hover:bg-orange-50"
-                >
-                  {ing[nameKey]}
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
+        <div className="relative" ref={wrapperRef}>
+          <label className="mb-1 block text-sm font-medium text-gray-700">
+            {t("ingredients.name")}
+          </label>
+          <Input
+            type="text"
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setShowDropdown(true);
+            }}
+            onFocus={() => setShowDropdown(true)}
+            onBlur={() => {
+              setTimeout(() => setShowDropdown(false), 200);
+            }}
+            placeholder={t("ingredients.search")}
+          />
+          {showDropdown && filtered.length > 0 && (
+            <ul className="absolute z-10 mt-1 max-h-40 w-full overflow-y-auto rounded-md border border-gray-200 bg-white shadow-lg">
+              {filtered.slice(0, 20).map((ing) => (
+                <li key={ing.id}>
+                  <button
+                    type="button"
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => selectIngredient(ing)}
+                    className="w-full px-3 py-1.5 text-left text-sm hover:bg-orange-50"
+                  >
+                    {ing[nameKey]}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
       </div>
-    </div>
+    </ResponsiveOverlay>
   );
 }

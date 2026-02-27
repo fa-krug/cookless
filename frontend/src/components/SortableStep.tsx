@@ -1,29 +1,25 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { GripVertical, X } from "lucide-react";
-import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { CookingStepPayload } from "../api/types";
-import ProgramStepForm from "./ProgramStepForm";
-import Textarea from "./ui/Textarea";
 
 interface SortableStepProps {
   id: string;
   step: CookingStepPayload;
-  onStepChange: (step: CookingStepPayload) => void;
   onRemove: () => void;
+  onTap: () => void;
   isMachine?: boolean;
 }
 
 export default function SortableStep({
   id,
   step,
-  onStepChange,
   onRemove,
+  onTap,
   isMachine,
 }: SortableStepProps) {
   const { t } = useTranslation();
-  const [freeTextMode, setFreeTextMode] = useState(false);
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id,
   });
@@ -33,14 +29,14 @@ export default function SortableStep({
     transition,
   };
 
-  const showProgram = isMachine && step.program_type;
-  const showProgramSelector = isMachine && !step.program_type && !step.instruction && !freeTextMode;
+  const hasProgram = isMachine && step.program_type;
+  const previewText = step.instruction || (hasProgram ? t(`steps.programs.${step.program_type}`) : "");
 
   return (
     <div
       ref={setNodeRef}
       style={style}
-      className={`flex items-start gap-2 rounded-lg border ${showProgram ? "border-orange-500/20 bg-orange-50 p-3" : "border-gray-200 p-2"} ${isDragging ? "z-10 scale-105 bg-white shadow-lg" : ""}`}
+      className={`flex items-start gap-2 rounded-lg border ${hasProgram ? "border-orange-500/20 bg-orange-50 p-2" : "border-gray-200 p-2"} ${isDragging ? "z-10 scale-105 bg-white shadow-lg" : ""}`}
     >
       <button
         type="button"
@@ -52,7 +48,6 @@ export default function SortableStep({
         <GripVertical size={18} />
       </button>
       <div className="min-w-0 flex-1">
-        {/* Header: step label + remove */}
         <div className="flex items-center justify-between">
           <span className="text-sm font-medium text-gray-500">
             {t("steps.stepNumber", { number: step.step_number })}
@@ -66,39 +61,23 @@ export default function SortableStep({
             <X size={16} />
           </button>
         </div>
-        {/* Content */}
-        <div className="mt-1.5">
-          {showProgram ? (
-            <ProgramStepForm step={step} onChange={onStepChange} />
-          ) : showProgramSelector ? (
-            <ProgramStepForm
-              step={step}
-              onChange={onStepChange}
-              onSelectFreeText={() => setFreeTextMode(true)}
-            />
-          ) : (
-            <div>
-              <Textarea
-                value={step.instruction}
-                onChange={(e) => onStepChange({ ...step, instruction: e.target.value })}
-                placeholder={t("steps.instruction")}
-                rows={3}
-                className="text-sm"
-              />
-              {isMachine && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setFreeTextMode(false);
-                    onStepChange({ ...step, program_type: null, instruction: "" });
-                  }}
-                  className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-md border border-dashed border-orange-400 px-3 py-2 text-sm text-orange-500 hover:bg-orange-50"
-                >
-                  {t("steps.selectProgram")}
-                </button>
-              )}
-            </div>
-          )}
+        <div
+          className="mt-1 cursor-pointer rounded px-1 py-1 hover:bg-gray-50"
+          onClick={onTap}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              onTap();
+            }
+          }}
+        >
+          <p
+            className={`text-sm ${previewText ? "" : "italic text-gray-400"}`}
+          >
+            {previewText || t("steps.instruction")}
+          </p>
         </div>
       </div>
     </div>

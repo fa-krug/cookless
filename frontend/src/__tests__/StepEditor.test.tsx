@@ -1,7 +1,17 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it, vi } from "vitest";
+import { beforeAll, describe, expect, it, vi } from "vitest";
 import StepEditor, { type StepRow } from "../components/StepEditor";
+
+// Mock HTMLDialogElement methods (jsdom doesn't implement them)
+beforeAll(() => {
+  HTMLDialogElement.prototype.showModal = vi.fn(function (this: HTMLDialogElement) {
+    this.setAttribute("open", "");
+  });
+  HTMLDialogElement.prototype.close = vi.fn(function (this: HTMLDialogElement) {
+    this.removeAttribute("open");
+  });
+});
 
 vi.mock("react-i18next", () => ({
   useTranslation: () => ({
@@ -22,9 +32,9 @@ describe("StepEditor", () => {
 
     expect(screen.getByText("By Hand")).toBeInTheDocument();
     expect(screen.getAllByRole("button", { name: "steps.reorder" })).toHaveLength(3);
-    expect(screen.getAllByDisplayValue("Chop onions")).toHaveLength(1);
-    expect(screen.getAllByDisplayValue("Heat oil")).toHaveLength(1);
-    expect(screen.getAllByDisplayValue("Fry onions")).toHaveLength(1);
+    expect(screen.getByText("Chop onions")).toBeInTheDocument();
+    expect(screen.getByText("Heat oil")).toBeInTheDocument();
+    expect(screen.getByText("Fry onions")).toBeInTheDocument();
   });
 
   it("drag handles are keyboard-accessible", () => {
@@ -62,12 +72,16 @@ describe("StepEditor", () => {
     ]);
   });
 
-  it("updates instruction text", async () => {
+  it("updates instruction text via drawer", async () => {
     const onChange = vi.fn();
     render(<StepEditor steps={threeSteps} onChange={onChange} label="By Hand" />);
 
-    const textareas = screen.getAllByPlaceholderText("steps.instruction");
-    await userEvent.type(textareas[0], "!");
+    // Click the step text to open drawer
+    await userEvent.click(screen.getByText("Chop onions"));
+
+    // Find textarea in the drawer
+    const textarea = screen.getByPlaceholderText("steps.instruction");
+    await userEvent.type(textarea, "!");
 
     expect(onChange).toHaveBeenCalledWith([
       { step_number: 1, instruction: "Chop onions!" },
@@ -82,21 +96,27 @@ describe("StepEditor", () => {
     expect(screen.getByText("steps.noSteps")).toBeInTheDocument();
   });
 
-  it("renders program selector for machine steps", () => {
+  it("renders program selector for machine steps in drawer", async () => {
     const steps: StepRow[] = [{ step_number: 1, instruction: "" }];
     render(
       <StepEditor steps={steps} onChange={vi.fn()} label="Machine" isMachine />,
     );
 
+    // Click step to open drawer with program selector
+    await userEvent.click(screen.getByText("steps.instruction"));
+
     expect(screen.getByText("steps.programs.MANUAL_COOKING")).toBeInTheDocument();
     expect(screen.getByText("steps.programs.CHOPPING")).toBeInTheDocument();
   });
 
-  it("does not show program selector for non-machine steps", () => {
+  it("does not show program selector for non-machine steps", async () => {
     const steps: StepRow[] = [{ step_number: 1, instruction: "" }];
     render(
       <StepEditor steps={steps} onChange={vi.fn()} label="By Hand" />,
     );
+
+    // Click to open drawer
+    await userEvent.click(screen.getByText("steps.instruction"));
 
     expect(screen.queryByText("steps.programs.MANUAL_COOKING")).not.toBeInTheDocument();
   });
