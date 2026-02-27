@@ -1,5 +1,6 @@
 import { useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Save } from "lucide-react";
+import { ArrowLeft, Save, SlidersHorizontal } from "lucide-react";
+import { useState } from "react";
 import { Spinner } from "../components/ui/Spinner";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -7,7 +8,7 @@ import { type ListType } from "../api/types";
 import Input from "../components/ui/Input";
 import IngredientForm from "../components/IngredientForm";
 import StepEditor from "../components/StepEditor";
-import TagSelector from "../components/TagSelector";
+import TagFilterDrawer from "../components/TagFilterDrawer";
 import { useIngredients } from "../hooks/useIngredients";
 import { queryKeys } from "../hooks/queryKeys";
 import { useCreateRecipe } from "../hooks/useRecipes";
@@ -29,6 +30,7 @@ export default function RecipeCreatePage() {
   const { data: allUnits = [] } = useUnits();
   const { data: groupedTags } = useTags();
   const createRecipe = useCreateRecipe();
+  const [showFilterDrawer, setShowFilterDrawer] = useState(false);
 
   const form = useRecipeForm({ listType });
 
@@ -134,14 +136,22 @@ export default function RecipeCreatePage() {
           isMachine
         />
 
-        {/* Tags Section */}
-        {groupedTags && (
-          <TagSelector
-            groupedTags={groupedTags}
-            selectedTagIds={form.tagIds}
-            onChange={form.setTagIds}
-          />
-        )}
+        {/* Tags */}
+        <div>
+          <button
+            type="button"
+            onClick={() => setShowFilterDrawer(true)}
+            className="flex items-center gap-1.5 rounded-lg border border-gray-300 px-3 py-1.5 text-sm text-gray-600 hover:border-gray-400"
+          >
+            <SlidersHorizontal size={14} />
+            {t("tags.filter")}
+            {form.tagIds.length > 0 && (
+              <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-orange-500 px-1 text-[10px] font-semibold text-white">
+                {form.tagIds.length}
+              </span>
+            )}
+          </button>
+        </div>
 
         {/* Save button */}
         <button
@@ -153,6 +163,16 @@ export default function RecipeCreatePage() {
           {t("common.save")}
         </button>
       </form>
+
+      {groupedTags && (
+        <TagFilterDrawer
+          open={showFilterDrawer}
+          onClose={() => setShowFilterDrawer(false)}
+          groupedTags={groupedTags}
+          selectedTags={form.tagIds}
+          onChange={form.setTagIds}
+        />
+      )}
     </div>
   );
 }
