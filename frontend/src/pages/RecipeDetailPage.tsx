@@ -2,7 +2,7 @@ import type { InfiniteData } from "@tanstack/react-query";
 import { useQueryClient } from "@tanstack/react-query";
 import { ArrowLeftRight, ArrowLeft, ChefHat, Save, Sparkles, Trash2, Upload, UtensilsCrossed } from "lucide-react";
 import { Spinner } from "../components/ui/Spinner";
-import { useMemo, useRef, useState } from "react";
+import { useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
 import {
@@ -10,18 +10,18 @@ import {
   type PaginatedResponse,
   type Recipe,
   type RecipeSummary,
-  type RecipeUpdatePayload,
 } from "../api/types";
 import Input from "../components/ui/Input";
-import IngredientForm, { type IngredientRow } from "../components/IngredientForm";
-import StepEditor, { type StepRow } from "../components/StepEditor";
+import IngredientForm from "../components/IngredientForm";
+import StepEditor from "../components/StepEditor";
 import TagSelector from "../components/TagSelector";
 import { RecipeDetailSkeleton } from "../components/ui/RecipeDetailSkeleton";
-import { createIngredient, useIngredients } from "../hooks/useIngredients";
+import { useIngredients } from "../hooks/useIngredients";
 import { queryKeys } from "../hooks/queryKeys";
 import { useAuth } from "../hooks/useAuth";
 import { useDeleteRecipeImage, useGenerateRecipeImage, useUploadRecipeImage } from "../hooks/useRecipeImage";
 import { useDeleteRecipe, useMoveRecipe, useRecipe, useUpdateRecipe } from "../hooks/useRecipes";
+import { useRecipeForm } from "../hooks/useRecipeForm";
 import { useTags } from "../hooks/useTags";
 import { useToast } from "../hooks/useToast";
 import { useUnits } from "../hooks/useUnits";
@@ -57,30 +57,6 @@ export default function RecipeDetailPage() {
   );
 }
 
-function buildIngredientRows(
-  recipe: Recipe,
-  allIngredients: Ingredient[],
-  nameKey: "name_de" | "name_en",
-): IngredientRow[] {
-  return recipe.ingredients.map((ri) => {
-    const ing = allIngredients.find((i) => i.id === ri.ingredient);
-    return {
-      ingredient: ri.ingredient,
-      ingredientName: ing ? ing[nameKey] : String(ri.ingredient),
-      quantity: ri.quantity,
-      unit: ri.unit,
-      order: ri.order,
-    };
-  });
-}
-
-function buildStepRows(steps: Recipe["manual_steps"]): StepRow[] {
-  return steps.map((s) => ({
-    step_number: s.step_number,
-    instruction: s.instruction,
-  }));
-}
-
 interface RecipeFormProps {
   recipe: Recipe;
   recipeId: string;
@@ -89,11 +65,9 @@ interface RecipeFormProps {
 }
 
 function RecipeForm({ recipe, recipeId, allIngredients, allUnits }: RecipeFormProps) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { addToast } = useToast();
-  const lang = i18n.language === "de" ? "de" : "en";
-  const nameKey = lang === "de" ? "name_de" : "name_en";
 
   const updateRecipe = useUpdateRecipe();
   const moveRecipe = useMoveRecipe();
@@ -109,90 +83,22 @@ function RecipeForm({ recipe, recipeId, allIngredients, allUnits }: RecipeFormPr
   const imageInProgress = uploadImage.isPending || generateImage.isPending;
   const { data: groupedTags } = useTags();
 
-  const initialIngredients = useMemo(
-    () => buildIngredientRows(recipe, allIngredients, nameKey),
-    [recipe, allIngredients, nameKey],
-  );
-
-  const [title, setTitle] = useState(recipe.title);
-  const [defaultServings, setDefaultServings] = useState(recipe.default_servings);
-  const [prepTime, setPrepTime] = useState(recipe.prep_time_minutes?.toString() ?? "");
-  const [cookTime, setCookTime] = useState(recipe.cook_time_minutes?.toString() ?? "");
-  const [ingredients, setIngredients] = useState<IngredientRow[]>(initialIngredients);
-  const [manualSteps, setManualSteps] = useState<StepRow[]>(buildStepRows(recipe.manual_steps));
-  const [machineSteps, setMachineSteps] = useState<StepRow[]>(
-    recipe.machine_steps.map((s) => ({
-      step_number: s.step_number,
-      instruction: s.instruction,
-      ...(s.program_type && {
-        program_type: s.program_type,
-        temperature: s.temperature,
-        duration_seconds: s.duration_seconds,
-        speed: s.speed,
-        turbo: s.turbo,
-        direction: s.direction,
-        weight_grams: s.weight_grams,
-      }),
-    })),
-  );
-  const [tagIds, setTagIds] = useState<string[]>(recipe.tags.map((tag) => tag.id));
+  const form = useRecipeForm({ recipe, allIngredients });
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
-
-    // Auto-create unknown ingredients (ingredient === 0 with a typed name)
-    const resolvedIngredients = await Promise.all(
-      ingredients.map(async (row) => {
-        if (row.ingredient > 0 || !row.ingredientName.trim()) return row;
-        const created = await createIngredient(row.ingredientName.trim());
-        return { ...row, ingredient: created.id };
-      }),
-    );
-
-    const payload: RecipeUpdatePayload = {
-      title,
-      list_type: recipe.list_type,
-      default_servings: defaultServings || 1,
-      prep_time_minutes: prepTime ? Number(prepTime) : null,
-      cook_time_minutes: cookTime ? Number(cookTime) : null,
-      leftover_days: recipe.leftover_days,
-      ingredients: resolvedIngredients
-        .filter((row) => row.ingredient > 0)
-        .map((row, i) => ({
-          ingredient: row.ingredient,
-          quantity: row.quantity || "0",
-          unit: row.unit,
-          order: i,
-        })),
-      manual_steps: manualSteps
-        .filter((s) => s.instruction.trim())
-        .map((s, i) => ({ step_number: i + 1, instruction: s.instruction })),
-      machine_steps: machineSteps
-        .filter((s) => s.instruction.trim() || s.program_type)
-        .map((s, i) => ({
-          step_number: i + 1,
-          instruction: s.instruction || "",
-          ...(s.program_type && {
-            program_type: s.program_type,
-            temperature: s.temperature ?? null,
-            duration_seconds: s.duration_seconds ?? null,
-            speed: s.speed ?? null,
-            turbo: s.turbo ?? false,
-            direction: s.direction ?? null,
-            weight_grams: s.weight_grams ?? null,
-          }),
-        })),
-      tag_ids: tagIds,
-    };
-
-    updateRecipe.mutate({ id: recipeId, data: payload }, {
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: queryKeys.ingredients });
-        addToast(t("success.recipeSaved"), "success");
-        navigate("/recipes");
+    const payload = await form.buildPayload();
+    updateRecipe.mutate(
+      { id: recipeId, data: payload },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: queryKeys.ingredients });
+          addToast(t("success.recipeSaved"), "success");
+          navigate("/recipes");
+        },
+        onError: () => addToast(t("errors.recipeSave"), "error"),
       },
-      onError: () => addToast(t("errors.recipeSave"), "error"),
-    });
+    );
   }
 
   function handleMove() {
@@ -363,8 +269,8 @@ function RecipeForm({ recipe, recipeId, allIngredients, allUnits }: RecipeFormPr
         <div>
           <Input
             type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
+            value={form.title}
+            onChange={(e) => form.setTitle(e.target.value)}
             placeholder={t("recipes.titlePlaceholder")}
             className="rounded-lg px-3 py-2 text-lg font-medium"
           />
@@ -379,9 +285,9 @@ function RecipeForm({ recipe, recipeId, allIngredients, allUnits }: RecipeFormPr
             <Input
               type="number"
               min={1}
-              value={defaultServings}
-              onChange={(e) => setDefaultServings(e.target.valueAsNumber || 0)}
-              onBlur={() => setDefaultServings((v) => Math.max(1, v))}
+              value={form.defaultServings}
+              onChange={(e) => form.setDefaultServings(e.target.valueAsNumber || 0)}
+              onBlur={() => form.setDefaultServings((v) => Math.max(1, v))}
             />
           </div>
           <div>
@@ -391,8 +297,8 @@ function RecipeForm({ recipe, recipeId, allIngredients, allUnits }: RecipeFormPr
             <Input
               type="number"
               min={0}
-              value={prepTime}
-              onChange={(e) => setPrepTime(e.target.value)}
+              value={form.prepTime}
+              onChange={(e) => form.setPrepTime(e.target.value)}
               placeholder={t("recipes.minutes")}
             />
           </div>
@@ -403,8 +309,8 @@ function RecipeForm({ recipe, recipeId, allIngredients, allUnits }: RecipeFormPr
             <Input
               type="number"
               min={0}
-              value={cookTime}
-              onChange={(e) => setCookTime(e.target.value)}
+              value={form.cookTime}
+              onChange={(e) => form.setCookTime(e.target.value)}
               placeholder={t("recipes.minutes")}
             />
           </div>
@@ -412,19 +318,19 @@ function RecipeForm({ recipe, recipeId, allIngredients, allUnits }: RecipeFormPr
 
         {/* Ingredients */}
         <IngredientForm
-          ingredients={ingredients}
-          onChange={setIngredients}
+          ingredients={form.ingredients}
+          onChange={form.setIngredients}
           allIngredients={allIngredients}
           allUnits={allUnits}
         />
 
         {/* Manual Steps */}
-        <StepEditor steps={manualSteps} onChange={setManualSteps} label={t("steps.manualSteps")} />
+        <StepEditor steps={form.manualSteps} onChange={form.setManualSteps} label={t("steps.manualSteps")} />
 
         {/* Machine Steps */}
         <StepEditor
-          steps={machineSteps}
-          onChange={setMachineSteps}
+          steps={form.machineSteps}
+          onChange={form.setMachineSteps}
           label={t("steps.machineSteps")}
           isMachine
         />
@@ -433,8 +339,8 @@ function RecipeForm({ recipe, recipeId, allIngredients, allUnits }: RecipeFormPr
         {groupedTags && (
           <TagSelector
             groupedTags={groupedTags}
-            selectedTagIds={tagIds}
-            onChange={setTagIds}
+            selectedTagIds={form.tagIds}
+            onChange={form.setTagIds}
           />
         )}
 
