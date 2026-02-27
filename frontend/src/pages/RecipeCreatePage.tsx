@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { TAG_CATEGORIES, type ListType, type RecipeUpdatePayload, type TagCategory } from "../api/types";
+import Input from "../components/ui/Input";
 import IngredientForm, { type IngredientRow } from "../components/IngredientForm";
 import StepEditor, { type StepRow } from "../components/StepEditor";
 import { createIngredient, useIngredients } from "../hooks/useIngredients";
@@ -119,12 +120,12 @@ export default function RecipeCreatePage() {
       <form onSubmit={handleSave} className="mt-4 space-y-6">
         {/* Title */}
         <div>
-          <input
+          <Input
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder={t("recipes.titlePlaceholder")}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-lg font-medium focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
+            className="rounded-lg px-3 py-2 text-lg font-medium"
           />
         </div>
 
@@ -134,39 +135,36 @@ export default function RecipeCreatePage() {
             <label className="mb-1 block text-sm font-medium text-gray-700">
               {t("recipes.servings")}
             </label>
-            <input
+            <Input
               type="number"
               min={1}
               value={defaultServings}
               onChange={(e) => setDefaultServings(e.target.valueAsNumber || 0)}
               onBlur={() => setDefaultServings((v) => Math.max(1, v))}
-              className="w-full rounded-md border border-gray-300 px-2 py-1.5 focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
             />
           </div>
           <div>
             <label className="mb-1 block text-sm font-medium text-gray-700">
               {t("recipes.prepTime")}
             </label>
-            <input
+            <Input
               type="number"
               min={0}
               value={prepTime}
               onChange={(e) => setPrepTime(e.target.value)}
               placeholder={t("recipes.minutes")}
-              className="w-full rounded-md border border-gray-300 px-2 py-1.5 focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
             />
           </div>
           <div>
             <label className="mb-1 block text-sm font-medium text-gray-700">
               {t("recipes.cookTime")}
             </label>
-            <input
+            <Input
               type="number"
               min={0}
               value={cookTime}
               onChange={(e) => setCookTime(e.target.value)}
               placeholder={t("recipes.minutes")}
-              className="w-full rounded-md border border-gray-300 px-2 py-1.5 focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
             />
           </div>
         </div>

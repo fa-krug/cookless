@@ -2,6 +2,8 @@ import { Plus, X } from "lucide-react";
 import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { Ingredient, Unit } from "../api/types";
+import Input from "./ui/Input";
+import Select from "./ui/Select";
 
 export interface IngredientRow {
   ingredient: number;
@@ -125,31 +127,31 @@ function IngredientRowInput({
   return (
     <div className="flex items-start gap-1.5">
       {/* Quantity */}
-      <input
+      <Input
         type="text"
         inputMode="decimal"
         value={row.quantity}
         onChange={(e) => onUpdate(index, { quantity: e.target.value })}
         placeholder={t("ingredients.quantity")}
-        className="w-16 shrink-0 rounded-md border border-gray-300 px-2 py-1.5 focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
+        className="w-16 shrink-0"
       />
 
       {/* Unit */}
-      <select
+      <Select
         value={row.unit}
         onChange={(e) => onUpdate(index, { unit: Number(e.target.value) })}
-        className="w-20 shrink-0 rounded-md border border-gray-300 px-2 py-1.5 focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
+        className="w-20 shrink-0"
       >
         {allUnits.map((u) => (
           <option key={u.id} value={u.id}>
             {u.abbreviation || u[nameKey]}
           </option>
         ))}
-      </select>
+      </Select>
 
       {/* Ingredient autocomplete */}
       <div className="relative min-w-0 flex-1" ref={wrapperRef}>
-        <input
+        <Input
           type="text"
           value={search}
           onChange={(e) => {
@@ -162,7 +164,6 @@ function IngredientRowInput({
             setTimeout(() => setShowDropdown(false), 200);
           }}
           placeholder={t("ingredients.search")}
-          className="w-full rounded-md border border-gray-300 px-2 py-1.5 focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
         />
         {showDropdown && filtered.length > 0 && (
           <ul className="absolute z-10 mt-1 max-h-40 w-full overflow-y-auto rounded-md border border-gray-200 bg-white shadow-lg">

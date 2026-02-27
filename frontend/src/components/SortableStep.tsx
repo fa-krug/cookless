@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { CookingStepPayload } from "../api/types";
 import ProgramStepForm from "./ProgramStepForm";
+import Textarea from "./ui/Textarea";
 
 interface SortableStepProps {
   id: string;
@@ -64,12 +65,12 @@ export default function SortableStep({
           />
         ) : (
           <div>
-            <textarea
+            <Textarea
               value={step.instruction}
               onChange={(e) => onStepChange({ ...step, instruction: e.target.value })}
               placeholder={t("steps.instruction")}
               rows={2}
-              className="w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
+              className="text-sm"
             />
             {isMachine && (
               <button
