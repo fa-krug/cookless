@@ -1,12 +1,13 @@
 import { useQueryClient } from "@tanstack/react-query";
-import { BookOpen, Plus, Search, Sparkles } from "lucide-react";
+import { BookOpen, Plus, Search, SlidersHorizontal, Sparkles } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router-dom";
-import { TAG_CATEGORIES, type GenerateRecipesPayload, type ListType, type RecipeSummary } from "../api/types";
+import { type GenerateRecipesPayload, type ListType, type RecipeSummary } from "../api/types";
 import GenerateRecipesDrawer from "../components/GenerateRecipesDrawer";
 import { GenerateRecipesPreview } from "../components/GenerateRecipesPreview";
 import RecipeCard from "../components/RecipeCard";
+import TagFilterDrawer from "../components/TagFilterDrawer";
 import { EmptyState } from "../components/ui/EmptyState";
 import { RecipeListSkeleton } from "../components/ui/RecipeListSkeleton";
 import { SortSelect } from "../components/ui/SortSelect";
@@ -14,8 +15,6 @@ import { Spinner } from "../components/ui/Spinner";
 import { useAuth } from "../hooks/useAuth";
 import { queryKeys } from "../hooks/queryKeys";
 import { useDeleteRecipe, useRecipes } from "../hooks/useRecipes";
-import { useCloseDetailsOnClickOutside } from "../hooks/useCloseDetailsOnClickOutside";
-import { useDropUp } from "../hooks/useDropUp";
 import { useTags } from "../hooks/useTags";
 import { useToast } from "../hooks/useToast";
 
@@ -70,6 +69,7 @@ export default function RecipeListPage() {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [pendingDeletes, setPendingDeletes] = useState<Set<string>>(new Set());
   const [showGenerateDrawer, setShowGenerateDrawer] = useState(false);
+  const [showFilterDrawer, setShowFilterDrawer] = useState(false);
   const [generateConfig, setGenerateConfig] = useState<GenerateRecipesPayload | null>(null);
   const timersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
   const loadMoreRef = useRef<HTMLDivElement>(null);
@@ -85,8 +85,6 @@ export default function RecipeListPage() {
     selectedTags.length > 0 ? selectedTags : undefined,
   );
   const { data: groupedTags } = useTags();
-  const tagFilterRef = useCloseDetailsOnClickOutside<HTMLDivElement>();
-  const tagDropUp = useDropUp();
   const deleteRecipe = useDeleteRecipe();
 
   const allRecipes = data?.pages.flatMap((page) => page.items) ?? [];
@@ -211,7 +209,7 @@ export default function RecipeListPage() {
       <h1 className="text-2xl font-bold">{t("recipes.title")}</h1>
 
       {/* Tabs */}
-      <div className="mt-4 flex border-b border-gray-200">
+      <div className="mt-3 flex border-b border-gray-200">
         {TABS.map((tab) => (
           <button
             key={tab.key}
@@ -228,7 +226,7 @@ export default function RecipeListPage() {
       </div>
 
       {/* Search + actions */}
-      <div className="mt-4 flex items-center gap-2">
+      <div className="mt-3 flex items-center gap-2">
         <div className="relative flex-1">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
           <input
@@ -261,7 +259,7 @@ export default function RecipeListPage() {
         )}
       </div>
 
-      {/* Sort + Tag filters */}
+      {/* Sort + Filter */}
       <div className="mt-2 flex items-center gap-2">
         <SortSelect
           value={sort}
@@ -269,58 +267,19 @@ export default function RecipeListPage() {
           options={sortOptions}
           ariaLabel={t("recipes.sortLabel")}
         />
-        {groupedTags && (
-          <div ref={tagFilterRef} className="flex flex-wrap items-center gap-1.5">
-            {TAG_CATEGORIES.map((category) => {
-              const tags = groupedTags[category] || [];
-              const selectedInCategory = tags.filter((t) => selectedTags.includes(t.id));
-              return (
-                <details key={category} className="relative" ref={tagDropUp(category).ref} onToggle={tagDropUp(category).onToggle}>
-                  <summary className="flex cursor-pointer select-none items-center gap-1 rounded-full border border-gray-300 bg-white px-3 py-1 text-xs font-medium text-gray-600 hover:border-gray-400">
-                    {t(`tags.${category}`)}
-                    {selectedInCategory.length > 0 && (
-                      <span className="ml-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-orange-500 text-[10px] font-semibold text-white">
-                        {selectedInCategory.length}
-                      </span>
-                    )}
-                  </summary>
-                  <div className={`absolute z-10 max-h-60 min-w-48 overflow-y-auto rounded-lg border border-gray-200 bg-white p-2 shadow-lg ${tagDropUp(category).openUp ? "bottom-full mb-1" : "mt-1"}`}>
-                    {tags.map((tag) => (
-                      <label
-                        key={tag.id}
-                        className="flex cursor-pointer items-center gap-2 rounded px-2 py-1 hover:bg-gray-50"
-                      >
-                        <input
-                          type="checkbox"
-                          checked={selectedTags.includes(tag.id)}
-                          onChange={(e) => {
-                            setSelectedTags((prev) =>
-                              e.target.checked
-                                ? [...prev, tag.id]
-                                : prev.filter((id) => id !== tag.id),
-                            );
-                          }}
-                          className="rounded accent-orange-500"
-                        />
-                        <span className="text-sm">
-                          {i18n.language === "de" ? tag.name_de : tag.name_en}
-                        </span>
-                      </label>
-                    ))}
-                  </div>
-                </details>
-              );
-            })}
-            {selectedTags.length > 0 && (
-              <button
-                onClick={() => setSelectedTags([])}
-                className="px-1.5 text-xs text-orange-600 hover:text-orange-700"
-              >
-                {t("tags.clearFilters")}
-              </button>
-            )}
-          </div>
-        )}
+        <button
+          type="button"
+          onClick={() => setShowFilterDrawer(true)}
+          className="flex items-center gap-1.5 rounded-lg border border-gray-300 px-3 py-1.5 text-sm text-gray-600 hover:border-gray-400"
+        >
+          <SlidersHorizontal size={14} />
+          {t("tags.filter")}
+          {selectedTags.length > 0 && (
+            <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-orange-500 px-1 text-[10px] font-semibold text-white">
+              {selectedTags.length}
+            </span>
+          )}
+        </button>
       </div>
 
       {/* Recipe list */}
@@ -359,6 +318,16 @@ export default function RecipeListPage() {
           </div>
         )}
       </div>
+
+      {groupedTags && (
+        <TagFilterDrawer
+          open={showFilterDrawer}
+          onClose={() => setShowFilterDrawer(false)}
+          groupedTags={groupedTags}
+          selectedTags={selectedTags}
+          onChange={setSelectedTags}
+        />
+      )}
 
       <GenerateRecipesDrawer
         isOpen={showGenerateDrawer}
