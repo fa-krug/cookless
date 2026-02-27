@@ -1,6 +1,6 @@
-import { useEffect, useId, useRef } from "react";
 import { X } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { useDialog } from "../../hooks/useDialog";
 
 interface ModalProps {
   open: boolean;
@@ -18,40 +18,7 @@ const SIZE_CLASSES = {
 
 export default function Modal({ open, onClose, title, children, size = "md" }: ModalProps) {
   const { t } = useTranslation();
-  const dialogRef = useRef<HTMLDialogElement>(null);
-  const previousFocusRef = useRef<Element | null>(null);
-  const titleId = useId();
-
-  useEffect(() => {
-    const dialog = dialogRef.current;
-    if (!dialog) return;
-    if (open && !dialog.open) {
-      previousFocusRef.current = document.activeElement;
-      dialog.showModal();
-    } else if (!open && dialog.open) {
-      dialog.close();
-      if (previousFocusRef.current instanceof HTMLElement) {
-        previousFocusRef.current.focus();
-      }
-    }
-  }, [open]);
-
-  useEffect(() => {
-    const dialog = dialogRef.current;
-    if (!dialog) return;
-    function handleCancel(e: Event) {
-      e.preventDefault();
-      onClose();
-    }
-    dialog.addEventListener("cancel", handleCancel);
-    return () => dialog.removeEventListener("cancel", handleCancel);
-  }, [onClose]);
-
-  function handleBackdropClick(e: React.MouseEvent<HTMLDialogElement>) {
-    if (e.target === dialogRef.current) {
-      onClose();
-    }
-  }
+  const { dialogRef, titleId, handleBackdropClick } = useDialog({ open, onClose });
 
   return (
     <dialog
