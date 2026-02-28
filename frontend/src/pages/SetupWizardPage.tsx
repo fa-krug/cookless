@@ -30,7 +30,7 @@ function StepIndicator({ currentStep }: { currentStep: string }) {
 
   return (
     <div className="mb-8">
-      <p className="mb-4 text-center text-sm text-gray-500">
+      <p className="mb-4 text-center text-sm text-muted-foreground">
         {t("setup.step", { current: currentIndex + 1, total: 3 })}
       </p>
       <div className="flex items-center justify-center gap-2">
@@ -42,16 +42,16 @@ function StepIndicator({ currentStep }: { currentStep: string }) {
             <div key={step} className="flex items-center gap-2">
               {i > 0 && (
                 <div
-                  className={`h-0.5 w-8 ${isDone ? "bg-orange-500" : "bg-gray-200"}`}
+                  className={`h-0.5 w-8 ${isDone ? "bg-primary" : "bg-muted"}`}
                 />
               )}
               <div
                 className={`flex h-10 w-10 items-center justify-center rounded-full ${
                   isActive
-                    ? "bg-orange-500 text-white"
+                    ? "bg-primary text-white"
                     : isDone
-                      ? "bg-orange-100 text-orange-500"
-                      : "bg-gray-100 text-gray-400"
+                      ? "bg-primary/10 text-primary"
+                      : "bg-muted text-muted-foreground"
                 }`}
               >
                 {isDone ? <Check size={20} /> : <Icon size={20} />}
@@ -89,15 +89,15 @@ function ChangePasswordStep({ onComplete }: { onComplete: () => void }) {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
         <div>
-          <h2 className="text-xl font-semibold text-gray-900">
+          <h2 className="text-xl font-semibold text-foreground">
             {t("setup.changePassword.title")}
           </h2>
-          <p className="mt-1 text-sm text-gray-500">
+          <p className="mt-1 text-sm text-muted-foreground">
             {t("setup.changePassword.description")}
           </p>
         </div>
 
-        <div className="text-sm text-gray-500">{user?.email}</div>
+        <div className="text-sm text-muted-foreground">{user?.email}</div>
 
         <FormField
           control={form.control}
@@ -142,7 +142,7 @@ function ChangePasswordStep({ onComplete }: { onComplete: () => void }) {
         />
 
         {form.formState.errors.root && (
-          <p className="text-sm text-red-600">{form.formState.errors.root.message}</p>
+          <p className="text-sm text-destructive">{form.formState.errors.root.message}</p>
         )}
 
         <Button
@@ -195,15 +195,15 @@ function AddPasskeyStep({ onComplete }: { onComplete: () => void }) {
   return (
     <div className="space-y-4">
       <div>
-        <h2 className="text-xl font-semibold text-gray-900">
+        <h2 className="text-xl font-semibold text-foreground">
           {t("setup.addPasskey.title")}
         </h2>
-        <p className="mt-1 text-sm text-gray-500">
+        <p className="mt-1 text-sm text-muted-foreground">
           {t("setup.addPasskey.description")}
         </p>
       </div>
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="text-sm text-destructive">{error}</p>}
 
       <Button
         className="w-full"
@@ -247,10 +247,10 @@ function CreateHouseholdStep({ onComplete }: { onComplete: () => void }) {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
         <div>
-          <h2 className="text-xl font-semibold text-gray-900">
+          <h2 className="text-xl font-semibold text-foreground">
             {t("setup.createHousehold.title")}
           </h2>
-          <p className="mt-1 text-sm text-gray-500">
+          <p className="mt-1 text-sm text-muted-foreground">
             {t("setup.createHousehold.description")}
           </p>
         </div>
@@ -274,7 +274,7 @@ function CreateHouseholdStep({ onComplete }: { onComplete: () => void }) {
         />
 
         {form.formState.errors.root && (
-          <p className="text-sm text-red-600">{form.formState.errors.root.message}</p>
+          <p className="text-sm text-destructive">{form.formState.errors.root.message}</p>
         )}
 
         <Button
@@ -305,9 +305,9 @@ export default function SetupWizardPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
-      <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-lg">
-        <h1 className="mb-6 text-center text-2xl font-bold text-gray-900">
+    <div className="flex min-h-screen items-center justify-center bg-muted px-4">
+      <div className="w-full max-w-md rounded-xl bg-card p-6 shadow-lg">
+        <h1 className="mb-6 text-center text-2xl font-bold text-foreground">
           Cookless
         </h1>
 

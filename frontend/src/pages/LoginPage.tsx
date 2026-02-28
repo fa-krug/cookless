@@ -54,7 +54,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-orange-50 via-amber-50/50 to-white px-4">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-primary/10 via-primary/5 to-background px-4">
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
           <h1>
@@ -62,7 +62,7 @@ export default function LoginPage() {
           </h1>
         </div>
 
-        <div className="rounded-2xl bg-white p-6 shadow-lg shadow-orange-900/5 ring-1 ring-gray-950/5">
+        <div className="rounded-2xl bg-card p-6 shadow-lg shadow-orange-900/5 ring-1 ring-border">
           <Form {...form}>
             <form
               onSubmit={form.handleSubmit(
@@ -74,7 +74,7 @@ export default function LoginPage() {
                 name="email"
                 render={({ field }) => (
                   <FormItem className="mb-5">
-                    <FormLabel className="text-xs text-gray-500">
+                    <FormLabel className="text-xs text-muted-foreground">
                       {t("auth.emailPlaceholder")}
                     </FormLabel>
                     <FormControl>
@@ -90,7 +90,7 @@ export default function LoginPage() {
               />
 
               {form.formState.errors.root && (
-                <p className="-mt-3 mb-4 text-center text-xs font-medium text-red-500">
+                <p className="-mt-3 mb-4 text-center text-xs font-medium text-destructive">
                   {form.formState.errors.root.message}
                 </p>
               )}
@@ -102,7 +102,7 @@ export default function LoginPage() {
                     name="password"
                     render={({ field }) => (
                       <FormItem className="mb-5">
-                        <FormLabel className="text-xs text-gray-500">
+                        <FormLabel className="text-xs text-muted-foreground">
                           {t("auth.passwordPlaceholder")}
                         </FormLabel>
                         <FormControl>
@@ -118,7 +118,7 @@ export default function LoginPage() {
                   <Button
                     type="button"
                     variant="link"
-                    className="mt-3 w-full text-xs text-gray-400"
+                    className="mt-3 w-full text-xs text-muted-foreground"
                     onClick={() => {
                       setShowPasswordForm(false);
                       form.setValue("password", "");
@@ -134,9 +134,9 @@ export default function LoginPage() {
                     {isLoading ? t("common.loading") : t("auth.signInWithPasskey")}
                   </Button>
                   <div className="my-4 flex items-center gap-3">
-                    <div className="h-px flex-1 bg-gray-200" />
-                    <span className="text-xs text-gray-400">{t("auth.orDivider")}</span>
-                    <div className="h-px flex-1 bg-gray-200" />
+                    <div className="h-px flex-1 bg-muted" />
+                    <span className="text-xs text-muted-foreground">{t("auth.orDivider")}</span>
+                    <div className="h-px flex-1 bg-muted" />
                   </div>
                   <Button
                     type="button"

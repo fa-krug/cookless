@@ -54,10 +54,10 @@ export default function ProgramStepForm({ step, onChange, onSelectFreeText }: Pr
             key={p.type}
             type="button"
             variant="outline"
-            className="flex h-auto flex-col items-center gap-1 px-2 py-2 text-xs hover:border-orange-400 hover:bg-orange-50"
+            className="flex h-auto flex-col items-center gap-1 px-2 py-2 text-xs hover:border-primary hover:bg-primary/10"
             onClick={() => selectProgram(p.type)}
           >
-            <p.icon size={18} className="text-gray-600" />
+            <p.icon size={18} className="text-muted-foreground" />
             <span className="text-center leading-tight">
               {t(`steps.programs.${p.type}`)}
             </span>
@@ -66,13 +66,13 @@ export default function ProgramStepForm({ step, onChange, onSelectFreeText }: Pr
         <Button
           type="button"
           variant="outline"
-          className="flex h-auto flex-col items-center gap-1 px-2 py-2 text-xs hover:border-orange-400 hover:bg-orange-50"
+          className="flex h-auto flex-col items-center gap-1 px-2 py-2 text-xs hover:border-primary hover:bg-primary/10"
           onClick={() => {
             clearProgram();
             onSelectFreeText?.();
           }}
         >
-          <PenLine size={18} className="text-gray-600" />
+          <PenLine size={18} className="text-muted-foreground" />
           <span className="text-center leading-tight">{t("steps.freeText")}</span>
         </Button>
       </div>
@@ -94,9 +94,9 @@ export default function ProgramStepForm({ step, onChange, onSelectFreeText }: Pr
     <div className="space-y-2">
       {/* Program badge + change button */}
       <div className="flex items-center gap-2">
-        <div className="flex items-center gap-1.5 rounded-full bg-orange-500 px-3 py-1">
-          <program.icon size={16} className="text-white" />
-          <span className="text-sm font-medium text-white">
+        <div className="flex items-center gap-1.5 rounded-full bg-primary px-3 py-1">
+          <program.icon size={16} className="text-primary-foreground" />
+          <span className="text-sm font-medium text-primary-foreground">
             {t(`steps.programs.${step.program_type}`)}
           </span>
         </div>
@@ -117,7 +117,7 @@ export default function ProgramStepForm({ step, onChange, onSelectFreeText }: Pr
           if (param.field === "temperature") {
             return (
               <label key="temperature" className="flex items-center gap-1 text-sm">
-                <span className="text-gray-500">{t("steps.params.temperature")}</span>
+                <span className="text-muted-foreground">{t("steps.params.temperature")}</span>
                 <Input
                   type="number"
                   min={param.min}
@@ -131,7 +131,7 @@ export default function ProgramStepForm({ step, onChange, onSelectFreeText }: Pr
                   }
                   className="h-8 w-16"
                 />
-                <span className="text-gray-400">°C</span>
+                <span className="text-muted-foreground">°C</span>
               </label>
             );
           }
@@ -139,7 +139,7 @@ export default function ProgramStepForm({ step, onChange, onSelectFreeText }: Pr
           if (param.field === "duration_seconds") {
             return (
               <div key="duration" className="flex items-center gap-1 text-sm">
-                <span className="text-gray-500">{t("steps.params.duration")}</span>
+                <span className="text-muted-foreground">{t("steps.params.duration")}</span>
                 <Input
                   type="number"
                   min={0}
@@ -150,7 +150,7 @@ export default function ProgramStepForm({ step, onChange, onSelectFreeText }: Pr
                   className="h-8 w-14"
                   placeholder="min"
                 />
-                <span className="text-gray-400">:</span>
+                <span className="text-muted-foreground">:</span>
                 <Input
                   type="number"
                   min={0}
@@ -169,7 +169,7 @@ export default function ProgramStepForm({ step, onChange, onSelectFreeText }: Pr
           if (param.field === "speed") {
             return (
               <label key="speed" className="flex items-center gap-1 text-sm">
-                <span className="text-gray-500">{t("steps.params.speed")}</span>
+                <span className="text-muted-foreground">{t("steps.params.speed")}</span>
                 <Input
                   type="number"
                   min={1}
@@ -190,8 +190,8 @@ export default function ProgramStepForm({ step, onChange, onSelectFreeText }: Pr
           if (param.field === "direction") {
             return (
               <div key="direction" className="flex items-center gap-1 text-sm">
-                <span className="text-gray-500">{t("steps.params.direction")}</span>
-                <div className="flex overflow-hidden rounded border border-gray-300">
+                <span className="text-muted-foreground">{t("steps.params.direction")}</span>
+                <div className="flex overflow-hidden rounded border border-border">
                   {(["LEFT", "RIGHT"] as Direction[]).map((d) => (
                     <Button
                       key={d}
@@ -218,7 +218,7 @@ export default function ProgramStepForm({ step, onChange, onSelectFreeText }: Pr
                     onChange({ ...step, turbo: checked === true })
                   }
                 />
-                <span className="text-gray-500">{t("steps.params.turbo")}</span>
+                <span className="text-muted-foreground">{t("steps.params.turbo")}</span>
               </label>
             );
           }
@@ -226,7 +226,7 @@ export default function ProgramStepForm({ step, onChange, onSelectFreeText }: Pr
           if (param.field === "weight_grams") {
             return (
               <label key="weight" className="flex items-center gap-1 text-sm">
-                <span className="text-gray-500">{t("steps.params.weight")}</span>
+                <span className="text-muted-foreground">{t("steps.params.weight")}</span>
                 <Input
                   type="number"
                   min={1}
@@ -240,7 +240,7 @@ export default function ProgramStepForm({ step, onChange, onSelectFreeText }: Pr
                   }
                   className="h-8 w-20"
                 />
-                <span className="text-gray-400">g</span>
+                <span className="text-muted-foreground">g</span>
               </label>
             );
           }

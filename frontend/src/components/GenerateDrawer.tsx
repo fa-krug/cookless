@@ -125,7 +125,7 @@ function DrawerForm({ existingPlan, onClose }: DrawerFormProps) {
           ))}
         </ToggleGroup>
         {shoppingDayError && (
-          <p className="mt-1 text-xs text-red-500">
+          <p className="mt-1 text-xs text-destructive">
             {shoppingDayError.message === "shopping_days_required"
               ? t("plan.shoppingDaysRequired")
               : shoppingDayError.message === "shopping_days_too_close"
@@ -161,9 +161,9 @@ function DrawerForm({ existingPlan, onClose }: DrawerFormProps) {
           step={0.1}
           value={knownRatio}
           onChange={(e) => form.setValue("knownRatio", Number(e.target.value))}
-          className="w-full accent-orange-500"
+          className="w-full accent-primary"
         />
-        <div className="mt-1 flex justify-between text-xs text-gray-400">
+        <div className="mt-1 flex justify-between text-xs text-muted-foreground">
           <span>{t("recipes.toTry")}</span>
           <span>{t("recipes.known")}</span>
         </div>
@@ -187,15 +187,15 @@ function DrawerForm({ existingPlan, onClose }: DrawerFormProps) {
       {groupedTags && (
         <div className="space-y-3">
           <div>
-            <h3 className="text-sm font-medium text-gray-700 mb-1">{t("tags.title")}</h3>
-            <p className="text-xs text-gray-500">{t("tags.excludeFromPlan")}</p>
+            <h3 className="text-sm font-medium text-foreground mb-1">{t("tags.title")}</h3>
+            <p className="text-xs text-muted-foreground">{t("tags.excludeFromPlan")}</p>
           </div>
           {TAG_CATEGORIES.map((category) => {
             const tags = groupedTags[category] || [];
             if (tags.length === 0) return null;
             return (
               <div key={category}>
-                <h4 className="text-xs font-medium text-gray-500 uppercase mb-1">
+                <h4 className="text-xs font-medium text-muted-foreground uppercase mb-1">
                   {t(`tags.${category}`)}
                 </h4>
                 <div className="flex flex-wrap gap-2">
@@ -207,8 +207,8 @@ function DrawerForm({ existingPlan, onClose }: DrawerFormProps) {
                         className={cn(
                           "flex items-center gap-1.5 text-sm px-2 py-1 rounded-lg border cursor-pointer",
                           isExcluded
-                            ? "border-gray-200 bg-gray-50 text-gray-400 line-through"
-                            : "border-gray-300 bg-white",
+                            ? "border-border bg-muted text-muted-foreground line-through"
+                            : "border-border bg-card",
                         )}
                       >
                         <Checkbox

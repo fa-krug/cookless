@@ -96,25 +96,25 @@ export default function InvitePage() {
 
   if (showPasskeyNudge) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-white px-4">
-        <p className="text-center text-gray-600">{t("invite.passkeyRecommendation")}</p>
+      <div className="flex min-h-screen flex-col items-center justify-center bg-background px-4">
+        <p className="text-center text-muted-foreground">{t("invite.passkeyRecommendation")}</p>
       </div>
     );
   }
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-white">
-        <p className="text-gray-500">{t("common.loading")}</p>
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <p className="text-muted-foreground">{t("common.loading")}</p>
       </div>
     );
   }
 
   if (error || !invite) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-white px-4">
-        <h1 className="mb-4 text-2xl font-bold text-gray-900">{t("common.appName")}</h1>
-        <p className="text-center text-red-500">{error || t("invite.invalid")}</p>
+      <div className="flex min-h-screen flex-col items-center justify-center bg-background px-4">
+        <h1 className="mb-4 text-2xl font-bold text-foreground">{t("common.appName")}</h1>
+        <p className="text-center text-destructive">{error || t("invite.invalid")}</p>
       </div>
     );
   }
@@ -122,13 +122,13 @@ export default function InvitePage() {
   // Logged-in user: show join prompt
   if (user) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-white px-4">
-        <h1 className="mb-2 text-2xl font-bold text-gray-900">{t("invite.joinTitle")}</h1>
-        <p className="mb-8 text-center text-gray-600">
+      <div className="flex min-h-screen flex-col items-center justify-center bg-background px-4">
+        <h1 className="mb-2 text-2xl font-bold text-foreground">{t("invite.joinTitle")}</h1>
+        <p className="mb-8 text-center text-muted-foreground">
           {t("invite.joinPrompt", { household: invite.household_name })}
         </p>
 
-        {actionError && <p className="mb-4 text-center text-sm text-red-500">{actionError}</p>}
+        {actionError && <p className="mb-4 text-center text-sm text-destructive">{actionError}</p>}
 
         <div className="flex w-full max-w-xs gap-3">
           <Button
@@ -152,9 +152,9 @@ export default function InvitePage() {
 
   // Not logged in: show registration form
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-white px-4">
-      <h1 className="mb-2 text-2xl font-bold text-gray-900">{t("invite.registerTitle")}</h1>
-      <p className="mb-8 text-center text-gray-600">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-background px-4">
+      <h1 className="mb-2 text-2xl font-bold text-foreground">{t("invite.registerTitle")}</h1>
+      <p className="mb-8 text-center text-muted-foreground">
         {t("invite.registerPrompt", { household: invite.household_name })}
       </p>
 
@@ -168,7 +168,7 @@ export default function InvitePage() {
           className="mb-4"
         />
 
-        {actionError && <p className="mb-4 text-center text-sm text-red-500">{actionError}</p>}
+        {actionError && <p className="mb-4 text-center text-sm text-destructive">{actionError}</p>}
 
         <Button
           type="button"
@@ -182,16 +182,16 @@ export default function InvitePage() {
         </Button>
 
         <div className="mb-4 flex items-center gap-3">
-          <div className="h-px flex-1 bg-gray-300" />
-          <span className="text-sm text-gray-500">{t("auth.orDivider")}</span>
-          <div className="h-px flex-1 bg-gray-300" />
+          <div className="h-px flex-1 bg-border" />
+          <span className="text-sm text-muted-foreground">{t("auth.orDivider")}</span>
+          <div className="h-px flex-1 bg-border" />
         </div>
 
         {!showPasswordForm ? (
           <Button
             type="button"
             variant="outline"
-            className="w-full border-orange-500 text-orange-500 hover:bg-orange-50"
+            className="w-full border-primary text-primary hover:bg-primary/10"
             onClick={() => setShowPasswordForm(true)}
           >
             {t("invite.registerWithPassword")}

@@ -66,7 +66,7 @@ export default function MealPlanPage() {
   return (
     <div className="p-4">
       <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">{t("plan.title")}</h1>
+        <h1 className="text-2xl font-bold text-foreground">{t("plan.title")}</h1>
         {currentPlan && (
           <IconButton
             variant="ghost"
@@ -95,8 +95,8 @@ export default function MealPlanPage() {
         <>
           {/* Active iteration ended prompt */}
           {activeIterationEnded && (
-            <div className="mb-4 rounded-lg border border-orange-200 bg-orange-50 p-4 text-center">
-              <p className="text-sm text-gray-700">
+            <div className="mb-4 rounded-lg border border-orange-200 bg-primary/10 p-4 text-center">
+              <p className="text-sm text-foreground">
                 {t("plan.iterationEnded")}
               </p>
               <Button
@@ -136,7 +136,7 @@ export default function MealPlanPage() {
           {/* Archived iterations */}
           {archivedIterations.length > 0 && (
             <div className="mt-8">
-              <h2 className="mb-3 text-sm font-semibold text-gray-400">
+              <h2 className="mb-3 text-sm font-semibold text-muted-foreground">
                 {t("plan.pastIterations")}
               </h2>
               <div className="space-y-4">

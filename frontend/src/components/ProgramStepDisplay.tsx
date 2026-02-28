@@ -29,14 +29,14 @@ export default function ProgramStepDisplay({ step, isCurrent }: ProgramStepDispl
   return (
     <div>
       <div className="flex items-center gap-1.5">
-        <program.icon size={iconSize} className="text-orange-500" />
+        <program.icon size={iconSize} className="text-primary" />
         <span
-          className={`font-medium ${isCurrent ? "text-base text-gray-900" : "text-sm text-gray-700"}`}
+          className={`font-medium ${isCurrent ? "text-base text-foreground" : "text-sm text-foreground"}`}
         >
           {t(`steps.programs.${step.program_type}`)}
         </span>
       </div>
-      <div className={`mt-1.5 flex flex-wrap items-center gap-3 ${textClass} text-gray-600`}>
+      <div className={`mt-1.5 flex flex-wrap items-center gap-3 ${textClass} text-muted-foreground`}>
         {step.temperature != null && (
           <span className="flex items-center gap-1">
             <Thermometer size={iconSize} />

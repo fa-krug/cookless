@@ -384,7 +384,8 @@
     "theme": "Theme",
     "themes": {
       "light": "Light",
-      "dark": "Dark"
+      "dark": "Dark",
+      "system": "System"
     },
     "logout": "Log out",
     "logoutConfirm": "Are you sure you want to log out?",

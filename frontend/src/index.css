@@ -122,30 +122,8 @@
   --sidebar-ring: oklch(0.69 0.204 70.746);
 }
 
-/* Legacy dark mode: override Tailwind 4 color variables for existing components.
-   Will be removed in shad9/shad10 as components migrate to semantic tokens. */
 html.dark {
   color-scheme: dark;
-
-  --color-gray-50: #1e293b;
-  --color-gray-100: #1e293b;
-  --color-gray-200: #334155;
-  --color-gray-300: #475569;
-  --color-gray-400: #64748b;
-  --color-gray-500: #94a3b8;
-  --color-gray-600: #cbd5e1;
-  --color-gray-700: #e2e8f0;
-  --color-gray-800: #f1f5f9;
-  --color-gray-900: #f8fafc;
-
-  --color-white: #0f172a;
-
-  --color-orange-50: #431407;
-  --color-red-50: #450a0a;
-}
-
-html.dark .text-white {
-  color: #fff !important;
 }
 
 @keyframes slide-down {
@@ -160,7 +138,7 @@ html.dark .text-white {
 }
 
 @keyframes highlight-fade {
-  0% { background-color: rgb(255 237 213); }
+  0% { background-color: oklch(0.69 0.204 70.746 / 20%); }
   100% { background-color: transparent; }
 }
 

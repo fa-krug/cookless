@@ -130,7 +130,7 @@ export function GenerateRecipesPreview({ config, onClose }: GenerateRecipesPrevi
     config.generate_images && recipes.some((r) => !r.imageBase64) && generating;
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-white">
+    <div className="fixed inset-0 z-50 flex flex-col bg-background">
       {/* Header */}
       <div className="flex items-center justify-between border-b px-4 py-3">
         <h2 className="text-lg font-semibold">{t("generateRecipes.preview")}</h2>
@@ -147,7 +147,7 @@ export function GenerateRecipesPreview({ config, onClose }: GenerateRecipesPrevi
       {/* Scrollable recipe list */}
       <ScrollArea className="flex-1 px-4 py-3">
         {error && (
-          <div className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</div>
+          <div className="mb-4 rounded-lg bg-destructive/10 p-3 text-sm text-destructive">{error}</div>
         )}
 
         {recipes.map((recipe, index) => (
@@ -157,8 +157,8 @@ export function GenerateRecipesPreview({ config, onClose }: GenerateRecipesPrevi
             onClick={() => toggleRecipe(index)}
             className={`mb-3 flex w-full items-start gap-3 rounded-lg border p-3 text-left transition-colors ${
               recipe.selected
-                ? "border-orange-300 bg-orange-50"
-                : "border-gray-200 bg-white opacity-50"
+                ? "border-primary/50 bg-primary/10"
+                : "border-border bg-background opacity-50"
             }`}
           >
             {/* Checkbox */}
@@ -167,11 +167,11 @@ export function GenerateRecipesPreview({ config, onClose }: GenerateRecipesPrevi
               checked={recipe.selected}
               onChange={() => toggleRecipe(index)}
               onClick={(e) => e.stopPropagation()}
-              className="mt-1 shrink-0 accent-orange-500"
+              className="mt-1 shrink-0 accent-primary"
             />
 
             {/* Image thumbnail */}
-            <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-md bg-gray-100">
+            <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-md bg-muted">
               {recipe.imageBase64 ? (
                 <img
                   src={`data:image/webp;base64,${recipe.imageBase64}`}
@@ -181,14 +181,14 @@ export function GenerateRecipesPreview({ config, onClose }: GenerateRecipesPrevi
               ) : config.generate_images ? (
                 <Spinner size={20} />
               ) : (
-                <Sparkles size={20} className="text-gray-300" />
+                <Sparkles size={20} className="text-muted-foreground" />
               )}
             </div>
 
             {/* Text content */}
             <div className="min-w-0 flex-1">
               <p className="font-medium">{recipe.title}</p>
-              <p className="mt-0.5 text-sm text-gray-500">
+              <p className="mt-0.5 text-sm text-muted-foreground">
                 {recipe.ingredients.length} {t("ingredients.title")}
                 {recipe.prep_time_minutes != null && (
                   <>
@@ -211,7 +211,7 @@ export function GenerateRecipesPreview({ config, onClose }: GenerateRecipesPrevi
 
         {/* Loading indicator */}
         {generating && (
-          <div className="flex items-center gap-2 py-4 text-sm text-gray-500">
+          <div className="flex items-center gap-2 py-4 text-sm text-muted-foreground">
             <Spinner size={16} />
             <span>
               {imagesStillLoading
@@ -223,8 +223,8 @@ export function GenerateRecipesPreview({ config, onClose }: GenerateRecipesPrevi
 
         {/* Empty state */}
         {!generating && recipes.length === 0 && !error && (
-          <div className="flex flex-col items-center justify-center py-12 text-center text-gray-500">
-            <Sparkles size={32} className="mb-2 text-gray-300" />
+          <div className="flex flex-col items-center justify-center py-12 text-center text-muted-foreground">
+            <Sparkles size={32} className="mb-2 text-muted-foreground" />
             <p>{t("generateRecipes.noResults")}</p>
           </div>
         )}
@@ -232,7 +232,7 @@ export function GenerateRecipesPreview({ config, onClose }: GenerateRecipesPrevi
 
       {/* Footer */}
       <div className="flex items-center justify-between border-t px-4 py-3">
-        <span className="text-sm text-gray-500">
+        <span className="text-sm text-muted-foreground">
           {t("generateRecipes.selected", { count: selectedCount })}
         </span>
         <div className="flex gap-2">

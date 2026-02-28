@@ -35,7 +35,7 @@ export default function CookingViewPage() {
   if (isLoading) {
     return (
       <div className="p-4">
-        <p className="text-center text-sm text-gray-500">{t("common.loading")}</p>
+        <p className="text-center text-sm text-muted-foreground">{t("common.loading")}</p>
       </div>
     );
   }
@@ -43,7 +43,7 @@ export default function CookingViewPage() {
   if (!recipe || !id) {
     return (
       <div className="p-4">
-        <p className="text-center text-sm text-gray-500">{t("common.error")}</p>
+        <p className="text-center text-sm text-muted-foreground">{t("common.error")}</p>
       </div>
     );
   }
@@ -69,15 +69,15 @@ export default function CookingViewPage() {
       </div>
 
       {/* Wake lock indicator */}
-      <div className="mt-2 flex items-center gap-1.5 text-xs text-gray-500">
+      <div className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground">
         <span
-          className={`inline-block h-2 w-2 rounded-full ${wakeLockActive ? "bg-green-500" : "bg-gray-300"}`}
+          className={`inline-block h-2 w-2 rounded-full ${wakeLockActive ? "bg-green-500" : "bg-border"}`}
         />
         {wakeLockActive ? t("cooking.wakeLockActive") : t("cooking.wakeLockInactive")}
       </div>
 
       {/* Method tabs */}
-      <div className="mt-4 flex rounded-lg border border-gray-200">
+      <div className="mt-4 flex rounded-lg border border-border">
         <Button
           type="button"
           variant="ghost"
@@ -85,8 +85,8 @@ export default function CookingViewPage() {
           className={cn(
             "flex-1 rounded-l-lg rounded-r-none",
             method === "MANUAL"
-              ? "bg-orange-500 text-white hover:bg-orange-500"
-              : "bg-white text-gray-700 hover:bg-gray-50",
+              ? "bg-primary/100 text-white hover:bg-primary/100"
+              : "bg-card text-foreground hover:bg-muted",
           )}
         >
           {t("cooking.manualMethod")}
@@ -98,8 +98,8 @@ export default function CookingViewPage() {
           className={cn(
             "flex-1 rounded-r-lg rounded-l-none",
             method === "MACHINE"
-              ? "bg-orange-500 text-white hover:bg-orange-500"
-              : "bg-white text-gray-700 hover:bg-gray-50",
+              ? "bg-primary/100 text-white hover:bg-primary/100"
+              : "bg-card text-foreground hover:bg-muted",
           )}
         >
           {t("cooking.machineMethod")}
@@ -109,7 +109,7 @@ export default function CookingViewPage() {
       {/* Progress bar */}
       {sortedSteps.length > 0 && (
         <div className="mt-4 mb-4">
-          <p className="mb-2 text-center text-sm font-medium text-gray-600">
+          <p className="mb-2 text-center text-sm font-medium text-muted-foreground">
             {t("cooking.stepOf", { current: currentStep + 1, total: sortedSteps.length })}
           </p>
           <div className="flex gap-1">
@@ -117,7 +117,7 @@ export default function CookingViewPage() {
               <div
                 key={index}
                 className={`h-1.5 flex-1 rounded-full transition-colors ${
-                  index <= currentStep ? "bg-orange-500" : "bg-gray-200"
+                  index <= currentStep ? "bg-primary/100" : "bg-muted"
                 }`}
               />
             ))}
@@ -127,7 +127,7 @@ export default function CookingViewPage() {
 
       {/* Steps list */}
       {sortedSteps.length === 0 ? (
-        <p className="mt-8 text-center text-sm text-gray-500">{t("cooking.noSteps")}</p>
+        <p className="mt-8 text-center text-sm text-muted-foreground">{t("cooking.noSteps")}</p>
       ) : (
         <div className="mt-4 space-y-3">
           {sortedSteps.map((step, index) => {
@@ -139,14 +139,14 @@ export default function CookingViewPage() {
                 onClick={() => setCurrentStep(index)}
                 className={`w-full rounded-lg border p-4 text-left transition-all ${
                   isCurrent
-                    ? "border-l-4 border-orange-500 bg-orange-50"
-                    : "border-gray-200 bg-white"
+                    ? "border-l-4 border-primary bg-primary/10"
+                    : "border-border bg-card"
                 }`}
               >
                 {step.program_type ? (
                   <div className="flex items-start gap-2">
                     <span
-                      className={`shrink-0 font-semibold ${isCurrent ? "text-lg text-orange-600" : "text-sm text-gray-500"}`}
+                      className={`shrink-0 font-semibold ${isCurrent ? "text-lg text-primary" : "text-sm text-muted-foreground"}`}
                     >
                       {step.step_number}.
                     </span>
@@ -155,12 +155,12 @@ export default function CookingViewPage() {
                 ) : (
                   <>
                     <span
-                      className={`font-semibold ${isCurrent ? "text-lg text-orange-600" : "text-sm text-gray-500"}`}
+                      className={`font-semibold ${isCurrent ? "text-lg text-primary" : "text-sm text-muted-foreground"}`}
                     >
                       {step.step_number}.
                     </span>
                     <span
-                      className={`ml-2 ${isCurrent ? "text-lg text-gray-900" : "text-sm text-gray-700"}`}
+                      className={`ml-2 ${isCurrent ? "text-lg text-foreground" : "text-sm text-foreground"}`}
                     >
                       {step.instruction}
                     </span>

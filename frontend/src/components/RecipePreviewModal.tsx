@@ -35,7 +35,7 @@ export default function RecipePreviewModal({ open, recipe, servings, onClose }: 
 
   return (
     <ResponsiveOverlay open={open} onClose={onClose} title={recipe.title}>
-      <div className="mt-2 flex flex-wrap gap-3 text-sm text-gray-500">
+      <div className="mt-2 flex flex-wrap gap-3 text-sm text-muted-foreground">
         <span>
           {servings} {t("recipes.servings")}
         </span>
@@ -54,7 +54,7 @@ export default function RecipePreviewModal({ open, recipe, servings, onClose }: 
       {/* Ingredients */}
       {sortedIngredients.length > 0 && (
         <div className="mt-4">
-          <h3 className="text-sm font-semibold text-gray-700">{t("ingredients.title")}</h3>
+          <h3 className="text-sm font-semibold text-foreground">{t("ingredients.title")}</h3>
           <ul className="mt-2 space-y-1">
             {sortedIngredients.map((ri) => {
               const ing = ingredientMap.get(ri.ingredient);
@@ -65,7 +65,7 @@ export default function RecipePreviewModal({ open, recipe, servings, onClose }: 
               const unitAbbr = unit?.abbreviation ?? "";
 
               return (
-                <li key={ri.id} className="text-sm text-gray-700">
+                <li key={ri.id} className="text-sm text-foreground">
                   <span className="font-medium">
                     {displayQty} {unitAbbr}
                   </span>{" "}
