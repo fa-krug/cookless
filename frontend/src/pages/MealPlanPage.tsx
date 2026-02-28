@@ -1,5 +1,6 @@
 import { Calendar, CalendarPlus, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { IconButton } from "@/components/ui/IconButton";
 import { EmptyState } from "../components/ui/EmptyState";
 import { Spinner } from "../components/ui/Spinner";
 import { useMemo, useState } from "react";
@@ -67,14 +68,14 @@ export default function MealPlanPage() {
       <div className="mb-4 flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900">{t("plan.title")}</h1>
         {currentPlan && (
-          <Button
+          <IconButton
             variant="ghost"
-            size="icon"
             onClick={() => setDrawerOpen(true)}
+            tooltip={t("plan.updateConfig")}
             aria-label={t("plan.updateConfig")}
           >
             <Settings size={20} />
-          </Button>
+          </IconButton>
         )}
       </div>
 

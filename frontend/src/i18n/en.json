@@ -21,7 +21,11 @@
     "recipes": "Recipes",
     "plan": "Plan",
     "shopping": "Shopping",
-    "settings": "Settings"
+    "settings": "Settings",
+    "collapseSidebar": "Collapse sidebar",
+    "expandSidebar": "Expand sidebar",
+    "account": "Account",
+    "manageHousehold": "Manage Household"
   },
   "auth": {
     "login": "Log in",

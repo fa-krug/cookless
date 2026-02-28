@@ -6,6 +6,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Recipe } from "../api/types";
 import { Toaster } from "../components/ui/sonner";
 import RecipeListPage from "../pages/RecipeListPage";
+import { TooltipProvider } from "../components/ui/tooltip";
 
 vi.mock("../hooks/useAuth", () => ({
   useAuth: () => ({ user: { active_household: { ai_enabled: false, gemini_api_key: "" } } }),
@@ -73,14 +74,14 @@ function renderPage() {
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
   });
   return render(
-    <>
+    <TooltipProvider delayDuration={0}>
       <QueryClientProvider client={queryClient}>
         <MemoryRouter>
           <RecipeListPage />
         </MemoryRouter>
       </QueryClientProvider>
       <Toaster />
-    </>,
+    </TooltipProvider>,
   );
 }
 

@@ -7,6 +7,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { type ListType } from "../api/types";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { IconButton } from "@/components/ui/IconButton";
 import { Label } from "@/components/ui/label";
 import IngredientForm from "../components/IngredientForm";
 import StepEditor from "../components/StepEditor";
@@ -52,9 +53,9 @@ export default function RecipeCreatePage() {
     <div className="p-4">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">{t("recipes.newRecipe")}</h1>
-        <Button type="button" variant="ghost" size="icon" onClick={() => navigate("/recipes")} aria-label={t("common.back")}>
+        <IconButton type="button" variant="ghost" onClick={() => navigate("/recipes")} tooltip={t("common.back")} aria-label={t("common.back")}>
           <ArrowLeft size={20} />
-        </Button>
+        </IconButton>
       </div>
 
       <form onSubmit={handleSave} className="mt-4 space-y-6">

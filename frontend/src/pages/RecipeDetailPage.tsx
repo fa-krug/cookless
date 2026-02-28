@@ -12,6 +12,7 @@ import {
   type RecipeSummary,
 } from "../api/types";
 import { Button } from "@/components/ui/button";
+import { IconButton } from "@/components/ui/IconButton";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import IngredientForm from "../components/IngredientForm";
@@ -198,15 +199,15 @@ function RecipeForm({ recipe, recipeId, allIngredients, allUnits }: RecipeFormPr
     <div className="p-4">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">{t("recipes.editRecipe")}</h1>
-        <Button
+        <IconButton
           variant="ghost"
-          size="icon"
           type="button"
           onClick={() => navigate("/recipes")}
+          tooltip={t("common.back")}
           aria-label={t("common.back")}
         >
           <ArrowLeft size={20} />
-        </Button>
+        </IconButton>
       </div>
 
       {/* Image section */}

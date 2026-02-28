@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import type { RecipeSummary, TagCategory } from "../api/types";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { IconButton } from "@/components/ui/IconButton";
 import { Card, CardContent } from "@/components/ui/card";
 
 const TAG_VARIANT: Record<TagCategory, "dietary" | "protein" | "cuisine" | "meal_type"> = {
@@ -76,15 +76,15 @@ export default function RecipeCard({ recipe, onDelete, highlight }: RecipeCardPr
             )}
           </div>
         </Link>
-        <Button
+        <IconButton
           variant="ghost"
-          size="icon"
           className="ml-3 shrink-0 text-red-600 hover:bg-red-50"
           onClick={() => onDelete(recipe.id)}
+          tooltip={`${t("common.delete")} ${recipe.title}`}
           aria-label={`${t("common.delete")} ${recipe.title}`}
         >
           <Trash2 size={18} />
-        </Button>
+        </IconButton>
       </CardContent>
     </Card>
   );

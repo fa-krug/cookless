@@ -45,6 +45,7 @@ import {
   useUpdateHousehold,
 } from "../hooks/useHousehold";
 import { Button } from "@/components/ui/button";
+import { IconButton } from "@/components/ui/IconButton";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
@@ -124,27 +125,27 @@ function MembersList({
             {isOwner && member.email !== currentUserEmail && (
               <div className="flex items-center gap-1">
                 {member.role !== "OWNER" && (
-                  <Button
+                  <IconButton
                     variant="ghost"
-                    size="icon"
                     onClick={() => handleTransferOwnership(member.id, member.email)}
                     disabled={transferOwnership.isPending}
                     className="h-8 w-8 text-orange-500 hover:bg-orange-50 hover:text-orange-700"
+                    tooltip={t("household.transferOwnership")}
                     aria-label={t("household.transferOwnership")}
                   >
                     {transferOwnership.isPending ? <Spinner /> : <Shield size={16} />}
-                  </Button>
+                  </IconButton>
                 )}
-                <Button
+                <IconButton
                   variant="ghost"
-                  size="icon"
                   onClick={() => handleRemove(member.id)}
                   disabled={removeMember.isPending}
                   className="h-8 w-8 text-red-500 hover:bg-red-50 hover:text-red-700"
+                  tooltip={t("common.remove")}
                   aria-label={t("common.remove")}
                 >
                   {removeMember.isPending ? <Spinner /> : <UserMinus size={16} />}
-                </Button>
+                </IconButton>
               </div>
             )}
           </li>
@@ -423,14 +424,14 @@ export default function HouseholdPage() {
       <div className="mb-4 flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900">{t("household.title")}</h1>
         {households && households.length > 1 && (
-          <Button
+          <IconButton
             variant="ghost"
-            size="icon"
             onClick={() => setSwitchDrawerOpen(true)}
+            tooltip={t("household.switchHousehold")}
             aria-label={t("household.switchHousehold")}
           >
             <ArrowLeftRight size={20} />
-          </Button>
+          </IconButton>
         )}
       </div>
 
@@ -497,18 +498,18 @@ export default function HouseholdPage() {
                 {activeHousehold.members.length})
               </p>
               {isOwner && (
-                <Button
+                <IconButton
                   variant="ghost"
-                  size="icon"
                   onClick={() => {
                     setEditName(activeHousehold.name);
                     setIsEditing(true);
                   }}
                   className="h-7 w-7 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                  tooltip={t("household.editName")}
                   aria-label={t("household.editName")}
                 >
                   <Pencil size={14} />
-                </Button>
+                </IconButton>
               )}
             </div>
           )}
@@ -693,9 +694,8 @@ export default function HouseholdPage() {
                                 />
                               </div>
                               <div className="flex gap-1">
-                                <Button
+                                <IconButton
                                   variant="ghost"
-                                  size="icon"
                                   type="button"
                                   onClick={async () => {
                                     await updateTag.mutateAsync({
@@ -705,20 +705,21 @@ export default function HouseholdPage() {
                                     setEditingTag(null);
                                   }}
                                   className="h-7 w-7 text-green-600 hover:bg-green-50"
+                                  tooltip={t("common.save")}
                                   aria-label={t("common.save")}
                                 >
                                   <Check size={14} />
-                                </Button>
-                                <Button
+                                </IconButton>
+                                <IconButton
                                   variant="ghost"
-                                  size="icon"
                                   type="button"
                                   onClick={() => setEditingTag(null)}
                                   className="h-7 w-7 text-gray-400 hover:bg-gray-100"
+                                  tooltip={t("common.cancel")}
                                   aria-label={t("common.cancel")}
                                 >
                                   <X size={14} />
-                                </Button>
+                                </IconButton>
                               </div>
                             </div>
                           ) : (
@@ -735,9 +736,8 @@ export default function HouseholdPage() {
                               </div>
                               {isOwner && (
                                 <div className="flex gap-1">
-                                  <Button
+                                  <IconButton
                                     variant="ghost"
-                                    size="icon"
                                     type="button"
                                     onClick={() => {
                                       setEditingTag(tag.id);
@@ -745,13 +745,13 @@ export default function HouseholdPage() {
                                       setEditNameDe(tag.name_de);
                                     }}
                                     className="h-7 w-7 text-gray-400 hover:bg-gray-100 hover:text-orange-600"
+                                    tooltip={t("tags.editTag")}
                                     aria-label={t("tags.editTag")}
                                   >
                                     <Pencil size={14} />
-                                  </Button>
-                                  <Button
+                                  </IconButton>
+                                  <IconButton
                                     variant="ghost"
-                                    size="icon"
                                     type="button"
                                     onClick={async () => {
                                       const confirmed = await confirm({
@@ -765,10 +765,11 @@ export default function HouseholdPage() {
                                       }
                                     }}
                                     className="h-7 w-7 text-gray-400 hover:bg-red-50 hover:text-red-600"
+                                    tooltip={t("tags.deleteTag")}
                                     aria-label={t("tags.deleteTag")}
                                   >
                                     <Trash2 size={14} />
-                                  </Button>
+                                  </IconButton>
                                 </div>
                               )}
                             </>
@@ -792,9 +793,8 @@ export default function HouseholdPage() {
                             />
                           </div>
                           <div className="flex gap-1">
-                            <Button
+                            <IconButton
                               variant="ghost"
-                              size="icon"
                               type="button"
                               onClick={async () => {
                                 if (newTagEn.trim() && newTagDe.trim()) {
@@ -809,13 +809,13 @@ export default function HouseholdPage() {
                                 }
                               }}
                               className="h-7 w-7 text-green-600 hover:bg-green-50"
+                              tooltip={t("common.save")}
                               aria-label={t("common.save")}
                             >
                               <Check size={14} />
-                            </Button>
-                            <Button
+                            </IconButton>
+                            <IconButton
                               variant="ghost"
-                              size="icon"
                               type="button"
                               onClick={() => {
                                 setAddingCategory(null);
@@ -823,10 +823,11 @@ export default function HouseholdPage() {
                                 setNewTagDe("");
                               }}
                               className="h-7 w-7 text-gray-400 hover:bg-gray-100"
+                              tooltip={t("common.cancel")}
                               aria-label={t("common.cancel")}
                             >
                               <X size={14} />
-                            </Button>
+                            </IconButton>
                           </div>
                         </div>
                       ) : (

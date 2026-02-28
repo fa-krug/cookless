@@ -2,6 +2,10 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import StepEditor, { type StepRow } from "../components/StepEditor";
+import { TooltipProvider } from "../components/ui/tooltip";
+
+const renderWithTooltip = (ui: React.ReactNode) =>
+  render(<TooltipProvider delayDuration={0}>{ui}</TooltipProvider>);
 
 vi.mock("react-i18next", () => ({
   useTranslation: () => ({
@@ -18,7 +22,7 @@ describe("StepEditor", () => {
   ];
 
   it("renders all steps with drag handles", () => {
-    render(<StepEditor steps={threeSteps} onChange={vi.fn()} label="By Hand" />);
+    renderWithTooltip(<StepEditor steps={threeSteps} onChange={vi.fn()} label="By Hand" />);
 
     expect(screen.getByText("By Hand")).toBeInTheDocument();
     expect(screen.getAllByRole("button", { name: "steps.reorder" })).toHaveLength(3);
@@ -28,7 +32,7 @@ describe("StepEditor", () => {
   });
 
   it("drag handles are keyboard-accessible", () => {
-    render(<StepEditor steps={threeSteps} onChange={vi.fn()} label="By Hand" />);
+    renderWithTooltip(<StepEditor steps={threeSteps} onChange={vi.fn()} label="By Hand" />);
 
     const handles = screen.getAllByRole("button", { name: "steps.reorder" });
     for (const handle of handles) {
@@ -39,7 +43,7 @@ describe("StepEditor", () => {
 
   it("adds a new step", async () => {
     const onChange = vi.fn();
-    render(<StepEditor steps={threeSteps} onChange={onChange} label="By Hand" />);
+    renderWithTooltip(<StepEditor steps={threeSteps} onChange={onChange} label="By Hand" />);
 
     await userEvent.click(screen.getByRole("button", { name: "steps.add" }));
 
@@ -51,7 +55,7 @@ describe("StepEditor", () => {
 
   it("removes a step and renumbers", async () => {
     const onChange = vi.fn();
-    render(<StepEditor steps={threeSteps} onChange={onChange} label="By Hand" />);
+    renderWithTooltip(<StepEditor steps={threeSteps} onChange={onChange} label="By Hand" />);
 
     const removeButtons = screen.getAllByRole("button", { name: "common.remove" });
     await userEvent.click(removeButtons[1]); // remove "Heat oil"
@@ -64,7 +68,7 @@ describe("StepEditor", () => {
 
   it("updates instruction text via drawer", async () => {
     const onChange = vi.fn();
-    render(<StepEditor steps={threeSteps} onChange={onChange} label="By Hand" />);
+    renderWithTooltip(<StepEditor steps={threeSteps} onChange={onChange} label="By Hand" />);
 
     // Click the step text to open drawer
     await userEvent.click(screen.getByText("Chop onions"));
@@ -81,14 +85,14 @@ describe("StepEditor", () => {
   });
 
   it("shows empty state when no steps", () => {
-    render(<StepEditor steps={[]} onChange={vi.fn()} label="By Hand" />);
+    renderWithTooltip(<StepEditor steps={[]} onChange={vi.fn()} label="By Hand" />);
 
     expect(screen.getByText("steps.noSteps")).toBeInTheDocument();
   });
 
   it("renders program selector for machine steps in drawer", async () => {
     const steps: StepRow[] = [{ step_number: 1, instruction: "" }];
-    render(
+    renderWithTooltip(
       <StepEditor steps={steps} onChange={vi.fn()} label="Machine" isMachine />,
     );
 
@@ -101,7 +105,7 @@ describe("StepEditor", () => {
 
   it("does not show program selector for non-machine steps", async () => {
     const steps: StepRow[] = [{ step_number: 1, instruction: "" }];
-    render(
+    renderWithTooltip(
       <StepEditor steps={steps} onChange={vi.fn()} label="By Hand" />,
     );
 

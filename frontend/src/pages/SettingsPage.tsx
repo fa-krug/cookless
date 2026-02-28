@@ -21,6 +21,7 @@ import type { AccessTokenCreated } from "../api/types";
 import { type Passkey, type User } from "../api/types";
 import { addPasskey } from "../api/webauthn";
 import { Button } from "@/components/ui/button";
+import { IconButton } from "@/components/ui/IconButton";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ConfirmDialog } from "../components/ui/ConfirmDialog";
@@ -365,21 +366,20 @@ export default function SettingsPage() {
                     })}
                   </p>
                 </div>
-                <Button
+                <IconButton
                   variant="ghost"
-                  size="icon"
                   className="h-8 w-8 text-red-500 hover:bg-red-50"
                   onClick={() => handleDeletePasskey(passkey.id)}
                   disabled={passkeys.length <= 1 && !user?.has_password}
-                  title={
+                  tooltip={
                     passkeys.length <= 1 && !user?.has_password
                       ? t("passkeys.cannotDeleteLast")
-                      : ""
+                      : t("passkeys.deletePasskey")
                   }
                   aria-label={t("passkeys.deletePasskey")}
                 >
                   <Trash2 size={16} />
-                </Button>
+                </IconButton>
               </div>
             ))}
           </div>
@@ -491,15 +491,15 @@ export default function SettingsPage() {
               <code className="min-w-0 flex-1 break-all rounded bg-white px-2 py-1 font-mono text-xs text-gray-900">
                 {createdToken.token}
               </code>
-              <Button
+              <IconButton
                 variant="ghost"
-                size="icon"
                 className="h-8 w-8 shrink-0 text-orange-600 hover:bg-orange-100"
                 type="button"
                 onClick={() => copyToken(createdToken.token)}
+                tooltip={copied ? t("tokens.tokenLabel") : t("tokens.tokenLabel")}
               >
                 {copied ? <Check size={16} /> : <Copy size={16} />}
-              </Button>
+              </IconButton>
             </div>
             <p className="mt-2 text-xs text-orange-700">{t("tokens.tokenWarning")}</p>
             <Button
@@ -553,15 +553,15 @@ export default function SettingsPage() {
                       : t("tokens.neverUsed")}
                   </p>
                 </div>
-                <Button
+                <IconButton
                   variant="ghost"
-                  size="icon"
                   className="h-8 w-8 shrink-0 text-red-500 hover:bg-red-50"
                   onClick={() => handleDeleteToken(token.id)}
+                  tooltip={t("tokens.deleteToken")}
                   aria-label={t("tokens.deleteToken")}
                 >
                   <Trash2 size={16} />
-                </Button>
+                </IconButton>
               </div>
             ))}
           </div>

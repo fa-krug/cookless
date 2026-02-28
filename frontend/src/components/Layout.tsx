@@ -1,11 +1,14 @@
 import { Navigate, Outlet } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { useOnlineSync } from "../hooks/useOnlineSync";
+import { useSidebarCollapsed } from "../hooks/useSidebarCollapsed";
 import BottomNav from "./BottomNav";
 import InstallBanner from "./InstallBanner";
+import { cn } from "@/lib/utils";
 
 export default function Layout() {
   const { user, isLoading } = useAuth();
+  const { collapsed } = useSidebarCollapsed();
   useOnlineSync();
 
   if (isLoading) {
@@ -27,7 +30,12 @@ export default function Layout() {
   return (
     <div className="flex min-h-screen bg-white md:flex-row">
       <BottomNav />
-      <div className="flex min-h-screen min-w-0 flex-1 flex-col md:ml-56">
+      <div
+        className={cn(
+          "flex min-h-screen min-w-0 flex-1 flex-col transition-[margin] duration-200",
+          collapsed ? "md:ml-16" : "md:ml-56",
+        )}
+      >
         <InstallBanner />
         <main className="mx-auto w-full max-w-3xl flex-1 overflow-y-auto pb-16 md:pb-0">
           <Outlet />

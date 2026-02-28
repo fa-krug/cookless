@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface GenerateRecipesDrawerProps {
   isOpen: boolean;
@@ -88,27 +89,29 @@ export default function GenerateRecipesDrawer({
                         </span>
                       )}
                     </summary>
-                    <div className="absolute z-10 mt-1 max-h-60 min-w-48 overflow-y-auto rounded-lg border border-gray-200 bg-white p-2 shadow-lg">
-                      {tags.map((tag) => (
-                        <label
-                          key={tag.id}
-                          className="flex cursor-pointer items-center gap-2 rounded px-2 py-1 hover:bg-gray-50"
-                        >
-                          <Checkbox
-                            checked={selectedTagIds.includes(tag.id)}
-                            onCheckedChange={(checked) => {
-                              setSelectedTagIds((prev) =>
-                                checked
-                                  ? [...prev, tag.id]
-                                  : prev.filter((id) => id !== tag.id),
-                              );
-                            }}
-                          />
-                          <span className="text-sm">
-                            {i18n.language === "de" ? tag.name_de : tag.name_en}
-                          </span>
-                        </label>
-                      ))}
+                    <div className="absolute z-10 mt-1 min-w-48 rounded-lg border border-gray-200 bg-white shadow-lg">
+                      <ScrollArea className="max-h-60 p-2">
+                        {tags.map((tag) => (
+                          <label
+                            key={tag.id}
+                            className="flex cursor-pointer items-center gap-2 rounded px-2 py-1 hover:bg-gray-50"
+                          >
+                            <Checkbox
+                              checked={selectedTagIds.includes(tag.id)}
+                              onCheckedChange={(checked) => {
+                                setSelectedTagIds((prev) =>
+                                  checked
+                                    ? [...prev, tag.id]
+                                    : prev.filter((id) => id !== tag.id),
+                                );
+                              }}
+                            />
+                            <span className="text-sm">
+                              {i18n.language === "de" ? tag.name_de : tag.name_en}
+                            </span>
+                          </label>
+                        ))}
+                      </ScrollArea>
                     </div>
                   </details>
                 );

@@ -3,6 +3,7 @@ import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { Ingredient, Unit } from "../api/types";
 import { Button } from "@/components/ui/button";
+import { IconButton } from "@/components/ui/IconButton";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -13,6 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import ResponsiveOverlay from "./ui/ResponsiveOverlay";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 export interface IngredientRow {
   ingredient: number;
@@ -71,15 +73,15 @@ export default function IngredientForm({
     <div>
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-medium">{t("ingredients.title")}</h3>
-        <Button
+        <IconButton
           type="button"
           onClick={addRow}
-          size="icon"
           className="h-8 w-8"
+          tooltip={t("ingredients.add")}
           aria-label={t("ingredients.add")}
         >
           <Plus size={18} />
-        </Button>
+        </IconButton>
       </div>
 
       {ingredients.length === 0 && (
@@ -114,19 +116,19 @@ export default function IngredientForm({
               >
                 {displayText}
               </span>
-              <Button
+              <IconButton
                 type="button"
                 variant="ghost"
-                size="icon"
                 onClick={(e) => {
                   e.stopPropagation();
                   removeRow(index);
                 }}
                 className="h-8 w-8 shrink-0 text-red-600 hover:bg-red-50"
+                tooltip={t("common.remove")}
                 aria-label={t("common.remove")}
               >
                 <X size={16} />
-              </Button>
+              </IconButton>
             </div>
           );
         })}
@@ -239,20 +241,22 @@ function IngredientEditDrawer({
             placeholder={t("ingredients.search")}
           />
           {showDropdown && filtered.length > 0 && (
-            <ul className="absolute z-10 mt-1 max-h-40 w-full overflow-y-auto rounded-md border border-gray-200 bg-white shadow-lg">
-              {filtered.slice(0, 20).map((ing) => (
-                <li key={ing.id}>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    onMouseDown={(e) => e.preventDefault()}
-                    onClick={() => selectIngredient(ing)}
-                    className="w-full justify-start px-3 py-1.5 text-sm font-normal hover:bg-orange-50"
-                  >
-                    {ing[nameKey]}
-                  </Button>
-                </li>
-              ))}
+            <ul className="absolute z-10 mt-1 w-full rounded-md border border-gray-200 bg-white shadow-lg">
+              <ScrollArea className="max-h-40">
+                {filtered.slice(0, 20).map((ing) => (
+                  <li key={ing.id}>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      onMouseDown={(e) => e.preventDefault()}
+                      onClick={() => selectIngredient(ing)}
+                      className="w-full justify-start px-3 py-1.5 text-sm font-normal hover:bg-orange-50"
+                    >
+                      {ing[nameKey]}
+                    </Button>
+                  </li>
+                ))}
+              </ScrollArea>
             </ul>
           )}
         </div>
