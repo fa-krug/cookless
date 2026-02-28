@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { api } from "../api/client";
 import { useAuth } from "../hooks/useAuth";
 
@@ -129,19 +131,20 @@ export default function InvitePage() {
         {actionError && <p className="mb-4 text-center text-sm text-red-500">{actionError}</p>}
 
         <div className="flex w-full max-w-xs gap-3">
-          <button
+          <Button
+            variant="outline"
+            className="flex-1"
             onClick={handleDecline}
-            className="flex-1 rounded-lg border border-gray-300 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50"
           >
             {t("invite.decline")}
-          </button>
-          <button
+          </Button>
+          <Button
+            className="flex-1"
             onClick={handleJoin}
             disabled={actionLoading}
-            className="flex-1 rounded-lg bg-orange-500 px-4 py-3 text-sm font-medium text-white hover:bg-orange-600 disabled:opacity-50"
           >
             {actionLoading ? t("common.loading") : t("invite.join")}
-          </button>
+          </Button>
         </div>
       </div>
     );
@@ -156,27 +159,27 @@ export default function InvitePage() {
       </p>
 
       <div className="w-full max-w-xs">
-        <input
+        <Input
           type="email"
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder={t("auth.emailPlaceholder")}
-          className="mb-4 w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
+          className="mb-4"
         />
 
         {actionError && <p className="mb-4 text-center text-sm text-red-500">{actionError}</p>}
 
-        <button
+        <Button
           type="button"
+          className="mb-4 w-full"
           onClick={(e) => handleRegister(e)}
           disabled={actionLoading}
-          className="mb-4 w-full rounded-lg bg-orange-500 px-6 py-3 text-base font-medium text-white transition-colors hover:bg-orange-600 disabled:opacity-50"
         >
           {actionLoading && !showPasswordForm
             ? t("common.loading")
             : t("invite.registerWithPasskey")}
-        </button>
+        </Button>
 
         <div className="mb-4 flex items-center gap-3">
           <div className="h-px flex-1 bg-gray-300" />
@@ -185,38 +188,39 @@ export default function InvitePage() {
         </div>
 
         {!showPasswordForm ? (
-          <button
+          <Button
             type="button"
+            variant="outline"
+            className="w-full border-orange-500 text-orange-500 hover:bg-orange-50"
             onClick={() => setShowPasswordForm(true)}
-            className="w-full rounded-lg border border-orange-500 px-6 py-3 text-base font-medium text-orange-500 transition-colors hover:bg-orange-50"
           >
             {t("invite.registerWithPassword")}
-          </button>
+          </Button>
         ) : (
           <form onSubmit={handlePasswordRegister}>
-            <input
+            <Input
               type="password"
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder={t("auth.passwordPlaceholder")}
-              className="mb-3 w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
+              className="mb-3"
             />
-            <input
+            <Input
               type="password"
               required
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               placeholder={t("password.confirmPassword")}
-              className="mb-4 w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
+              className="mb-4"
             />
-            <button
+            <Button
               type="submit"
+              className="w-full"
               disabled={actionLoading}
-              className="w-full rounded-lg bg-orange-500 px-6 py-3 text-base font-medium text-white transition-colors hover:bg-orange-600 disabled:opacity-50"
             >
               {actionLoading ? t("common.loading") : t("invite.registerWithPassword")}
-            </button>
+            </Button>
           </form>
         )}
       </div>

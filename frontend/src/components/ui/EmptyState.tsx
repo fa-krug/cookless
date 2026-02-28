@@ -1,5 +1,6 @@
 import type { LucideIcon } from "lucide-react";
 import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 
 interface ActionLink {
   label: string;
@@ -33,13 +34,9 @@ export function EmptyState({ icon: Icon, title, subtitle, action }: EmptyStatePr
             {action.label}
           </Link>
         ) : (
-          <button
-            type="button"
-            onClick={action.onClick}
-            className="mt-4 inline-flex items-center rounded-lg bg-orange-500 px-5 py-2.5 text-sm font-semibold text-white hover:bg-orange-600"
-          >
+          <Button type="button" className="mt-4" onClick={action.onClick}>
             {action.label}
-          </button>
+          </Button>
         )
       )}
     </div>

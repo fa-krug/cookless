@@ -44,6 +44,10 @@ import {
   useTransferOwnership,
   useUpdateHousehold,
 } from "../hooks/useHousehold";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
 
 function MembersList({
   household,
@@ -121,23 +125,27 @@ function MembersList({
             {isOwner && member.email !== currentUserEmail && (
               <div className="flex items-center gap-1">
                 {member.role !== "OWNER" && (
-                  <button
+                  <Button
+                    variant="ghost"
+                    size="icon"
                     onClick={() => handleTransferOwnership(member.id, member.email)}
                     disabled={transferOwnership.isPending}
-                    className="rounded-md p-1.5 text-orange-500 hover:bg-orange-50 hover:text-orange-700 disabled:opacity-50"
+                    className="h-8 w-8 text-orange-500 hover:bg-orange-50 hover:text-orange-700"
                     aria-label={t("household.transferOwnership")}
                   >
                     {transferOwnership.isPending ? <Spinner /> : <Shield size={16} />}
-                  </button>
+                  </Button>
                 )}
-                <button
+                <Button
+                  variant="ghost"
+                  size="icon"
                   onClick={() => handleRemove(member.id)}
                   disabled={removeMember.isPending}
-                  className="rounded-md p-1.5 text-red-500 hover:bg-red-50 hover:text-red-700 disabled:opacity-50"
+                  className="h-8 w-8 text-red-500 hover:bg-red-50 hover:text-red-700"
                   aria-label={t("common.remove")}
                 >
                   {removeMember.isPending ? <Spinner /> : <UserMinus size={16} />}
-                </button>
+                </Button>
               </div>
             )}
           </li>
@@ -175,14 +183,13 @@ function InviteSection({ householdId }: { householdId: string }) {
   return (
     <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
       <h2 className="mb-3 text-lg font-semibold text-gray-900">{t("household.generateInvite")}</h2>
-      <button
+      <Button
         onClick={handleGenerate}
         disabled={createInvite.isPending}
-        className="flex items-center gap-2 rounded-md bg-orange-500 px-4 py-2 text-sm font-medium text-white hover:bg-orange-600 disabled:opacity-50"
       >
         {createInvite.isPending ? <Spinner /> : <Link size={16} />}
         {t("household.generateInvite")}
-      </button>
+      </Button>
 
       {invite && (
         <div className="mt-3 rounded-md bg-gray-50 p-3">
@@ -190,13 +197,14 @@ function InviteSection({ householdId }: { householdId: string }) {
             <code className="min-w-0 flex-1 truncate rounded bg-gray-200 px-2 py-1 text-sm font-mono">
               {invite.code}
             </code>
-            <button
+            <Button
+              variant="secondary"
+              size="sm"
               onClick={handleCopy}
-              className="flex items-center gap-1.5 rounded-md bg-gray-200 px-3 py-1 text-sm font-medium text-gray-700 hover:bg-gray-300"
             >
               <Clipboard size={14} />
               {copied ? t("household.copied") : t("household.copyLink")}
-            </button>
+            </Button>
           </div>
           <p className="mt-2 text-xs text-gray-500">
             {t("household.inviteExpiry", {
@@ -233,21 +241,20 @@ function JoinHouseholdSection() {
     <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
       <h2 className="mb-3 text-lg font-semibold text-gray-900">{t("household.joinHousehold")}</h2>
       <form onSubmit={handleJoin} className="flex gap-2">
-        <input
+        <Input
           type="text"
           value={code}
           onChange={(e) => setCode(e.target.value)}
           placeholder={t("household.inviteCodePlaceholder")}
-          className="flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
+          className="flex-1"
         />
-        <button
+        <Button
           type="submit"
           disabled={!code.trim() || acceptInvite.isPending}
-          className="flex items-center gap-2 rounded-md bg-orange-500 px-4 py-2 text-sm font-medium text-white hover:bg-orange-600 disabled:opacity-50"
         >
           {acceptInvite.isPending ? <Spinner /> : <UserPlus size={16} />}
           {t("household.joinHousehold")}
-        </button>
+        </Button>
       </form>
     </div>
   );
@@ -278,21 +285,20 @@ function CreateHouseholdSection() {
         {t("household.createHousehold")}
       </h2>
       <form onSubmit={handleCreate} className="flex gap-2">
-        <input
+        <Input
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder={t("household.householdName")}
-          className="flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
+          className="flex-1"
         />
-        <button
+        <Button
           type="submit"
           disabled={!name.trim() || createHousehold.isPending}
-          className="flex items-center gap-2 rounded-md bg-orange-500 px-4 py-2 text-sm font-medium text-white hover:bg-orange-600 disabled:opacity-50"
         >
           {createHousehold.isPending ? <Spinner /> : <Plus size={16} />}
           {t("common.add")}
-        </button>
+        </Button>
       </form>
     </div>
   );
@@ -422,13 +428,14 @@ export default function HouseholdPage() {
       <div className="mb-4 flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900">{t("household.title")}</h1>
         {households && households.length > 1 && (
-          <button
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={() => setSwitchDrawerOpen(true)}
-            className="rounded-lg p-2 text-gray-500 hover:bg-gray-100"
             aria-label={t("household.switchHousehold")}
           >
             <ArrowLeftRight size={20} />
-          </button>
+          </Button>
         )}
       </div>
 
@@ -464,28 +471,28 @@ export default function HouseholdPage() {
               }}
               className="space-y-2"
             >
-              <input
+              <Input
                 type="text"
                 value={editName}
                 onChange={(e) => setEditName(e.target.value)}
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
                 autoFocus
               />
               <div className="flex gap-2">
-                <button
+                <Button
                   type="submit"
+                  size="sm"
                   disabled={!editName.trim() || updateHousehold.isPending}
-                  className="rounded-md bg-orange-500 px-3 py-2 text-sm font-medium text-white hover:bg-orange-600 disabled:opacity-50"
                 >
                   {updateHousehold.isPending ? t("common.loading") : t("common.save")}
-                </button>
-                <button
+                </Button>
+                <Button
                   type="button"
+                  variant="secondary"
+                  size="sm"
                   onClick={() => setIsEditing(false)}
-                  className="rounded-md bg-gray-200 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-300"
                 >
                   {t("common.cancel")}
-                </button>
+                </Button>
               </div>
             </form>
           ) : (
@@ -495,16 +502,18 @@ export default function HouseholdPage() {
                 {activeHousehold.members.length})
               </p>
               {isOwner && (
-                <button
+                <Button
+                  variant="ghost"
+                  size="icon"
                   onClick={() => {
                     setEditName(activeHousehold.name);
                     setIsEditing(true);
                   }}
-                  className="rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                  className="h-7 w-7 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
                   aria-label={t("household.editName")}
                 >
                   <Pencil size={14} />
-                </button>
+                </Button>
               )}
             </div>
           )}
@@ -569,11 +578,11 @@ export default function HouseholdPage() {
 
           {aiEnabled && (
             <>
-              <label className="mb-1 block text-sm font-medium text-gray-700">
+              <Label>
                 {t("ai.apiKey")}
-              </label>
+              </Label>
               <div className="flex gap-2">
-                <input
+                <Input
                   type="password"
                   placeholder={t("ai.apiKeyPlaceholder")}
                   value={geminiKey}
@@ -583,18 +592,21 @@ export default function HouseholdPage() {
                   }}
                   onBlur={handleGeminiKeyBlur}
                   disabled={!isOwner}
-                  className={`min-w-0 flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500 ${!isOwner ? "cursor-not-allowed bg-gray-50 opacity-60" : ""}`}
+                  className={cn("min-w-0 flex-1", !isOwner && "cursor-not-allowed bg-gray-50 opacity-60")}
                 />
-                <button
+                <Button
+                  variant="secondary"
+                  size="sm"
                   onClick={handleVerifyKey}
                   disabled={!geminiKey || verifyingKey || !isOwner}
-                  className={`flex shrink-0 items-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium disabled:opacity-50 ${
+                  className={cn(
+                    "shrink-0",
                     keyStatus === "valid"
                       ? "bg-green-100 text-green-700"
                       : keyStatus === "invalid"
                         ? "bg-red-100 text-red-700"
-                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                  }`}
+                        : ""
+                  )}
                 >
                   {verifyingKey ? (
                     <Spinner />
@@ -610,7 +622,7 @@ export default function HouseholdPage() {
                       : keyStatus === "invalid"
                         ? t("ai.keyInvalid")
                         : t("ai.verify")}
-                </button>
+                </Button>
               </div>
             </>
           )}
@@ -626,7 +638,9 @@ export default function HouseholdPage() {
               <h2 className="text-lg font-semibold text-gray-900">{t("tags.manageTags")}</h2>
             </div>
             {isOwner && (
-              <button
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={async () => {
                   const confirmed = await confirm({
                     title: t("tags.resetToDefaults"),
@@ -642,11 +656,10 @@ export default function HouseholdPage() {
                   }
                 }}
                 disabled={resetTags.isPending}
-                className="flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-100 disabled:opacity-50"
               >
                 {resetTags.isPending ? <Spinner /> : <RotateCcw size={14} />}
                 {t("tags.resetToDefaults")}
-              </button>
+              </Button>
             )}
           </div>
           <div className="space-y-3">
@@ -671,21 +684,23 @@ export default function HouseholdPage() {
                           {isOwner && editingTag === tag.id ? (
                             <div className="flex flex-1 items-center justify-between gap-2">
                               <div className="flex min-w-0 flex-1 items-center gap-2">
-                                <input
+                                <Input
                                   value={editNameEn}
                                   onChange={(e) => setEditNameEn(e.target.value)}
-                                  className="w-28 rounded border px-2 py-0.5 text-sm"
+                                  className="h-8 w-28"
                                   placeholder={t("tags.nameEn")}
                                 />
-                                <input
+                                <Input
                                   value={editNameDe}
                                   onChange={(e) => setEditNameDe(e.target.value)}
-                                  className="w-28 rounded border px-2 py-0.5 text-sm"
+                                  className="h-8 w-28"
                                   placeholder={t("tags.nameDe")}
                                 />
                               </div>
                               <div className="flex gap-1">
-                                <button
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
                                   type="button"
                                   onClick={async () => {
                                     await updateTag.mutateAsync({
@@ -694,19 +709,21 @@ export default function HouseholdPage() {
                                     });
                                     setEditingTag(null);
                                   }}
-                                  className="rounded-md p-1.5 text-green-600 hover:bg-green-50"
+                                  className="h-7 w-7 text-green-600 hover:bg-green-50"
                                   aria-label={t("common.save")}
                                 >
                                   <Check size={14} />
-                                </button>
-                                <button
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
                                   type="button"
                                   onClick={() => setEditingTag(null)}
-                                  className="rounded-md p-1.5 text-gray-400 hover:bg-gray-100"
+                                  className="h-7 w-7 text-gray-400 hover:bg-gray-100"
                                   aria-label={t("common.cancel")}
                                 >
                                   <X size={14} />
-                                </button>
+                                </Button>
                               </div>
                             </div>
                           ) : (
@@ -723,19 +740,23 @@ export default function HouseholdPage() {
                               </div>
                               {isOwner && (
                                 <div className="flex gap-1">
-                                  <button
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
                                     type="button"
                                     onClick={() => {
                                       setEditingTag(tag.id);
                                       setEditNameEn(tag.name_en);
                                       setEditNameDe(tag.name_de);
                                     }}
-                                    className="rounded-md p-1.5 text-gray-400 hover:bg-gray-100 hover:text-orange-600"
+                                    className="h-7 w-7 text-gray-400 hover:bg-gray-100 hover:text-orange-600"
                                     aria-label={t("tags.editTag")}
                                   >
                                     <Pencil size={14} />
-                                  </button>
-                                  <button
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
                                     type="button"
                                     onClick={async () => {
                                       const confirmed = await confirm({
@@ -748,11 +769,11 @@ export default function HouseholdPage() {
                                         deleteTag.mutate(tag.id);
                                       }
                                     }}
-                                    className="rounded-md p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-600"
+                                    className="h-7 w-7 text-gray-400 hover:bg-red-50 hover:text-red-600"
                                     aria-label={t("tags.deleteTag")}
                                   >
                                     <Trash2 size={14} />
-                                  </button>
+                                  </Button>
                                 </div>
                               )}
                             </>
@@ -762,21 +783,23 @@ export default function HouseholdPage() {
                       {isOwner && (addingCategory === category ? (
                         <div className="mt-2 flex items-center justify-between gap-2 border-t pt-2">
                           <div className="flex min-w-0 flex-1 items-center gap-2">
-                            <input
+                            <Input
                               value={newTagEn}
                               onChange={(e) => setNewTagEn(e.target.value)}
-                              className="w-28 rounded border px-2 py-0.5 text-sm"
+                              className="h-8 w-28"
                               placeholder={t("tags.nameEn")}
                             />
-                            <input
+                            <Input
                               value={newTagDe}
                               onChange={(e) => setNewTagDe(e.target.value)}
-                              className="w-28 rounded border px-2 py-0.5 text-sm"
+                              className="h-8 w-28"
                               placeholder={t("tags.nameDe")}
                             />
                           </div>
                           <div className="flex gap-1">
-                            <button
+                            <Button
+                              variant="ghost"
+                              size="icon"
                               type="button"
                               onClick={async () => {
                                 if (newTagEn.trim() && newTagDe.trim()) {
@@ -790,33 +813,36 @@ export default function HouseholdPage() {
                                   setAddingCategory(null);
                                 }
                               }}
-                              className="rounded-md p-1.5 text-green-600 hover:bg-green-50"
+                              className="h-7 w-7 text-green-600 hover:bg-green-50"
                               aria-label={t("common.save")}
                             >
                               <Check size={14} />
-                            </button>
-                            <button
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
                               type="button"
                               onClick={() => {
                                 setAddingCategory(null);
                                 setNewTagEn("");
                                 setNewTagDe("");
                               }}
-                              className="rounded-md p-1.5 text-gray-400 hover:bg-gray-100"
+                              className="h-7 w-7 text-gray-400 hover:bg-gray-100"
                               aria-label={t("common.cancel")}
                             >
                               <X size={14} />
-                            </button>
+                            </Button>
                           </div>
                         </div>
                       ) : (
-                        <button
+                        <Button
+                          variant="link"
                           type="button"
                           onClick={() => setAddingCategory(category)}
-                          className="mt-2 w-full border-t pt-2 text-left text-sm text-orange-600 hover:text-orange-700"
+                          className="mt-2 w-full justify-start pt-2 text-sm text-orange-600 hover:text-orange-700"
                         >
                           + {t("tags.addTag")}
-                        </button>
+                        </Button>
                       ))}
                     </div>
                   </details>
@@ -829,14 +855,15 @@ export default function HouseholdPage() {
       {/* Leave household (non-owner only) */}
       {activeHousehold && !isOwner && (
         <div className="mb-4 rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
-          <button
+          <Button
+            variant="outline"
             onClick={handleLeave}
             disabled={leaveHousehold.isPending}
-            className="flex items-center gap-2 rounded-md border border-red-300 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 disabled:opacity-50"
+            className="border-red-300 text-red-600 hover:bg-red-50"
           >
             {leaveHousehold.isPending ? <Spinner /> : <LogOut size={16} />}
             {t("household.leaveHousehold")}
-          </button>
+          </Button>
         </div>
       )}
 
@@ -847,26 +874,27 @@ export default function HouseholdPage() {
             {t("household.deleteHousehold")}
           </h2>
           {!showDeleteConfirm ? (
-            <button
+            <Button
+              variant="destructive"
               onClick={() => setShowDeleteConfirm(true)}
-              className="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
             >
               {t("household.deleteHousehold")}
-            </button>
+            </Button>
           ) : (
             <div>
               <p className="mb-2 text-sm text-red-800 dark:text-red-300">
                 {t("household.deleteConfirm", { name: activeHousehold.name })}
               </p>
               <div className="flex gap-2">
-                <input
+                <Input
                   type="text"
                   value={deleteConfirmName}
                   onChange={(e) => setDeleteConfirmName(e.target.value)}
                   placeholder={t("household.deleteConfirmPlaceholder")}
-                  className="flex-1 rounded-md border border-red-300 px-3 py-2 text-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500 dark:border-red-700 dark:bg-red-950 dark:text-red-200 dark:placeholder-red-400"
+                  className="flex-1 border-red-300 focus-visible:ring-red-500 dark:border-red-700 dark:bg-red-950 dark:text-red-200 dark:placeholder-red-400"
                 />
-                <button
+                <Button
+                  variant="destructive"
                   onClick={() => {
                     deleteHousehold.mutate(activeHousehold.id, {
                       onSuccess: async () => {
@@ -881,19 +909,18 @@ export default function HouseholdPage() {
                   disabled={
                     deleteConfirmName !== activeHousehold.name || deleteHousehold.isPending
                   }
-                  className="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
                 >
                   {t("common.delete")}
-                </button>
-                <button
+                </Button>
+                <Button
+                  variant="secondary"
                   onClick={() => {
                     setShowDeleteConfirm(false);
                     setDeleteConfirmName("");
                   }}
-                  className="rounded-md bg-gray-200 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
                 >
                   {t("common.cancel")}
-                </button>
+                </Button>
               </div>
             </div>
           )}
@@ -911,21 +938,23 @@ export default function HouseholdPage() {
       >
         <div className="space-y-2">
           {households?.map((h) => (
-            <button
+            <Button
               key={h.id}
+              variant="ghost"
               onClick={() => handleSwitch(h.id)}
               disabled={switchHousehold.isPending}
-              className={`w-full rounded-lg px-4 py-3 text-left text-sm font-medium transition ${
+              className={cn(
+                "w-full justify-start px-4 py-3 text-sm font-medium",
                 h.id === activeHouseholdId
                   ? "bg-orange-50 text-orange-700 ring-1 ring-orange-300"
                   : "bg-gray-50 text-gray-700 hover:bg-gray-100"
-              } disabled:opacity-50`}
+              )}
             >
               {h.name}
               {h.id === activeHouseholdId && (
                 <Check size={16} className="float-right mt-0.5 text-orange-500" />
               )}
-            </button>
+            </Button>
           ))}
         </div>
       </ResponsiveOverlay>

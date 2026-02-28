@@ -10,7 +10,16 @@ import RecipeCard from "../components/RecipeCard";
 import TagFilterDrawer from "../components/TagFilterDrawer";
 import { EmptyState } from "../components/ui/EmptyState";
 import { RecipeListSkeleton } from "../components/ui/RecipeListSkeleton";
-import { SortSelect } from "../components/ui/SortSelect";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { cn } from "@/lib/utils";
 import { Spinner } from "../components/ui/Spinner";
 import { useAuth } from "../hooks/useAuth";
 import { queryKeys } from "../hooks/queryKeys";
@@ -211,17 +220,19 @@ export default function RecipeListPage() {
       {/* Tabs */}
       <div className="mt-3 flex border-b border-gray-200">
         {TABS.map((tab) => (
-          <button
+          <Button
             key={tab.key}
+            variant="ghost"
             onClick={() => setActiveTab(tab.key)}
-            className={`flex-1 py-2 text-center text-sm font-medium ${
+            className={cn(
+              "flex-1 rounded-none py-2 text-sm font-medium",
               activeTab === tab.key
                 ? "border-b-2 border-orange-500 text-orange-500"
-                : "text-gray-500 hover:text-gray-700"
-            }`}
+                : "text-gray-500 hover:text-gray-700",
+            )}
           >
             {t(tab.labelKey)}
-          </button>
+          </Button>
         ))}
       </div>
 
@@ -229,48 +240,54 @@ export default function RecipeListPage() {
       <div className="mt-3 flex items-center gap-2">
         <div className="relative flex-1">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-          <input
+          <Input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder={t("common.search")}
-            className="w-full rounded-lg border border-gray-300 py-2 pl-9 pr-3 text-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
+            className="pl-9"
           />
         </div>
-        <button
-          type="button"
+        <Button
+          size="sm"
+          className="shrink-0"
           onClick={() => navigate(`/recipes/new?list=${activeTab}`)}
-          className="flex shrink-0 items-center gap-1.5 rounded-lg bg-orange-500 px-3 py-2 text-sm font-medium text-white hover:bg-orange-600"
           aria-label={t("recipes.newRecipe")}
         >
           <Plus size={18} />
           <span className="hidden sm:inline">{t("recipes.newRecipe")}</span>
-        </button>
+        </Button>
         {aiEnabled && (
-          <button
-            type="button"
+          <Button
+            size="sm"
+            className="shrink-0"
             onClick={handleGenerateClick}
-            className="flex shrink-0 items-center gap-1.5 rounded-lg bg-orange-500 px-3 py-2 text-sm font-medium text-white hover:bg-orange-600"
             aria-label={t("generateRecipes.button")}
           >
             <Sparkles size={18} />
             <span className="hidden sm:inline">{t("generateRecipes.button")}</span>
-          </button>
+          </Button>
         )}
       </div>
 
       {/* Sort + Filter */}
       <div className="mt-2 flex items-center gap-2">
-        <SortSelect
-          value={sort}
-          onChange={handleSortChange}
-          options={sortOptions}
-          ariaLabel={t("recipes.sortLabel")}
-        />
-        <button
-          type="button"
+        <Select value={sort} onValueChange={handleSortChange}>
+          <SelectTrigger className="w-auto" aria-label={t("recipes.sortLabel")}>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {sortOptions.map((opt) => (
+              <SelectItem key={opt.value} value={opt.value}>
+                {opt.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Button
+          variant="outline"
+          size="sm"
           onClick={() => setShowFilterDrawer(true)}
-          className="flex items-center gap-1.5 rounded-lg border border-gray-300 px-3 py-1.5 text-sm text-gray-600 hover:border-gray-400"
         >
           <SlidersHorizontal size={14} />
           {t("tags.filter")}
@@ -279,7 +296,7 @@ export default function RecipeListPage() {
               {selectedTags.length}
             </span>
           )}
-        </button>
+        </Button>
       </div>
 
       {/* Recipe list */}

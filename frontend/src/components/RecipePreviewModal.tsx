@@ -2,6 +2,7 @@ import { Pencil, Play } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import type { Recipe } from "../api/types";
+import { Button } from "@/components/ui/button";
 import { useIngredients } from "../hooks/useIngredients";
 import { useUnits } from "../hooks/useUnits";
 import ResponsiveOverlay from "./ui/ResponsiveOverlay";
@@ -79,23 +80,15 @@ export default function RecipePreviewModal({ open, recipe, servings, onClose }: 
       {/* Actions */}
       <div className="mt-6 flex gap-3">
         {hasSteps && (
-          <button
-            type="button"
-            onClick={() => navigate(`/cook/${recipe.id}`)}
-            className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-orange-500 px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-orange-600"
-          >
+          <Button type="button" className="flex-1" onClick={() => navigate(`/cook/${recipe.id}`)}>
             <Play size={16} />
             {t("cooking.start")}
-          </button>
+          </Button>
         )}
-        <button
-          type="button"
-          onClick={() => navigate(`/recipes/${recipe.id}`)}
-          className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-gray-300 px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50"
-        >
+        <Button type="button" variant="outline" className="flex-1" onClick={() => navigate(`/recipes/${recipe.id}`)}>
           <Pencil size={16} />
           {t("common.edit")}
-        </button>
+        </Button>
       </div>
     </ResponsiveOverlay>
   );

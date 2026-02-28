@@ -143,8 +143,10 @@ describe("RecipeListPage sorting", () => {
       expect(screen.getByText("Apple Pie")).toBeInTheDocument();
     });
 
-    const sortSelect = screen.getByLabelText("recipes.sortLabel");
-    await user.selectOptions(sortSelect, "name-desc");
+    // Open the Radix Select by clicking the trigger
+    await user.click(screen.getByLabelText("recipes.sortLabel"));
+    // Select the Z-A option
+    await user.click(screen.getByRole("option", { name: "recipes.sortNameZA" }));
 
     const cards = screen.getAllByRole("link");
     const titles = cards.map((c) => c.textContent).filter(Boolean);
@@ -162,7 +164,8 @@ describe("RecipeListPage sorting", () => {
       expect(screen.getByText("Apple Pie")).toBeInTheDocument();
     });
 
-    await user.selectOptions(screen.getByLabelText("recipes.sortLabel"), "newest");
+    await user.click(screen.getByLabelText("recipes.sortLabel"));
+    await user.click(screen.getByRole("option", { name: "recipes.sortNewest" }));
 
     const cards = screen.getAllByRole("link");
     const titles = cards.map((c) => c.textContent).filter(Boolean);
@@ -181,7 +184,8 @@ describe("RecipeListPage sorting", () => {
       expect(screen.getByText("Apple Pie")).toBeInTheDocument();
     });
 
-    await user.selectOptions(screen.getByLabelText("recipes.sortLabel"), "newest");
+    await user.click(screen.getByLabelText("recipes.sortLabel"));
+    await user.click(screen.getByRole("option", { name: "recipes.sortNewest" }));
     expect(storageMap.get("cookless-recipe-sort")).toBe("newest");
   });
 
@@ -193,8 +197,9 @@ describe("RecipeListPage sorting", () => {
       expect(screen.getByText("Apple Pie")).toBeInTheDocument();
     });
 
-    const sortSelect = screen.getByLabelText("recipes.sortLabel") as HTMLSelectElement;
-    expect(sortSelect.value).toBe("name-desc");
+    // Radix Select trigger shows the selected option's text
+    const trigger = screen.getByLabelText("recipes.sortLabel");
+    expect(trigger).toHaveTextContent("recipes.sortNameZA");
   });
 
   it("shows search empty state when search has no matches", async () => {

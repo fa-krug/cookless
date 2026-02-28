@@ -2,9 +2,17 @@ import { Plus, X } from "lucide-react";
 import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { Ingredient, Unit } from "../api/types";
-import Input from "./ui/Input";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import ResponsiveOverlay from "./ui/ResponsiveOverlay";
-import Select from "./ui/Select";
 
 export interface IngredientRow {
   ingredient: number;
@@ -63,14 +71,15 @@ export default function IngredientForm({
     <div>
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-medium">{t("ingredients.title")}</h3>
-        <button
+        <Button
           type="button"
           onClick={addRow}
-          className="rounded-md bg-orange-500 p-1.5 text-white hover:bg-orange-600"
+          size="icon"
+          className="h-8 w-8"
           aria-label={t("ingredients.add")}
         >
           <Plus size={18} />
-        </button>
+        </Button>
       </div>
 
       {ingredients.length === 0 && (
@@ -105,17 +114,19 @@ export default function IngredientForm({
               >
                 {displayText}
               </span>
-              <button
+              <Button
                 type="button"
+                variant="ghost"
+                size="icon"
                 onClick={(e) => {
                   e.stopPropagation();
                   removeRow(index);
                 }}
-                className="shrink-0 rounded-md p-1 text-red-600 hover:bg-red-50"
+                className="h-8 w-8 shrink-0 text-red-600 hover:bg-red-50"
                 aria-label={t("common.remove")}
               >
                 <X size={16} />
-              </button>
+              </Button>
             </div>
           );
         })}
@@ -177,9 +188,9 @@ function IngredientEditDrawer({
       <div className="space-y-4">
         <div className="flex gap-3">
           <div className="flex-1">
-            <label className="mb-1 block text-sm font-medium text-gray-700">
+            <Label>
               {t("ingredients.quantity")}
-            </label>
+            </Label>
             <Input
               type="text"
               inputMode="decimal"
@@ -189,26 +200,31 @@ function IngredientEditDrawer({
             />
           </div>
           <div className="flex-1">
-            <label className="mb-1 block text-sm font-medium text-gray-700">
+            <Label>
               {t("ingredients.unit")}
-            </label>
+            </Label>
             <Select
-              value={row.unit}
-              onChange={(e) => onUpdate(index, { unit: Number(e.target.value) })}
+              value={String(row.unit)}
+              onValueChange={(val) => onUpdate(index, { unit: Number(val) })}
             >
-              {allUnits.map((u) => (
-                <option key={u.id} value={u.id}>
-                  {u.abbreviation || u[nameKey]}
-                </option>
-              ))}
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {allUnits.map((u) => (
+                  <SelectItem key={u.id} value={String(u.id)}>
+                    {u.abbreviation || u[nameKey]}
+                  </SelectItem>
+                ))}
+              </SelectContent>
             </Select>
           </div>
         </div>
 
         <div className="relative" ref={wrapperRef}>
-          <label className="mb-1 block text-sm font-medium text-gray-700">
+          <Label>
             {t("ingredients.name")}
-          </label>
+          </Label>
           <Input
             type="text"
             value={search}
@@ -226,14 +242,15 @@ function IngredientEditDrawer({
             <ul className="absolute z-10 mt-1 max-h-40 w-full overflow-y-auto rounded-md border border-gray-200 bg-white shadow-lg">
               {filtered.slice(0, 20).map((ing) => (
                 <li key={ing.id}>
-                  <button
+                  <Button
                     type="button"
+                    variant="ghost"
                     onMouseDown={(e) => e.preventDefault()}
                     onClick={() => selectIngredient(ing)}
-                    className="w-full px-3 py-1.5 text-left text-sm hover:bg-orange-50"
+                    className="w-full justify-start px-3 py-1.5 text-sm font-normal hover:bg-orange-50"
                   >
                     {ing[nameKey]}
-                  </button>
+                  </Button>
                 </li>
               ))}
             </ul>

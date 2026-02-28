@@ -3,6 +3,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { GripVertical, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { CookingStepPayload } from "../api/types";
+import { Button } from "@/components/ui/button";
 
 interface SortableStepProps {
   id: string;
@@ -38,28 +39,32 @@ export default function SortableStep({
       style={style}
       className={`flex items-start gap-2 rounded-lg border ${hasProgram ? "border-orange-500/20 bg-orange-50 p-2" : "border-gray-200 p-2"} ${isDragging ? "z-10 scale-105 bg-white shadow-lg" : ""}`}
     >
-      <button
+      <Button
         type="button"
-        className="shrink-0 cursor-grab touch-none pt-1 text-gray-400 hover:text-gray-600 active:cursor-grabbing"
+        variant="ghost"
+        size="icon"
+        className="h-auto shrink-0 cursor-grab touch-none p-0 pt-1 text-gray-400 hover:bg-transparent hover:text-gray-600 active:cursor-grabbing"
         aria-label={t("steps.reorder")}
         {...attributes}
         {...listeners}
       >
         <GripVertical size={18} />
-      </button>
+      </Button>
       <div className="min-w-0 flex-1">
         <div className="flex items-center justify-between">
           <span className="text-sm font-medium text-gray-500">
             {t("steps.stepNumber", { number: step.step_number })}
           </span>
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7 shrink-0 text-red-600 hover:bg-red-50"
             onClick={onRemove}
-            className="shrink-0 rounded-md p-1 text-red-600 hover:bg-red-50"
             aria-label={t("common.remove")}
           >
             <X size={16} />
-          </button>
+          </Button>
         </div>
         <div
           className="mt-1 cursor-pointer rounded px-1 py-1 hover:bg-gray-50"

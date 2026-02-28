@@ -1,4 +1,5 @@
 import { useTranslation } from "react-i18next";
+import { Button } from "@/components/ui/button";
 import { useDialog } from "../../hooks/useDialog";
 
 interface DrawerProps {
@@ -38,13 +39,9 @@ export default function Drawer({
           <h2 id={titleId} className="text-lg font-semibold text-gray-900">
             {title}
           </h2>
-          <button
-            onClick={onClose}
-            aria-label={t("common.close")}
-            className="text-sm text-gray-500 hover:text-gray-700"
-          >
+          <Button variant="ghost" size="sm" onClick={onClose} aria-label={t("common.close")}>
             {t("common.close")}
-          </button>
+          </Button>
         </div>
 
         <div className="overflow-y-auto px-4 pb-6" style={{ maxHeight: `calc(${maxHeight} - 5rem)` }}>

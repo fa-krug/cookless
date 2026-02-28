@@ -10,6 +10,7 @@ import type {
 import { streamGenerateRecipes, useBulkCreateRecipes } from "../hooks/useGenerateRecipes";
 import { useToast } from "../hooks/useToast";
 import { Spinner } from "./ui/Spinner";
+import { Button } from "@/components/ui/button";
 
 interface GenerateRecipesPreviewProps {
   config: GenerateRecipesPayload;
@@ -132,13 +133,14 @@ export function GenerateRecipesPreview({ config, onClose }: GenerateRecipesPrevi
       {/* Header */}
       <div className="flex items-center justify-between border-b px-4 py-3">
         <h2 className="text-lg font-semibold">{t("generateRecipes.preview")}</h2>
-        <button
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={handleCancel}
-          className="rounded-full p-1 text-gray-500 hover:bg-gray-100"
           aria-label={t("common.cancel")}
         >
           <X size={20} />
-        </button>
+        </Button>
       </div>
 
       {/* Scrollable recipe list */}
@@ -233,23 +235,19 @@ export function GenerateRecipesPreview({ config, onClose }: GenerateRecipesPrevi
           {t("generateRecipes.selected", { count: selectedCount })}
         </span>
         <div className="flex gap-2">
-          <button
-            onClick={handleCancel}
-            className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-          >
+          <Button variant="outline" onClick={handleCancel}>
             {t("common.cancel")}
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={handleSave}
             disabled={selectedCount === 0 || saving}
-            className="rounded-lg bg-orange-500 px-4 py-2 text-sm font-medium text-white hover:bg-orange-600 disabled:opacity-50"
           >
             {saving ? (
               <Spinner size={16} />
             ) : (
               t("generateRecipes.saveCount", { count: selectedCount })
             )}
-          </button>
+          </Button>
         </div>
       </div>
     </div>

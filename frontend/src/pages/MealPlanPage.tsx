@@ -1,4 +1,5 @@
 import { Calendar, CalendarPlus, Settings } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { EmptyState } from "../components/ui/EmptyState";
 import { Spinner } from "../components/ui/Spinner";
 import { useMemo, useState } from "react";
@@ -67,13 +68,14 @@ export default function MealPlanPage() {
       <div className="mb-4 flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900">{t("plan.title")}</h1>
         {currentPlan && (
-          <button
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={() => setDrawerOpen(true)}
-            className="rounded-lg p-2 text-gray-500 hover:bg-gray-100"
             aria-label={t("plan.updateConfig")}
           >
             <Settings size={20} />
-          </button>
+          </Button>
         )}
       </div>
 
@@ -97,16 +99,16 @@ export default function MealPlanPage() {
               <p className="text-sm text-gray-700">
                 {t("plan.iterationEnded")}
               </p>
-              <button
+              <Button
+                className="mt-3"
                 onClick={handleNextIteration}
                 disabled={nextIteration.isPending}
-                className="mt-3 inline-flex items-center gap-2 rounded-lg bg-orange-500 px-5 py-2 text-sm font-semibold text-white hover:bg-orange-600 disabled:opacity-50"
               >
                 {nextIteration.isPending ? <Spinner /> : <CalendarPlus size={16} />}
                 {nextIteration.isPending
                   ? t("common.loading")
                   : t("plan.generateNext")}
-              </button>
+              </Button>
             </div>
           )}
 

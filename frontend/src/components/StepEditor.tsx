@@ -8,7 +8,8 @@ import type { CookingStepPayload } from "../api/types";
 import ProgramStepForm from "./ProgramStepForm";
 import SortableStep from "./SortableStep";
 import ResponsiveOverlay from "./ui/ResponsiveOverlay";
-import Textarea from "./ui/Textarea";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 
 export type StepRow = CookingStepPayload;
 
@@ -57,14 +58,15 @@ export default function StepEditor({ steps, onChange, label, isMachine }: StepEd
     <div>
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-medium">{label}</h3>
-        <button
+        <Button
           type="button"
+          size="icon"
+          className="h-8 w-8"
           onClick={addStep}
-          className="rounded-md bg-orange-500 p-1.5 text-white hover:bg-orange-600"
           aria-label={t("steps.add")}
         >
           <Plus size={18} />
-        </button>
+        </Button>
       </div>
 
       {steps.length === 0 && (
@@ -137,16 +139,17 @@ function StepEditDrawer({ step, isMachine, onStepChange, onClose }: StepEditDraw
             rows={6}
           />
           {isMachine && (
-            <button
+            <Button
               type="button"
+              variant="outline"
+              className="mt-3 w-full border-dashed border-orange-400 text-orange-500 hover:bg-orange-50"
               onClick={() => {
                 setFreeTextMode(false);
                 onStepChange({ ...step, program_type: null, instruction: "" });
               }}
-              className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-md border border-dashed border-orange-400 px-3 py-2 text-sm text-orange-500 hover:bg-orange-50"
             >
               {t("steps.selectProgram")}
-            </button>
+            </Button>
           )}
         </div>
       )}

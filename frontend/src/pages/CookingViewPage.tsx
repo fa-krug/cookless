@@ -1,4 +1,6 @@
 import { ArrowLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
@@ -54,14 +56,15 @@ export default function CookingViewPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">{recipe.title}</h1>
-        <button
+        <Button
           type="button"
+          variant="ghost"
+          size="icon"
           onClick={() => navigate(-1)}
-          className="rounded-md p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
           aria-label={t("common.back")}
         >
           <ArrowLeft size={20} />
-        </button>
+        </Button>
       </div>
 
       {/* Wake lock indicator */}
@@ -74,28 +77,32 @@ export default function CookingViewPage() {
 
       {/* Method tabs */}
       <div className="mt-4 flex rounded-lg border border-gray-200">
-        <button
+        <Button
           type="button"
+          variant="ghost"
           onClick={() => handleMethodChange("MANUAL")}
-          className={`flex-1 rounded-l-lg px-4 py-2 text-sm font-medium transition-colors ${
+          className={cn(
+            "flex-1 rounded-l-lg rounded-r-none",
             method === "MANUAL"
-              ? "bg-orange-500 text-white"
-              : "bg-white text-gray-700 hover:bg-gray-50"
-          }`}
+              ? "bg-orange-500 text-white hover:bg-orange-500"
+              : "bg-white text-gray-700 hover:bg-gray-50",
+          )}
         >
           {t("cooking.manualMethod")}
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
+          variant="ghost"
           onClick={() => handleMethodChange("MACHINE")}
-          className={`flex-1 rounded-r-lg px-4 py-2 text-sm font-medium transition-colors ${
+          className={cn(
+            "flex-1 rounded-r-lg rounded-l-none",
             method === "MACHINE"
-              ? "bg-orange-500 text-white"
-              : "bg-white text-gray-700 hover:bg-gray-50"
-          }`}
+              ? "bg-orange-500 text-white hover:bg-orange-500"
+              : "bg-white text-gray-700 hover:bg-gray-50",
+          )}
         >
           {t("cooking.machineMethod")}
-        </button>
+        </Button>
       </div>
 
       {/* Progress bar */}
@@ -166,16 +173,17 @@ export default function CookingViewPage() {
 
       {/* Done button on last step */}
       {currentStep >= sortedSteps.length - 1 && sortedSteps.length > 0 && (
-        <button
+        <Button
           type="button"
+          variant="outline"
+          className="mt-4 w-full"
           onClick={() => {
             clearProgress();
             navigate(`/recipes/${id}`);
           }}
-          className="mt-4 w-full rounded-lg border border-gray-200 px-4 py-2 text-sm text-gray-500 hover:bg-gray-50"
         >
           {t("cooking.done")}
-        </button>
+        </Button>
       )}
     </div>
   );

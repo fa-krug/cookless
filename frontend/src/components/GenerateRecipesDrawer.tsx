@@ -6,6 +6,10 @@ import ResponsiveOverlay from "./ui/ResponsiveOverlay";
 import { useCloseDetailsOnClickOutside } from "../hooks/useCloseDetailsOnClickOutside";
 import { useTags } from "../hooks/useTags";
 import { TAG_CATEGORIES } from "../api/types";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Textarea } from "@/components/ui/textarea";
 
 interface GenerateRecipesDrawerProps {
   isOpen: boolean;
@@ -47,9 +51,9 @@ export default function GenerateRecipesDrawer({
         {/* Count slider */}
         <div>
           <div className="flex items-center justify-between">
-            <label className="text-sm font-medium text-gray-700">
+            <Label>
               {t("generateRecipes.count")}
-            </label>
+            </Label>
             <span className="text-sm font-semibold text-orange-600">{count}</span>
           </div>
           <input
@@ -65,9 +69,9 @@ export default function GenerateRecipesDrawer({
         {/* Tags */}
         {groupedTags && (
           <div ref={tagSectionRef}>
-            <label className="text-sm font-medium text-gray-700">
+            <Label>
               {t("generateRecipes.tags")}
-            </label>
+            </Label>
             <div className="mt-2 flex flex-wrap gap-2">
               {TAG_CATEGORIES.map((category) => {
                 const tags = groupedTags[category] || [];
@@ -90,17 +94,15 @@ export default function GenerateRecipesDrawer({
                           key={tag.id}
                           className="flex cursor-pointer items-center gap-2 rounded px-2 py-1 hover:bg-gray-50"
                         >
-                          <input
-                            type="checkbox"
+                          <Checkbox
                             checked={selectedTagIds.includes(tag.id)}
-                            onChange={(e) => {
+                            onCheckedChange={(checked) => {
                               setSelectedTagIds((prev) =>
-                                e.target.checked
+                                checked
                                   ? [...prev, tag.id]
                                   : prev.filter((id) => id !== tag.id),
                               );
                             }}
-                            className="rounded accent-orange-500"
                           />
                           <span className="text-sm">
                             {i18n.language === "de" ? tag.name_de : tag.name_en}
@@ -117,25 +119,23 @@ export default function GenerateRecipesDrawer({
 
         {/* Free text */}
         <div>
-          <label className="text-sm font-medium text-gray-700">
+          <Label>
             {t("generateRecipes.freeText")}
-          </label>
-          <textarea
+          </Label>
+          <Textarea
             rows={3}
             value={freeText}
             onChange={(e) => setFreeText(e.target.value)}
             placeholder={t("generateRecipes.freeTextPlaceholder")}
-            className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
+            className="mt-1"
           />
         </div>
 
         {/* Generate images checkbox */}
         <label className="flex cursor-pointer items-center gap-2">
-          <input
-            type="checkbox"
+          <Checkbox
             checked={generateImages}
-            onChange={(e) => setGenerateImages(e.target.checked)}
-            className="rounded accent-orange-500"
+            onCheckedChange={(checked) => setGenerateImages(checked === true)}
           />
           <span className="text-sm text-gray-700">
             {t("generateRecipes.generateImages")}
@@ -143,14 +143,10 @@ export default function GenerateRecipesDrawer({
         </label>
 
         {/* Generate button */}
-        <button
-          type="button"
-          onClick={handleGenerate}
-          className="flex w-full items-center justify-center gap-2 rounded-lg bg-orange-500 px-4 py-3 text-sm font-medium text-white hover:bg-orange-600"
-        >
+        <Button type="button" className="w-full" onClick={handleGenerate}>
           <Sparkles size={16} />
           {t("generateRecipes.generate")}
-        </button>
+        </Button>
       </div>
     </ResponsiveOverlay>
   );

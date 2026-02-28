@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 export interface ConfirmDialogProps {
   open: boolean;
@@ -58,11 +60,6 @@ export function ConfirmDialog({
         ? typedValue.length === 0
         : false;
 
-  const confirmBtnClass =
-    confirmVariant === "danger"
-      ? "rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
-      : "rounded-md bg-orange-500 px-4 py-2 text-sm font-medium text-white hover:bg-orange-600 disabled:opacity-50";
-
   return (
     <dialog
       ref={dialogRef}
@@ -73,32 +70,28 @@ export function ConfirmDialog({
         <p className="mt-2 text-sm text-gray-600">{message}</p>
 
         {(requireTypedConfirmation != null || inputField != null) && (
-          <input
+          <Input
             type={inputField?.type ?? "text"}
             value={typedValue}
             onChange={(e) => setTypedValue(e.target.value)}
             placeholder={inputField?.placeholder ?? requireTypedConfirmation}
-            className="mt-3 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
+            className="mt-3"
             autoFocus
           />
         )}
 
         <div className="mt-5 flex justify-end gap-2">
-          <button
-            type="button"
-            onClick={onCancel}
-            className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-          >
+          <Button type="button" variant="outline" onClick={onCancel}>
             {cancelLabel}
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
+            variant={confirmVariant === "danger" ? "destructive" : "default"}
             onClick={() => onConfirm(inputField ? typedValue : undefined)}
             disabled={confirmDisabled}
-            className={confirmBtnClass}
           >
             {confirmLabel}
-          </button>
+          </Button>
         </div>
       </div>
     </dialog>
