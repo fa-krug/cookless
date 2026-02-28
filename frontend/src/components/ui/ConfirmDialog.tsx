@@ -1,4 +1,12 @@
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -27,31 +35,7 @@ export function ConfirmDialog({
   requireTypedConfirmation,
   inputField,
 }: ConfirmDialogProps) {
-  const dialogRef = useRef<HTMLDialogElement>(null);
   const [typedValue, setTypedValue] = useState("");
-
-  useEffect(() => {
-    const dialog = dialogRef.current;
-    if (!dialog) return;
-
-    if (open && !dialog.open) {
-      dialog.showModal();
-    } else if (!open && dialog.open) {
-      dialog.close();
-    }
-  }, [open]);
-
-  useEffect(() => {
-    const dialog = dialogRef.current;
-    if (!dialog) return;
-
-    function handleCancel(e: Event) {
-      e.preventDefault();
-      onCancel();
-    }
-    dialog.addEventListener("cancel", handleCancel);
-    return () => dialog.removeEventListener("cancel", handleCancel);
-  }, [onCancel]);
 
   const confirmDisabled =
     requireTypedConfirmation != null
@@ -61,13 +45,12 @@ export function ConfirmDialog({
         : false;
 
   return (
-    <dialog
-      ref={dialogRef}
-      className="m-auto w-full max-w-sm rounded-2xl border-none bg-transparent p-0 shadow-xl backdrop:bg-black/40"
-    >
-      <div className="rounded-2xl bg-white p-5 shadow-xl">
-        <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
-        <p className="mt-2 text-sm text-gray-600">{message}</p>
+    <AlertDialog open={open} onOpenChange={(v) => !v && onCancel()}>
+      <AlertDialogContent className="sm:max-w-sm">
+        <AlertDialogHeader>
+          <AlertDialogTitle>{title}</AlertDialogTitle>
+          <AlertDialogDescription>{message}</AlertDialogDescription>
+        </AlertDialogHeader>
 
         {(requireTypedConfirmation != null || inputField != null) && (
           <Input
@@ -75,12 +58,11 @@ export function ConfirmDialog({
             value={typedValue}
             onChange={(e) => setTypedValue(e.target.value)}
             placeholder={inputField?.placeholder ?? requireTypedConfirmation}
-            className="mt-3"
             autoFocus
           />
         )}
 
-        <div className="mt-5 flex justify-end gap-2">
+        <AlertDialogFooter>
           <Button type="button" variant="outline" onClick={onCancel}>
             {cancelLabel}
           </Button>
@@ -92,8 +74,8 @@ export function ConfirmDialog({
           >
             {confirmLabel}
           </Button>
-        </div>
-      </div>
-    </dialog>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 }

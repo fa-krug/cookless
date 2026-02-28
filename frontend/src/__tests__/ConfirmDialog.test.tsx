@@ -3,16 +3,6 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { ConfirmDialog } from "../components/ui/ConfirmDialog";
 
-// Mock HTMLDialogElement methods (jsdom doesn't implement them)
-beforeAll(() => {
-  HTMLDialogElement.prototype.showModal = vi.fn(function (this: HTMLDialogElement) {
-    this.setAttribute("open", "");
-  });
-  HTMLDialogElement.prototype.close = vi.fn(function (this: HTMLDialogElement) {
-    this.removeAttribute("open");
-  });
-});
-
 describe("ConfirmDialog", () => {
   it("renders title and message when open", () => {
     render(
@@ -124,10 +114,10 @@ describe("ConfirmDialog", () => {
     expect(onConfirm).toHaveBeenCalledWith("mypassword");
   });
 
-  it("calls showModal when opened", () => {
+  it("does not render when closed", () => {
     render(
       <ConfirmDialog
-        open={true}
+        open={false}
         title="Test"
         message="Test"
         onConfirm={vi.fn()}
@@ -135,6 +125,6 @@ describe("ConfirmDialog", () => {
       />,
     );
 
-    expect(HTMLDialogElement.prototype.showModal).toHaveBeenCalled();
+    expect(screen.queryByText("Test")).not.toBeInTheDocument();
   });
 });

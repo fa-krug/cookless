@@ -1,7 +1,10 @@
-import { X } from "lucide-react";
-import { useTranslation } from "react-i18next";
-import { Button } from "@/components/ui/button";
-import { useDialog } from "../../hooks/useDialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { cn } from "@/lib/utils";
 
 interface ModalProps {
   open: boolean;
@@ -18,27 +21,14 @@ const SIZE_CLASSES = {
 };
 
 export default function Modal({ open, onClose, title, children, size = "md" }: ModalProps) {
-  const { t } = useTranslation();
-  const { dialogRef, titleId, handleBackdropClick } = useDialog({ open, onClose });
-
   return (
-    <dialog
-      ref={dialogRef}
-      aria-labelledby={titleId}
-      onClick={handleBackdropClick}
-      className={`m-auto w-full rounded-2xl border-none bg-transparent p-0 backdrop:bg-black/40 ${SIZE_CLASSES[size]}`}
-    >
-      <div className="rounded-2xl bg-white p-6 shadow-xl">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 id={titleId} className="text-lg font-semibold text-gray-900">
-            {title}
-          </h2>
-          <Button variant="ghost" size="icon" onClick={onClose} aria-label={t("common.close")}>
-            <X size={20} />
-          </Button>
-        </div>
+    <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+      <DialogContent className={cn(SIZE_CLASSES[size])}>
+        <DialogHeader>
+          <DialogTitle>{title}</DialogTitle>
+        </DialogHeader>
         {children}
-      </div>
-    </dialog>
+      </DialogContent>
+    </Dialog>
   );
 }
