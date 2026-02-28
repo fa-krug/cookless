@@ -4,7 +4,6 @@ import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Recipe } from "../api/types";
-import { ToastProvider } from "../contexts/ToastContext";
 import RecipeListPage from "../pages/RecipeListPage";
 
 // Mock useAuth
@@ -101,13 +100,13 @@ function createQueryClient() {
 function renderPage() {
   const queryClient = createQueryClient();
   return render(
-    <ToastProvider>
+    
       <QueryClientProvider client={queryClient}>
         <MemoryRouter>
           <RecipeListPage />
         </MemoryRouter>
       </QueryClientProvider>
-    </ToastProvider>,
+    ,
   );
 }
 

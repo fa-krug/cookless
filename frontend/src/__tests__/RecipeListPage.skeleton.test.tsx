@@ -3,7 +3,6 @@ import { render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { describe, expect, it, vi } from "vitest";
 
-import { ToastProvider } from "../contexts/ToastContext";
 
 vi.mock("../hooks/useAuth", () => ({
   useAuth: () => ({ user: { active_household: { ai_enabled: false, gemini_api_key: "" } } }),
@@ -24,11 +23,11 @@ vi.mock("../api/client", () => ({
 function renderWithProviders(ui: React.ReactElement) {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return render(
-    <ToastProvider>
+    
       <QueryClientProvider client={qc}>
         <MemoryRouter>{ui}</MemoryRouter>
       </QueryClientProvider>
-    </ToastProvider>,
+    ,
   );
 }
 

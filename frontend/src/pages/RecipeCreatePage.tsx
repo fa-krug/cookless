@@ -16,13 +16,12 @@ import { queryKeys } from "../hooks/queryKeys";
 import { useCreateRecipe } from "../hooks/useRecipes";
 import { useRecipeForm } from "../hooks/useRecipeForm";
 import { useTags } from "../hooks/useTags";
-import { useToast } from "../hooks/useToast";
+import { toast } from "sonner";
 import { useUnits } from "../hooks/useUnits";
 
 export default function RecipeCreatePage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { addToast } = useToast();
   const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
 
@@ -42,10 +41,10 @@ export default function RecipeCreatePage() {
     createRecipe.mutate(payload, {
       onSuccess: (newRecipe) => {
         queryClient.invalidateQueries({ queryKey: queryKeys.ingredients });
-        addToast(t("success.recipeSaved"), "success");
+        toast.success(t("success.recipeSaved"));
         navigate("/recipes", { state: { newRecipeId: newRecipe.id } });
       },
-      onError: () => addToast(t("errors.recipeSave"), "error"),
+      onError: () => toast.error(t("errors.recipeSave")),
     });
   }
 

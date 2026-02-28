@@ -25,7 +25,7 @@ import { useAuth } from "../hooks/useAuth";
 import { queryKeys } from "../hooks/queryKeys";
 import { useDeleteRecipe, useRecipes } from "../hooks/useRecipes";
 import { useTags } from "../hooks/useTags";
-import { useToast } from "../hooks/useToast";
+import { toast } from "sonner";
 
 type SortOption = "name-asc" | "name-desc" | "newest" | "updated";
 
@@ -64,7 +64,6 @@ const TABS: { key: ListType; labelKey: string }[] = [
 
 export default function RecipeListPage() {
   const { t, i18n } = useTranslation();
-  const { addToast } = useToast();
   const { user } = useAuth();
   const aiEnabled = user?.active_household?.ai_enabled ?? false;
   const aiConfigured = aiEnabled && (user?.active_household?.gemini_api_key ?? "") !== "";
@@ -151,7 +150,7 @@ export default function RecipeListPage() {
     let undone = false;
 
     // Show undo toast
-    addToast(t("recipes.deleted", { title: recipe.title }), "success", {
+    toast.success(t("recipes.deleted", { title: recipe.title }), {
       duration: 5000,
       action: {
         label: t("common.undo"),
@@ -181,7 +180,7 @@ export default function RecipeListPage() {
         deleteRecipe.mutate(id, {
           onError: () => {
             queryClient.invalidateQueries({ queryKey: queryKeys.recipes });
-            addToast(t("errors.recipeDelete"), "error");
+            toast.error(t("errors.recipeDelete"));
           },
         });
       }

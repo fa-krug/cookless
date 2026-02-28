@@ -22,7 +22,7 @@ import { useTranslation } from "react-i18next";
 import { api } from "../api/client";
 import { TAG_CATEGORIES, type Household, type Invite, type TagCategory } from "../api/types";
 import { ConfirmDialog } from "../components/ui/ConfirmDialog";
-import { useToast } from "../hooks/useToast";
+import { toast } from "sonner";
 import { useAuth } from "../hooks/useAuth";
 import { useConfirm } from "../hooks/useConfirm";
 import {
@@ -61,7 +61,6 @@ function MembersList({
   onOwnershipTransferred: () => Promise<void>;
 }) {
   const { t } = useTranslation();
-  const { addToast } = useToast();
   const { confirm, dialogProps } = useConfirm();
   const removeMember = useRemoveMember();
   const transferOwnership = useTransferOwnership();
@@ -78,7 +77,7 @@ function MembersList({
     removeMember.mutate(
       { householdId: household.id, memberId },
       {
-        onError: () => addToast(t("errors.memberRemove"), "error"),
+        onError: () => toast.error(t("errors.memberRemove")),
       },
     );
   }
@@ -97,9 +96,9 @@ function MembersList({
       {
         onSuccess: async () => {
           await onOwnershipTransferred();
-          addToast(t("success.ownershipTransferred"), "success");
+          toast.success(t("success.ownershipTransferred"));
         },
-        onError: () => addToast(t("errors.ownershipTransfer"), "error"),
+        onError: () => toast.error(t("errors.ownershipTransfer")),
       },
     );
   }
@@ -158,7 +157,6 @@ function MembersList({
 
 function InviteSection({ householdId }: { householdId: string }) {
   const { t } = useTranslation();
-  const { addToast } = useToast();
   const createInvite = useCreateInvite();
   const [invite, setInvite] = useState<Invite | null>(null);
   const [copied, setCopied] = useState(false);
@@ -169,7 +167,7 @@ function InviteSection({ householdId }: { householdId: string }) {
         setInvite(data);
         setCopied(false);
       },
-      onError: () => addToast(t("errors.inviteCreate"), "error"),
+      onError: () => toast.error(t("errors.inviteCreate")),
     });
   }
 
@@ -219,7 +217,6 @@ function InviteSection({ householdId }: { householdId: string }) {
 
 function JoinHouseholdSection() {
   const { t } = useTranslation();
-  const { addToast } = useToast();
   const acceptInvite = useAcceptInvite();
   const { refreshUser } = useAuth();
   const [code, setCode] = useState("");
@@ -231,9 +228,9 @@ function JoinHouseholdSection() {
       onSuccess: async () => {
         setCode("");
         await refreshUser();
-        addToast(t("success.householdJoined"), "success");
+        toast.success(t("success.householdJoined"));
       },
-      onError: () => addToast(t("errors.householdJoin"), "error"),
+      onError: () => toast.error(t("errors.householdJoin")),
     });
   }
 
@@ -262,7 +259,6 @@ function JoinHouseholdSection() {
 
 function CreateHouseholdSection() {
   const { t } = useTranslation();
-  const { addToast } = useToast();
   const createHousehold = useCreateHousehold();
   const { refreshUser } = useAuth();
   const [name, setName] = useState("");
@@ -275,7 +271,7 @@ function CreateHouseholdSection() {
         setName("");
         await refreshUser();
       },
-      onError: () => addToast(t("errors.householdCreate"), "error"),
+      onError: () => toast.error(t("errors.householdCreate")),
     });
   }
 
@@ -306,7 +302,6 @@ function CreateHouseholdSection() {
 
 export default function HouseholdPage() {
   const { t, i18n } = useTranslation();
-  const { addToast } = useToast();
   const { user, refreshUser } = useAuth();
   const { confirm, dialogProps } = useConfirm();
   const { data: households, isLoading } = useHouseholds();
@@ -361,7 +356,7 @@ export default function HouseholdPage() {
         setDeleteConfirmName("");
         await refreshUser();
       },
-      onError: () => addToast(t("errors.householdSwitch"), "error"),
+      onError: () => toast.error(t("errors.householdSwitch")),
     });
   }
 
@@ -378,9 +373,9 @@ export default function HouseholdPage() {
     leaveHousehold.mutate(activeHousehold.id, {
       onSuccess: async () => {
         await refreshUser();
-        addToast(t("success.householdLeft"), "success");
+        toast.success(t("success.householdLeft"));
       },
-      onError: () => addToast(t("errors.householdLeave"), "error"),
+      onError: () => toast.error(t("errors.householdLeave")),
     });
   }
 
@@ -393,7 +388,7 @@ export default function HouseholdPage() {
       );
       await refreshUser();
     } catch {
-      addToast(t("errors.settingsSave"), "error");
+      toast.error(t("errors.settingsSave"));
     }
   }
 
@@ -465,7 +460,7 @@ export default function HouseholdPage() {
                       setIsEditing(false);
                       await refreshUser();
                     },
-                    onError: () => addToast(t("errors.householdUpdate"), "error"),
+                    onError: () => toast.error(t("errors.householdUpdate")),
                   },
                 );
               }}
@@ -650,8 +645,8 @@ export default function HouseholdPage() {
                   });
                   if (confirmed) {
                     resetTags.mutate(undefined, {
-                      onSuccess: () => addToast(t("tags.resetSuccess"), "success"),
-                      onError: () => addToast(t("errors.tagsReset"), "error"),
+                      onSuccess: () => toast.success(t("tags.resetSuccess")),
+                      onError: () => toast.error(t("errors.tagsReset")),
                     });
                   }
                 }}
@@ -901,9 +896,9 @@ export default function HouseholdPage() {
                         setShowDeleteConfirm(false);
                         setDeleteConfirmName("");
                         await refreshUser();
-                        addToast(t("success.householdDeleted"), "success");
+                        toast.success(t("success.householdDeleted"));
                       },
-                      onError: () => addToast(t("errors.householdDelete"), "error"),
+                      onError: () => toast.error(t("errors.householdDelete")),
                     });
                   }}
                   disabled={

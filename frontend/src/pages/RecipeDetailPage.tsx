@@ -25,7 +25,7 @@ import { useDeleteRecipeImage, useGenerateRecipeImage, useUploadRecipeImage } fr
 import { useDeleteRecipe, useMoveRecipe, useRecipe, useUpdateRecipe } from "../hooks/useRecipes";
 import { useRecipeForm } from "../hooks/useRecipeForm";
 import { useTags } from "../hooks/useTags";
-import { useToast } from "../hooks/useToast";
+import { toast } from "sonner";
 import { useUnits } from "../hooks/useUnits";
 
 export default function RecipeDetailPage() {
@@ -69,7 +69,6 @@ interface RecipeFormProps {
 function RecipeForm({ recipe, recipeId, allIngredients, allUnits }: RecipeFormProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { addToast } = useToast();
 
   const updateRecipe = useUpdateRecipe();
   const moveRecipe = useMoveRecipe();
@@ -96,10 +95,10 @@ function RecipeForm({ recipe, recipeId, allIngredients, allUnits }: RecipeFormPr
       {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: queryKeys.ingredients });
-          addToast(t("success.recipeSaved"), "success");
+          toast.success(t("success.recipeSaved"));
           navigate("/recipes");
         },
-        onError: () => addToast(t("errors.recipeSave"), "error"),
+        onError: () => toast.error(t("errors.recipeSave")),
       },
     );
   }
@@ -107,7 +106,7 @@ function RecipeForm({ recipe, recipeId, allIngredients, allUnits }: RecipeFormPr
   function handleMove() {
     moveRecipe.mutate(recipeId, {
       onSuccess: () => navigate("/recipes"),
-      onError: () => addToast(t("errors.recipeMove"), "error"),
+      onError: () => toast.error(t("errors.recipeMove")),
     });
   }
 
@@ -135,7 +134,7 @@ function RecipeForm({ recipe, recipeId, allIngredients, allUnits }: RecipeFormPr
     let undone = false;
 
     // Show undo toast on the list page
-    addToast(t("recipes.deleted", { title: recipe.title }), "success", {
+    toast.success(t("recipes.deleted", { title: recipe.title }), {
       duration: 5000,
       action: {
         label: t("common.undo"),
@@ -159,7 +158,7 @@ function RecipeForm({ recipe, recipeId, allIngredients, allUnits }: RecipeFormPr
         deleteRecipe.mutate(recipeId, {
           onError: () => {
             queryClient.setQueryData<InfiniteRecipes>(listQueryKey, previousRecipes);
-            addToast(t("errors.recipeDelete"), "error");
+            toast.error(t("errors.recipeDelete"));
           },
         });
       }
@@ -172,7 +171,7 @@ function RecipeForm({ recipe, recipeId, allIngredients, allUnits }: RecipeFormPr
     uploadImage.mutate(
       { id: recipeId, file },
       {
-        onError: () => addToast(t("recipeImage.uploadFailed"), "error"),
+        onError: () => toast.error(t("recipeImage.uploadFailed")),
       },
     );
     e.target.value = "";
@@ -185,13 +184,13 @@ function RecipeForm({ recipe, recipeId, allIngredients, allUnits }: RecipeFormPr
       return;
     }
     generateImage.mutate(recipeId, {
-      onError: () => addToast(t("recipeImage.generateFailed"), "error"),
+      onError: () => toast.error(t("recipeImage.generateFailed")),
     });
   }
 
   function handleDeleteImage() {
     deleteImage.mutate(recipeId, {
-      onError: () => addToast(t("common.error"), "error"),
+      onError: () => toast.error(t("common.error")),
     });
   }
 

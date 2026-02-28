@@ -6,7 +6,7 @@ import { ApiError } from "../api/client";
 import { TAG_CATEGORIES, type MealPlan } from "../api/types";
 import { useSetupPlan } from "../hooks/useMealPlan";
 import { useTags } from "../hooks/useTags";
-import { useToast } from "../hooks/useToast";
+import { toast } from "sonner";
 import ResponsiveOverlay from "./ui/ResponsiveOverlay";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -41,7 +41,6 @@ interface DrawerFormProps {
 
 function DrawerForm({ existingPlan, onClose }: DrawerFormProps) {
   const { t, i18n } = useTranslation();
-  const { addToast } = useToast();
   const setupPlan = useSetupPlan();
   const { data: groupedTags } = useTags();
 
@@ -111,7 +110,7 @@ function DrawerForm({ existingPlan, onClose }: DrawerFormProps) {
             "detail" in error.body
               ? String((error.body as { detail: unknown }).detail)
               : undefined;
-          addToast(detail || t("errors.planGenerate"), "error");
+          toast.error(detail || t("errors.planGenerate"));
         },
       },
     );

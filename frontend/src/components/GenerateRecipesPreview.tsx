@@ -8,7 +8,7 @@ import type {
   GenerateStreamEvent,
 } from "../api/types";
 import { streamGenerateRecipes, useBulkCreateRecipes } from "../hooks/useGenerateRecipes";
-import { useToast } from "../hooks/useToast";
+import { toast } from "sonner";
 import { Spinner } from "./ui/Spinner";
 import { Button } from "@/components/ui/button";
 
@@ -25,7 +25,6 @@ interface PreviewRecipe extends GeneratedRecipe {
 export function GenerateRecipesPreview({ config, onClose }: GenerateRecipesPreviewProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { addToast } = useToast();
   const bulkCreate = useBulkCreateRecipes();
 
   const [recipes, setRecipes] = useState<PreviewRecipe[]>([]);
@@ -116,10 +115,10 @@ export function GenerateRecipesPreview({ config, onClose }: GenerateRecipesPrevi
           image_base64: r.imageBase64,
         })),
       });
-      addToast(t("generateRecipes.saved", { count: selectedCount }), "success");
+      toast.success(t("generateRecipes.saved", { count: selectedCount }));
       navigate("/recipes");
     } catch {
-      addToast(t("errors.recipeSave"), "error");
+      toast.error(t("errors.recipeSave"));
     } finally {
       setSaving(false);
     }

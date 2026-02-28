@@ -29,13 +29,12 @@ import { extractApiDetail, mapPasswordError } from "../utils/passwordErrors";
 import { SettingsSkeleton } from "../components/ui/SettingsSkeleton";
 import { useAuth } from "../hooks/useAuth";
 import { useConfirm } from "../hooks/useConfirm";
-import { useToast } from "../hooks/useToast";
+import { toast } from "sonner";
 import { useTokens, useCreateToken, useDeleteToken } from "../hooks/useTokens";
 
 export default function SettingsPage() {
   const { t, i18n } = useTranslation();
   const { user, logout, refreshUser } = useAuth();
-  const { addToast } = useToast();
   const { confirm, dialogProps } = useConfirm();
   const navigate = useNavigate();
 
@@ -94,7 +93,7 @@ export default function SettingsPage() {
       });
       await refreshUser();
     } catch {
-      addToast(t("errors.settingsSave"), "error");
+      toast.error(t("errors.settingsSave"));
     }
   }
 
@@ -118,7 +117,7 @@ export default function SettingsPage() {
     } catch (err) {
       // Silence user cancellation (browser WebAuthn dialog dismissed)
       if (err instanceof DOMException && err.name === "NotAllowedError") return;
-      addToast(t("errors.passkeyAdd"), "error");
+      toast.error(t("errors.passkeyAdd"));
     } finally {
       setAddingPasskey(false);
     }
@@ -138,7 +137,7 @@ export default function SettingsPage() {
       await fetchPasskeys();
       await refreshUser();
     } catch {
-      addToast(t("errors.passkeyDelete"), "error");
+      toast.error(t("errors.passkeyDelete"));
     }
   }
 
@@ -233,9 +232,9 @@ export default function SettingsPage() {
       setNewTokenScopes([]);
       setNewTokenPreset("90d");
       setNewTokenCustomDate("");
-      addToast(t("tokens.tokenCreated"), "success");
+      toast.success(t("tokens.tokenCreated"));
     } catch {
-      addToast(t("errors.tokenCreate"), "error");
+      toast.error(t("errors.tokenCreate"));
     }
   }
 
@@ -251,7 +250,7 @@ export default function SettingsPage() {
     try {
       await deleteToken.mutateAsync(id);
     } catch {
-      addToast(t("errors.tokenDelete"), "error");
+      toast.error(t("errors.tokenDelete"));
     }
   }
 

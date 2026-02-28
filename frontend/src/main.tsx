@@ -2,7 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import AppProviders from './components/AppProviders'
-import { ToastProvider } from './contexts/ToastContext'
+import { Toaster } from './components/ui/sonner'
 import './i18n'
 import './index.css'
 import App from './App.tsx'
@@ -10,11 +10,10 @@ import App from './App.tsx'
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
-      <ToastProvider>
-        <AppProviders>
-          <App />
-        </AppProviders>
-      </ToastProvider>
+      <AppProviders>
+        <App />
+      </AppProviders>
+      <Toaster />
     </BrowserRouter>
   </StrictMode>,
 )
