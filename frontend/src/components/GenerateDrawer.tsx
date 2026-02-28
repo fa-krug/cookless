@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { cn } from "@/lib/utils";
 
 interface GenerateDrawerProps {
@@ -52,19 +53,6 @@ function DrawerForm({ existingPlan, onClose }: DrawerFormProps) {
   const shoppingDays = form.watch("shoppingDays");
   const knownRatio = form.watch("knownRatio");
   const excludedTagIds = form.watch("excludedTagIds");
-
-  function toggleShoppingDay(day: number) {
-    const prev = form.getValues("shoppingDays");
-    let next: number[];
-    if (prev.includes(day)) {
-      next = prev.filter((d) => d !== day);
-    } else if (prev.length < 2) {
-      next = [...prev, day];
-    } else {
-      return;
-    }
-    form.setValue("shoppingDays", next, { shouldValidate: true });
-  }
 
   function handleSubmit(values: GeneratePlanFormValues) {
     setupPlan.mutate(
@@ -103,19 +91,17 @@ function DrawerForm({ existingPlan, onClose }: DrawerFormProps) {
         <Label>
           {t("plan.iterationWeeks")}
         </Label>
-        <div className="flex gap-2">
+        <ToggleGroup
+          type="single"
+          value={String(iterationWeeks)}
+          onValueChange={(val) => val && form.setValue("iterationWeeks", Number(val))}
+        >
           {[1, 2, 3].map((w) => (
-            <Button
-              key={w}
-              type="button"
-              variant={iterationWeeks === w ? "default" : "secondary"}
-              size="sm"
-              onClick={() => form.setValue("iterationWeeks", w)}
-            >
+            <ToggleGroupItem key={w} value={String(w)} size="sm">
               {t("plan.weeks", { count: w })}
-            </Button>
+            </ToggleGroupItem>
           ))}
-        </div>
+        </ToggleGroup>
       </div>
 
       {/* Shopping days */}
@@ -123,20 +109,21 @@ function DrawerForm({ existingPlan, onClose }: DrawerFormProps) {
         <Label>
           {t("plan.shoppingDays")}
         </Label>
-        <div className="flex gap-1">
+        <ToggleGroup
+          type="multiple"
+          value={shoppingDays.map(String)}
+          onValueChange={(vals) => {
+            if (vals.length > 2) return;
+            form.setValue("shoppingDays", vals.map(Number), { shouldValidate: true });
+          }}
+          className="flex gap-1"
+        >
           {weekdays.map((day, idx) => (
-            <Button
-              key={idx}
-              type="button"
-              variant={shoppingDays.includes(idx) ? "default" : "secondary"}
-              size="sm"
-              className="flex-1 px-1"
-              onClick={() => toggleShoppingDay(idx)}
-            >
+            <ToggleGroupItem key={idx} value={String(idx)} size="sm" className="flex-1 px-1">
               {day}
-            </Button>
+            </ToggleGroupItem>
           ))}
-        </div>
+        </ToggleGroup>
         {shoppingDayError && (
           <p className="mt-1 text-xs text-red-500">
             {shoppingDayError.message === "shopping_days_required"

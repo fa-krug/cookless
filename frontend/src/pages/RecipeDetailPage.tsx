@@ -2,7 +2,7 @@ import type { InfiniteData } from "@tanstack/react-query";
 import { useQueryClient } from "@tanstack/react-query";
 import { ArrowLeftRight, ArrowLeft, ChefHat, Save, SlidersHorizontal, Sparkles, Trash2, Upload, UtensilsCrossed } from "lucide-react";
 import { Spinner } from "../components/ui/Spinner";
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
 import {
@@ -18,7 +18,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import IngredientForm from "../components/IngredientForm";
 import StepEditor from "../components/StepEditor";
-import TagFilterDrawer from "../components/TagFilterDrawer";
+import TagFilterPopover from "../components/TagFilterDrawer";
 import { RecipeDetailSkeleton } from "../components/ui/RecipeDetailSkeleton";
 import { useIngredients } from "../hooks/useIngredients";
 import { queryKeys } from "../hooks/queryKeys";
@@ -85,7 +85,6 @@ function RecipeForm({ recipe, recipeId, allIngredients, allUnits }: RecipeFormPr
   const household = user?.active_household;
   const imageInProgress = uploadImage.isPending || generateImage.isPending;
   const { data: groupedTags } = useTags();
-  const [showFilterDrawer, setShowFilterDrawer] = useState(false);
 
   const { form, ingredientFields, manualStepFields, machineStepFields, buildPayload } =
     useRecipeForm({ recipe, allIngredients });
@@ -356,20 +355,23 @@ function RecipeForm({ recipe, recipeId, allIngredients, allUnits }: RecipeFormPr
 
         {/* Tags */}
         <div>
-          <Button
-            variant="outline"
-            size="sm"
-            type="button"
-            onClick={() => setShowFilterDrawer(true)}
-          >
-            <SlidersHorizontal size={14} />
-            {t("tags.filter")}
-            {tagIds.length > 0 && (
-              <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-orange-500 px-1 text-[10px] font-semibold text-white">
-                {tagIds.length}
-              </span>
-            )}
-          </Button>
+          {groupedTags && (
+            <TagFilterPopover
+              groupedTags={groupedTags}
+              selectedTags={tagIds}
+              onChange={(ids) => form.setValue("tagIds", ids)}
+            >
+              <Button variant="outline" size="sm" type="button">
+                <SlidersHorizontal size={14} />
+                {t("tags.filter")}
+                {tagIds.length > 0 && (
+                  <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-orange-500 px-1 text-[10px] font-semibold text-white">
+                    {tagIds.length}
+                  </span>
+                )}
+              </Button>
+            </TagFilterPopover>
+          )}
         </div>
 
         {/* Action buttons */}
@@ -421,15 +423,6 @@ function RecipeForm({ recipe, recipeId, allIngredients, allUnits }: RecipeFormPr
         </div>
       </form>
 
-      {groupedTags && (
-        <TagFilterDrawer
-          open={showFilterDrawer}
-          onClose={() => setShowFilterDrawer(false)}
-          groupedTags={groupedTags}
-          selectedTags={tagIds}
-          onChange={(ids) => form.setValue("tagIds", ids)}
-        />
-      )}
     </div>
   );
 }

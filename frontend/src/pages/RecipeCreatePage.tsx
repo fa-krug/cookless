@@ -1,6 +1,5 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Save, SlidersHorizontal } from "lucide-react";
-import { useState } from "react";
 import { Spinner } from "../components/ui/Spinner";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -12,7 +11,7 @@ import { IconButton } from "@/components/ui/IconButton";
 import { Label } from "@/components/ui/label";
 import IngredientForm from "../components/IngredientForm";
 import StepEditor from "../components/StepEditor";
-import TagFilterDrawer from "../components/TagFilterDrawer";
+import TagFilterPopover from "../components/TagFilterDrawer";
 import { useIngredients } from "../hooks/useIngredients";
 import { queryKeys } from "../hooks/queryKeys";
 import { useCreateRecipe } from "../hooks/useRecipes";
@@ -33,7 +32,6 @@ export default function RecipeCreatePage() {
   const { data: allUnits = [] } = useUnits();
   const { data: groupedTags } = useTags();
   const createRecipe = useCreateRecipe();
-  const [showFilterDrawer, setShowFilterDrawer] = useState(false);
 
   const { form, ingredientFields, manualStepFields, machineStepFields, buildPayload } =
     useRecipeForm({ listType });
@@ -142,15 +140,23 @@ export default function RecipeCreatePage() {
 
         {/* Tags */}
         <div>
-          <Button type="button" variant="outline" size="sm" onClick={() => setShowFilterDrawer(true)}>
-            <SlidersHorizontal size={14} />
-            {t("tags.filter")}
-            {tagIds.length > 0 && (
-              <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-orange-500 px-1 text-[10px] font-semibold text-white">
-                {tagIds.length}
-              </span>
-            )}
-          </Button>
+          {groupedTags && (
+            <TagFilterPopover
+              groupedTags={groupedTags}
+              selectedTags={tagIds}
+              onChange={(ids) => form.setValue("tagIds", ids)}
+            >
+              <Button type="button" variant="outline" size="sm">
+                <SlidersHorizontal size={14} />
+                {t("tags.filter")}
+                {tagIds.length > 0 && (
+                  <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-orange-500 px-1 text-[10px] font-semibold text-white">
+                    {tagIds.length}
+                  </span>
+                )}
+              </Button>
+            </TagFilterPopover>
+          )}
         </div>
 
         {/* Save button */}
@@ -160,15 +166,6 @@ export default function RecipeCreatePage() {
         </Button>
       </form>
 
-      {groupedTags && (
-        <TagFilterDrawer
-          open={showFilterDrawer}
-          onClose={() => setShowFilterDrawer(false)}
-          groupedTags={groupedTags}
-          selectedTags={tagIds}
-          onChange={(ids) => form.setValue("tagIds", ids)}
-        />
-      )}
     </div>
   );
 }

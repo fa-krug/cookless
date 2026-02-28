@@ -7,7 +7,7 @@ import { type GenerateRecipesPayload, type ListType, type RecipeSummary } from "
 import GenerateRecipesDrawer from "../components/GenerateRecipesDrawer";
 import { GenerateRecipesPreview } from "../components/GenerateRecipesPreview";
 import RecipeCard from "../components/RecipeCard";
-import TagFilterDrawer from "../components/TagFilterDrawer";
+import TagFilterPopover from "../components/TagFilterDrawer";
 import { EmptyState } from "../components/ui/EmptyState";
 import { RecipeListSkeleton } from "../components/ui/RecipeListSkeleton";
 import { Button } from "@/components/ui/button";
@@ -72,7 +72,6 @@ export default function RecipeListPage() {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [pendingDeletes, setPendingDeletes] = useState<Set<string>>(new Set());
   const [showGenerateDrawer, setShowGenerateDrawer] = useState(false);
-  const [showFilterDrawer, setShowFilterDrawer] = useState(false);
   const [generateConfig, setGenerateConfig] = useState<GenerateRecipesPayload | null>(null);
   const timersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
   const loadMoreRef = useRef<HTMLDivElement>(null);
@@ -275,19 +274,23 @@ export default function RecipeListPage() {
             ))}
           </SelectContent>
         </Select>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setShowFilterDrawer(true)}
-        >
-          <SlidersHorizontal size={14} />
-          {t("tags.filter")}
-          {selectedTags.length > 0 && (
-            <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-semibold text-primary-foreground">
-              {selectedTags.length}
-            </span>
-          )}
-        </Button>
+        {groupedTags && (
+          <TagFilterPopover
+            groupedTags={groupedTags}
+            selectedTags={selectedTags}
+            onChange={setSelectedTags}
+          >
+            <Button variant="outline" size="sm">
+              <SlidersHorizontal size={14} />
+              {t("tags.filter")}
+              {selectedTags.length > 0 && (
+                <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-semibold text-primary-foreground">
+                  {selectedTags.length}
+                </span>
+              )}
+            </Button>
+          </TagFilterPopover>
+        )}
       </div>
 
       {/* Recipe list */}
@@ -326,16 +329,6 @@ export default function RecipeListPage() {
           </div>
         )}
       </div>
-
-      {groupedTags && (
-        <TagFilterDrawer
-          open={showFilterDrawer}
-          onClose={() => setShowFilterDrawer(false)}
-          groupedTags={groupedTags}
-          selectedTags={selectedTags}
-          onChange={setSelectedTags}
-        />
-      )}
 
       <GenerateRecipesDrawer
         isOpen={showGenerateDrawer}
