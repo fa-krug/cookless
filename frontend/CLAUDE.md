@@ -21,10 +21,11 @@ For watch mode tests: `npx vitest` (no npm script defined).
 - **React Router DOM v7** -- client routing
 - **react-i18next** -- i18n (en/de)
 - **@dnd-kit** (core + sortable + utilities) -- drag-and-drop for cooking steps
+- **react-hook-form** + **@hookform/resolvers** + **zod** -- form state, validation schemas
 - **sonner** -- toast notifications
 - **lucide-react** -- icon library
-- **shadcn/ui** -- UI primitives (Dialog, AlertDialog, Drawer/vaul, Sheet, Button, Input, etc.)
-- **@radix-ui** -- headless primitives (Dialog, AlertDialog, Select, Checkbox, Label, Slot)
+- **shadcn/ui** -- UI primitives (Dialog, AlertDialog, Drawer/vaul, Button, Input, Form, Select, Tabs, etc.)
+- **@radix-ui** -- headless primitives (Dialog, AlertDialog, Select, Checkbox, Label, Slot, Toggle, Popover, Tooltip)
 - **vaul** -- swipe-to-close Drawer component
 - **vite-plugin-pwa** + **Workbox** -- PWA with custom service worker
 - **@tailwindcss/vite** -- Tailwind CSS 4 Vite plugin (no tailwind.config.js)
@@ -42,16 +43,29 @@ src/
       dialog.tsx        # shadcn Dialog (Radix)
       alert-dialog.tsx  # shadcn AlertDialog (Radix)
       vaul-drawer.tsx   # shadcn Drawer (vaul) -- swipe-to-close
-      sheet.tsx          # shadcn Sheet (Radix)
       Modal.tsx         # app wrapper around shadcn Dialog, sizes sm/md/lg
       Drawer.tsx        # app wrapper around vaul Drawer, bottom sheet
       ResponsiveOverlay # Modal (>=640px) or Drawer (<640px)
       ConfirmDialog.tsx # app wrapper around AlertDialog, typed confirmation, input fields
-      Skeleton.tsx      # base pulse skeleton
-      *Skeleton.tsx     # per-page skeletons (RecipeList, RecipeDetail, MealPlan, ShoppingList, Settings)
+      IconButton.tsx    # Button with integrated Tooltip
+      skeleton.tsx      # base pulse skeleton
+      *Skeleton.tsx     # per-page skeletons (RecipeList, RecipeCard, RecipeDetail, MealPlan, ShoppingList, Settings)
       EmptyState.tsx    # icon + title + subtitle + action (Link or button)
+      Spinner.tsx       # animated loading spinner
       sonner.tsx        # shadcn themed Sonner toast wrapper
-      SortSelect.tsx    # controlled <select>
+      form.tsx          # shadcn Form (react-hook-form + zod integration)
+      select.tsx        # shadcn Select (Radix)
+      tabs.tsx          # shadcn Tabs (Radix)
+      toggle.tsx        # shadcn Toggle / toggle-group (Radix)
+      badge.tsx         # shadcn Badge
+      card.tsx          # shadcn Card
+      popover.tsx       # shadcn Popover (Radix)
+      dropdown-menu.tsx # shadcn DropdownMenu (Radix)
+      avatar.tsx        # shadcn Avatar (Radix)
+      collapsible.tsx   # shadcn Collapsible (Radix)
+      tooltip.tsx       # shadcn Tooltip (Radix)
+      textarea.tsx      # shadcn Textarea
+      scroll-area.tsx   # shadcn ScrollArea (Radix)
       useMediaQuery.ts  # SSR-safe media query hook
     AppLogo.tsx         # "Cookless" branding
     AppProviders.tsx    # QueryClient + AuthProvider setup
@@ -63,25 +77,41 @@ src/
     IngredientForm.tsx  # editable ingredient list with autocomplete
     StepEditor.tsx      # drag-reorderable cooking steps (@dnd-kit)
     SortableStep.tsx    # single draggable step (useSortable)
+    ProgramStepDisplay  # cooking step machine program display
+    ProgramStepForm.tsx # machine program step editor
     GenerateDrawer.tsx  # meal plan config form in Drawer
+    GenerateRecipesDrawer # AI recipe generation form
+    GenerateRecipesPreview # preview/select generated recipes
+    TagFilterDrawer.tsx # tag filter popover
     IterationCard.tsx   # meal plan iteration display
     ShoppingCategory.tsx # shopping items grouped by category
+    theme-provider.tsx  # dark/light/system theme provider
   contexts/
     AuthContext.tsx      # AuthProvider + useAuth hook
     authContextValue.ts  # AuthContextValue interface
   hooks/
+    queryKeys.ts        # centralized React Query key constants
     useAuth.ts          # re-exports from AuthContext
     useRecipes.ts       # useRecipes, useRecipe, useCreateRecipe, useUpdateRecipe, useMoveRecipe, useDeleteRecipe
-    useRecipeImage.ts    # useUploadRecipeImage, useGenerateRecipeImage, useDeleteRecipeImage
+    useRecipeForm.ts    # recipe create/edit form logic
+    useRecipeImage.ts   # useUploadRecipeImage, useGenerateRecipeImage, useDeleteRecipeImage
     useIngredients.ts   # useIngredients (staleTime 5min), createIngredient (standalone async fn)
     useUnits.ts         # useUnits (staleTime Infinity)
+    useTags.ts          # tag queries
+    useTokens.ts        # API access token management
     useMealPlan.ts      # useMealPlans, useMealPlan, useSetupPlan, useRenewIteration, useNextIteration
+    useGenerateRecipes.ts # AI recipe generation mutations
     useShoppingList.ts  # useShoppingLists, useShoppingList, useToggleItem, useBulkToggle
     useHousehold.ts     # useHouseholds, useCreateHousehold, useSwitchHousehold, useUpdateHousehold, useDeleteHousehold, useLeaveHousehold, useCreateInvite, useAcceptInvite, useRemoveMember, useTransferOwnership
     useConfirm.ts       # imperative confirm dialog: confirm(options) -> Promise<string|boolean>
+    useCookingProgress.ts # cooking step progress tracking
     useInstallPrompt.ts # PWA beforeinstallprompt listener
     useOnlineSync.ts    # replays offline toggles on reconnect via SW messaging
     useWakeLock.ts      # Screen Wake Lock API (CookingViewPage)
+    useTheme.ts         # dark/light/system theme mode hook
+    useSidebarCollapsed.ts # sidebar collapse state (localStorage)
+    useDropUp.ts        # dropdown direction detection
+    useCloseDetailsOnClickOutside.ts # close <details> on outside click
   i18n/
     index.ts            # i18next setup (detection: localStorage -> navigator)
     en.json             # English translations
@@ -100,6 +130,9 @@ src/
     CookingViewPage.tsx
     SettingsPage.tsx
     HouseholdPage.tsx
+  lib/
+    utils.ts            # cn() class-name merge helper (clsx + tailwind-merge)
+    schemas/            # Zod validation schemas (login, password, household, recipe, generate-plan, generate-recipes, settings)
   sw.ts                 # custom Workbox service worker
   index.css             # Tailwind 4 imports + custom animations
   setupTests.ts         # @testing-library/jest-dom import
@@ -239,8 +272,6 @@ Built on shadcn/ui primitives (Radix Dialog + vaul Drawer). Focus trapping, esca
 - **Modal:** Wraps shadcn Dialog. `size` prop (sm/md/lg). Built-in X close button via DialogContent.
 - **Drawer:** Wraps vaul Drawer. Bottom sheet with drag handle and native swipe-to-close. `maxHeight` prop (default 85vh). Close text button.
 - **ResponsiveOverlay:** Renders Modal on desktop (>=640px), Drawer on mobile. Based on `useMediaQuery`.
-- **Sheet:** shadcn Sheet available for side panels (top/bottom/left/right). Not yet used by app components.
-
 ### ConfirmDialog
 Wraps shadcn AlertDialog. Props: `open`, `title`, `message`, `confirmVariant` (danger/primary), `requireTypedConfirmation` (must type exact string), `inputField` (text/password). Used via `useConfirm()` hook which returns `{ confirm(options): Promise<string|boolean>, dialogProps }`.
 
@@ -283,13 +314,14 @@ Configured via `@tailwindcss/vite` plugin (no config file). Custom theme in `ind
 
 ```css
 @import "tailwindcss";
+@import "tw-animate-css";
 
 @theme {
-  --animate-slide-down: slide-down 0.3s ease-out;
+  --animate-highlight: highlight-fade 2s ease-out;
 }
 ```
 
-Base layer: prevents iOS text zoom (`font-size: 16px` on inputs), cursor pointer on buttons. Brand accent: orange-500 (`#f97316`). No `@apply` -- utilities only.
+Base layer: prevents iOS text zoom (`font-size: 16px` on inputs), cursor pointer on buttons. Brand accent: orange-500 (`#f97316`). Shadcn semantic color tokens via CSS variables (oklch). Light + dark themes with `tw-animate-css` for transition animations.
 
 ## Testing
 
@@ -337,4 +369,4 @@ vi.mock("../api/client", () => ({
 
 **Skeleton tests:** Verify `data-testid` appears while queries are pending (mock never resolves).
 
-**Test files:** Located in `src/__tests__/` -- cover pages (RecipeListPage, sorting, undo, skeleton), UI components (ConfirmDialog, Drawer, EmptyState, InstallBanner, Modal, StepEditor), and hooks (useConfirm, useInstallPrompt).
+**Test files:** Located in `src/__tests__/` -- cover pages (RecipeListPage, sorting, undo, skeleton, MealPlan skeleton, RecipeDetail skeleton, ShoppingList skeleton), UI components (BottomNav, ConfirmDialog, Drawer, EmptyState, IconButton, InstallBanner, Layout, Modal, Spinner, StepEditor), hooks (useConfirm, useCookingProgress, useInstallPrompt, useTheme), and utilities (formatDuration).

@@ -43,9 +43,8 @@
   --radius-xl: calc(var(--radius) + 4px);
 }
 
-/* Custom animations (existing) */
+/* Custom animations */
 @theme {
-  --animate-slide-down: slide-down 0.3s ease-out;
   --animate-highlight: highlight-fade 2s ease-out;
 }
 
@@ -124,17 +123,6 @@
 
 html.dark {
   color-scheme: dark;
-}
-
-@keyframes slide-down {
-  from {
-    opacity: 0;
-    transform: translateY(-1rem);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
 }
 
 @keyframes highlight-fade {
