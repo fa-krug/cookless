@@ -19,6 +19,14 @@ import ResponsiveOverlay from "../components/ui/ResponsiveOverlay";
 import { Spinner } from "../components/ui/Spinner";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  householdNameSchema,
+  joinHouseholdSchema,
+  type HouseholdNameFormValues,
+  type JoinHouseholdFormValues,
+} from "@/lib/schemas/household";
 import { api } from "../api/client";
 import { TAG_CATEGORIES, type Household, type Invite, type TagCategory } from "../api/types";
 import { ConfirmDialog } from "../components/ui/ConfirmDialog";
@@ -220,14 +228,16 @@ function JoinHouseholdSection() {
   const { t } = useTranslation();
   const acceptInvite = useAcceptInvite();
   const { refreshUser } = useAuth();
-  const [code, setCode] = useState("");
 
-  function handleJoin(e: React.FormEvent) {
-    e.preventDefault();
-    if (!code.trim()) return;
-    acceptInvite.mutate(code.trim(), {
+  const form = useForm<JoinHouseholdFormValues>({
+    resolver: zodResolver(joinHouseholdSchema),
+    defaultValues: { code: "" },
+  });
+
+  function handleJoin(values: JoinHouseholdFormValues) {
+    acceptInvite.mutate(values.code.trim(), {
       onSuccess: async () => {
-        setCode("");
+        form.reset();
         await refreshUser();
         toast.success(t("success.householdJoined"));
       },
@@ -235,14 +245,15 @@ function JoinHouseholdSection() {
     });
   }
 
+  const code = form.watch("code");
+
   return (
     <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
       <h2 className="mb-3 text-lg font-semibold text-gray-900">{t("household.joinHousehold")}</h2>
-      <form onSubmit={handleJoin} className="flex gap-2">
+      <form onSubmit={form.handleSubmit(handleJoin)} className="flex gap-2">
         <Input
           type="text"
-          value={code}
-          onChange={(e) => setCode(e.target.value)}
+          {...form.register("code")}
           placeholder={t("household.inviteCodePlaceholder")}
           className="flex-1"
         />
@@ -262,30 +273,33 @@ function CreateHouseholdSection() {
   const { t } = useTranslation();
   const createHousehold = useCreateHousehold();
   const { refreshUser } = useAuth();
-  const [name, setName] = useState("");
 
-  function handleCreate(e: React.FormEvent) {
-    e.preventDefault();
-    if (!name.trim()) return;
-    createHousehold.mutate(name.trim(), {
+  const form = useForm<HouseholdNameFormValues>({
+    resolver: zodResolver(householdNameSchema),
+    defaultValues: { name: "" },
+  });
+
+  function handleCreate(values: HouseholdNameFormValues) {
+    createHousehold.mutate(values.name.trim(), {
       onSuccess: async () => {
-        setName("");
+        form.reset();
         await refreshUser();
       },
       onError: () => toast.error(t("errors.householdCreate")),
     });
   }
 
+  const name = form.watch("name");
+
   return (
     <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
       <h2 className="mb-3 text-lg font-semibold text-gray-900">
         {t("household.createHousehold")}
       </h2>
-      <form onSubmit={handleCreate} className="flex gap-2">
+      <form onSubmit={form.handleSubmit(handleCreate)} className="flex gap-2">
         <Input
           type="text"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
+          {...form.register("name")}
           placeholder={t("household.householdName")}
           className="flex-1"
         />
@@ -313,7 +327,11 @@ export default function HouseholdPage() {
 
   const [switchDrawerOpen, setSwitchDrawerOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [editName, setEditName] = useState("");
+  const editForm = useForm<HouseholdNameFormValues>({
+    resolver: zodResolver(householdNameSchema),
+    defaultValues: { name: "" },
+  });
+  const editName = editForm.watch("name");
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteConfirmName, setDeleteConfirmName] = useState("");
 
@@ -451,11 +469,9 @@ export default function HouseholdPage() {
           </h2>
           {isEditing ? (
             <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                if (!editName.trim()) return;
+              onSubmit={editForm.handleSubmit((values) => {
                 updateHousehold.mutate(
-                  { id: activeHousehold.id, name: editName.trim() },
+                  { id: activeHousehold.id, name: values.name.trim() },
                   {
                     onSuccess: async () => {
                       setIsEditing(false);
@@ -464,13 +480,12 @@ export default function HouseholdPage() {
                     onError: () => toast.error(t("errors.householdUpdate")),
                   },
                 );
-              }}
+              })}
               className="space-y-2"
             >
               <Input
                 type="text"
-                value={editName}
-                onChange={(e) => setEditName(e.target.value)}
+                {...editForm.register("name")}
                 autoFocus
               />
               <div className="flex gap-2">
@@ -501,7 +516,7 @@ export default function HouseholdPage() {
                 <IconButton
                   variant="ghost"
                   onClick={() => {
-                    setEditName(activeHousehold.name);
+                    editForm.setValue("name", activeHousehold.name);
                     setIsEditing(true);
                   }}
                   className="h-7 w-7 text-gray-400 hover:bg-gray-100 hover:text-gray-600"

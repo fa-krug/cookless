@@ -1,13 +1,25 @@
 import { useState } from "react";
 import { Navigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { changePasswordSchema, type ChangePasswordFormValues } from "@/lib/schemas/password";
+import { householdNameSchema, type HouseholdNameFormValues } from "@/lib/schemas/household";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+} from "@/components/ui/form";
 import { useAuth } from "../hooks/useAuth";
 import { api } from "../api/client";
 import { addPasskey } from "../api/webauthn";
 import { KeyRound, Home, Lock, Check } from "lucide-react";
+import { extractApiDetail, mapPasswordError } from "../utils/passwordErrors";
 
 const STEPS = ["CHANGE_PASSWORD", "ADD_PASSKEY", "CREATE_HOUSEHOLD"] as const;
 
@@ -52,99 +64,96 @@ function StepIndicator({ currentStep }: { currentStep: string }) {
   );
 }
 
-import { extractApiDetail, mapPasswordError } from "../utils/passwordErrors";
-
 function ChangePasswordStep({ onComplete }: { onComplete: () => void }) {
   const { t } = useTranslation();
   const { user } = useAuth();
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [error, setError] = useState("");
-  const [submitting, setSubmitting] = useState(false);
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setError("");
+  const form = useForm<ChangePasswordFormValues>({
+    resolver: zodResolver(changePasswordSchema),
+    defaultValues: { currentPassword: "", newPassword: "", confirmPassword: "" },
+  });
 
-    if (newPassword !== confirmPassword) {
-      setError(t("setup.changePassword.mismatch"));
-      return;
-    }
-
-    setSubmitting(true);
+  async function handleSubmit(values: ChangePasswordFormValues) {
     try {
       await api.post("/api/v1/users/me/password/", {
-        current_password: currentPassword,
-        new_password: newPassword,
+        current_password: values.currentPassword,
+        new_password: values.newPassword,
       });
       onComplete();
     } catch (err: unknown) {
-      setError(mapPasswordError(extractApiDetail(err), t));
-    } finally {
-      setSubmitting(false);
+      form.setError("root", { message: mapPasswordError(extractApiDetail(err), t) });
     }
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
-        <h2 className="text-xl font-semibold text-gray-900">
-          {t("setup.changePassword.title")}
-        </h2>
-        <p className="mt-1 text-sm text-gray-500">
-          {t("setup.changePassword.description")}
-        </p>
-      </div>
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+        <div>
+          <h2 className="text-xl font-semibold text-gray-900">
+            {t("setup.changePassword.title")}
+          </h2>
+          <p className="mt-1 text-sm text-gray-500">
+            {t("setup.changePassword.description")}
+          </p>
+        </div>
 
-      <div className="text-sm text-gray-500">{user?.email}</div>
+        <div className="text-sm text-gray-500">{user?.email}</div>
 
-      <div>
-        <Label>
-          {t("setup.changePassword.currentPassword")}
-        </Label>
-        <Input
-          type="password"
-          value={currentPassword}
-          onChange={(e) => setCurrentPassword(e.target.value)}
-          required
+        <FormField
+          control={form.control}
+          name="currentPassword"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{t("setup.changePassword.currentPassword")}</FormLabel>
+              <FormControl>
+                <Input type="password" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
         />
-      </div>
 
-      <div>
-        <Label>
-          {t("setup.changePassword.newPassword")}
-        </Label>
-        <Input
-          type="password"
-          value={newPassword}
-          onChange={(e) => setNewPassword(e.target.value)}
-          required
+        <FormField
+          control={form.control}
+          name="newPassword"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{t("setup.changePassword.newPassword")}</FormLabel>
+              <FormControl>
+                <Input type="password" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
         />
-      </div>
 
-      <div>
-        <Label>
-          {t("setup.changePassword.confirmPassword")}
-        </Label>
-        <Input
-          type="password"
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-          required
+        <FormField
+          control={form.control}
+          name="confirmPassword"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{t("setup.changePassword.confirmPassword")}</FormLabel>
+              <FormControl>
+                <Input type="password" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
         />
-      </div>
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
+        {form.formState.errors.root && (
+          <p className="text-sm text-red-600">{form.formState.errors.root.message}</p>
+        )}
 
-      <Button
-        type="submit"
-        className="w-full"
-        disabled={submitting}
-      >
-        {submitting ? t("common.loading") : t("setup.changePassword.submit")}
-      </Button>
-    </form>
+        <Button
+          type="submit"
+          className="w-full"
+          disabled={form.formState.isSubmitting}
+        >
+          {form.formState.isSubmitting ? t("common.loading") : t("setup.changePassword.submit")}
+        </Button>
+      </form>
+    </Form>
   );
 }
 
@@ -219,58 +228,64 @@ function AddPasskeyStep({ onComplete }: { onComplete: () => void }) {
 
 function CreateHouseholdStep({ onComplete }: { onComplete: () => void }) {
   const { t } = useTranslation();
-  const [name, setName] = useState("");
-  const [error, setError] = useState("");
-  const [submitting, setSubmitting] = useState(false);
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setSubmitting(true);
-    setError("");
+  const form = useForm<HouseholdNameFormValues>({
+    resolver: zodResolver(householdNameSchema),
+    defaultValues: { name: "" },
+  });
+
+  async function handleSubmit(values: HouseholdNameFormValues) {
     try {
-      await api.post("/api/v1/households/", { name });
+      await api.post("/api/v1/households/", { name: values.name });
       onComplete();
     } catch {
-      setError(t("errors.householdCreate"));
-    } finally {
-      setSubmitting(false);
+      form.setError("root", { message: t("errors.householdCreate") });
     }
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
-        <h2 className="text-xl font-semibold text-gray-900">
-          {t("setup.createHousehold.title")}
-        </h2>
-        <p className="mt-1 text-sm text-gray-500">
-          {t("setup.createHousehold.description")}
-        </p>
-      </div>
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+        <div>
+          <h2 className="text-xl font-semibold text-gray-900">
+            {t("setup.createHousehold.title")}
+          </h2>
+          <p className="mt-1 text-sm text-gray-500">
+            {t("setup.createHousehold.description")}
+          </p>
+        </div>
 
-      <div>
-        <Label>
-          {t("setup.createHousehold.name")}
-        </Label>
-        <Input
-          type="text"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder={t("setup.createHousehold.namePlaceholder")}
-          required
+        <FormField
+          control={form.control}
+          name="name"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{t("setup.createHousehold.name")}</FormLabel>
+              <FormControl>
+                <Input
+                  type="text"
+                  placeholder={t("setup.createHousehold.namePlaceholder")}
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
         />
-      </div>
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
+        {form.formState.errors.root && (
+          <p className="text-sm text-red-600">{form.formState.errors.root.message}</p>
+        )}
 
-      <Button
-        type="submit"
-        className="w-full"
-        disabled={submitting || !name.trim()}
-      >
-        {submitting ? t("common.loading") : t("setup.createHousehold.submit")}
-      </Button>
-    </form>
+        <Button
+          type="submit"
+          className="w-full"
+          disabled={form.formState.isSubmitting}
+        >
+          {form.formState.isSubmitting ? t("common.loading") : t("setup.createHousehold.submit")}
+        </Button>
+      </form>
+    </Form>
   );
 }
 
