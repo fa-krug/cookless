@@ -22,6 +22,9 @@ For watch mode tests: `npx vitest` (no npm script defined).
 - **react-i18next** -- i18n (en/de)
 - **@dnd-kit** (core + sortable + utilities) -- drag-and-drop for cooking steps
 - **lucide-react** -- icon library
+- **shadcn/ui** -- UI primitives (Dialog, AlertDialog, Drawer/vaul, Sheet, Button, Input, etc.)
+- **@radix-ui** -- headless primitives (Dialog, AlertDialog, Select, Checkbox, Label, Slot)
+- **vaul** -- swipe-to-close Drawer component
 - **vite-plugin-pwa** + **Workbox** -- PWA with custom service worker
 - **@tailwindcss/vite** -- Tailwind CSS 4 Vite plugin (no tailwind.config.js)
 
@@ -34,11 +37,15 @@ src/
     types.ts            # all TypeScript types (mirrors backend schemas)
     webauthn.ts         # WebAuthn browser API helpers
   components/
-    ui/                 # shared headless primitives
-      Modal.tsx         # native <dialog>, sizes sm/md/lg
-      Drawer.tsx        # native <dialog>, bottom sheet, drag handle
+    ui/                 # shared UI primitives (shadcn/ui + app wrappers)
+      dialog.tsx        # shadcn Dialog (Radix)
+      alert-dialog.tsx  # shadcn AlertDialog (Radix)
+      vaul-drawer.tsx   # shadcn Drawer (vaul) -- swipe-to-close
+      sheet.tsx          # shadcn Sheet (Radix)
+      Modal.tsx         # app wrapper around shadcn Dialog, sizes sm/md/lg
+      Drawer.tsx        # app wrapper around vaul Drawer, bottom sheet
       ResponsiveOverlay # Modal (>=640px) or Drawer (<640px)
-      ConfirmDialog.tsx # typed confirmation, password input, danger variant
+      ConfirmDialog.tsx # app wrapper around AlertDialog, typed confirmation, input fields
       Skeleton.tsx      # base pulse skeleton
       *Skeleton.tsx     # per-page skeletons (RecipeList, RecipeDetail, MealPlan, ShoppingList, Settings)
       EmptyState.tsx    # icon + title + subtitle + action (Link or button)
@@ -234,13 +241,14 @@ Strategy: `injectManifest` (custom SW with Workbox manifest injection).
 ## UI Component Patterns
 
 ### Modal / Drawer / ResponsiveOverlay
-All use native `<dialog>` with `showModal()`. Backdrop click closes. Focus restored on close.
-- **Modal:** `size` prop (sm/md/lg). X button in header.
-- **Drawer:** Bottom sheet with drag handle. `maxHeight` prop (default 85vh). Close text button.
+Built on shadcn/ui primitives (Radix Dialog + vaul Drawer). Focus trapping, escape-to-close, and backdrop handled by Radix.
+- **Modal:** Wraps shadcn Dialog. `size` prop (sm/md/lg). Built-in X close button via DialogContent.
+- **Drawer:** Wraps vaul Drawer. Bottom sheet with drag handle and native swipe-to-close. `maxHeight` prop (default 85vh). Close text button.
 - **ResponsiveOverlay:** Renders Modal on desktop (>=640px), Drawer on mobile. Based on `useMediaQuery`.
+- **Sheet:** shadcn Sheet available for side panels (top/bottom/left/right). Not yet used by app components.
 
 ### ConfirmDialog
-Props: `open`, `title`, `message`, `confirmVariant` (danger/primary), `requireTypedConfirmation` (must type exact string), `inputField` (text/password). Used via `useConfirm()` hook which returns `{ confirm(options): Promise<string|boolean>, dialogProps }`.
+Wraps shadcn AlertDialog. Props: `open`, `title`, `message`, `confirmVariant` (danger/primary), `requireTypedConfirmation` (must type exact string), `inputField` (text/password). Used via `useConfirm()` hook which returns `{ confirm(options): Promise<string|boolean>, dialogProps }`.
 
 ### Skeleton loading
 Each major page has a dedicated skeleton component (`RecipeListSkeleton`, `RecipeDetailSkeleton`, etc.) with `data-testid` for testing. Base `Skeleton` is `animate-pulse rounded bg-gray-200`.

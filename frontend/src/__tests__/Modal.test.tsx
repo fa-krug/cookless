@@ -1,16 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { beforeAll, describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import Modal from "../components/ui/Modal";
-
-beforeAll(() => {
-  HTMLDialogElement.prototype.showModal = vi.fn(function (this: HTMLDialogElement) {
-    this.setAttribute("open", "");
-  });
-  HTMLDialogElement.prototype.close = vi.fn(function (this: HTMLDialogElement) {
-    this.removeAttribute("open");
-  });
-});
 
 describe("Modal", () => {
   it("renders title and children when open", () => {
@@ -23,63 +14,45 @@ describe("Modal", () => {
     expect(screen.getByText("Content")).toBeInTheDocument();
   });
 
-  it("calls showModal when open becomes true", () => {
+  it("renders dialog role when open", () => {
     render(
       <Modal open onClose={() => {}} title="Test">
         <p>Content</p>
       </Modal>,
     );
-    expect(HTMLDialogElement.prototype.showModal).toHaveBeenCalled();
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
   });
 
-  it("calls close when open becomes false", () => {
-    const { rerender } = render(
-      <Modal open onClose={() => {}} title="Test">
-        <p>Content</p>
-      </Modal>,
-    );
-    rerender(
+  it("does not render dialog when closed", () => {
+    render(
       <Modal open={false} onClose={() => {}} title="Test">
         <p>Content</p>
       </Modal>,
     );
-    expect(HTMLDialogElement.prototype.close).toHaveBeenCalled();
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 
-  it("calls onClose when Escape is pressed", () => {
+  it("calls onClose when close button is clicked", async () => {
     const onClose = vi.fn();
     render(
       <Modal open onClose={onClose} title="Test">
         <p>Content</p>
       </Modal>,
     );
-    const dialog = screen.getByRole("dialog");
-    dialog.dispatchEvent(new Event("cancel", { bubbles: true }));
+    await userEvent.click(screen.getByRole("button", { name: "Close" }));
     expect(onClose).toHaveBeenCalled();
   });
 
-  it("calls onClose when backdrop is clicked", async () => {
-    const onClose = vi.fn();
-    render(
-      <Modal open onClose={onClose} title="Test">
-        <p>Content</p>
-      </Modal>,
-    );
-    const dialog = screen.getByRole("dialog");
-    await userEvent.click(dialog);
-    expect(onClose).toHaveBeenCalled();
-  });
-
-  it("has aria-labelledby pointing to title", () => {
+  it("has accessible title", () => {
     render(
       <Modal open onClose={() => {}} title="My Title">
         <p>Content</p>
       </Modal>,
     );
     const dialog = screen.getByRole("dialog");
-    const titleId = dialog.getAttribute("aria-labelledby");
-    expect(titleId).toBeTruthy();
-    const titleEl = document.getElementById(titleId!);
+    expect(dialog).toHaveAttribute("aria-labelledby");
+    const titleId = dialog.getAttribute("aria-labelledby")!;
+    const titleEl = document.getElementById(titleId);
     expect(titleEl?.textContent).toBe("My Title");
   });
 });

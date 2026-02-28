@@ -1,17 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { beforeAll, describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import StepEditor, { type StepRow } from "../components/StepEditor";
-
-// Mock HTMLDialogElement methods (jsdom doesn't implement them)
-beforeAll(() => {
-  HTMLDialogElement.prototype.showModal = vi.fn(function (this: HTMLDialogElement) {
-    this.setAttribute("open", "");
-  });
-  HTMLDialogElement.prototype.close = vi.fn(function (this: HTMLDialogElement) {
-    this.removeAttribute("open");
-  });
-});
 
 vi.mock("react-i18next", () => ({
   useTranslation: () => ({

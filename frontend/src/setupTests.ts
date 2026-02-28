@@ -27,3 +27,15 @@ window.HTMLElement.prototype.scrollIntoView = () => {};
 window.HTMLElement.prototype.hasPointerCapture = () => false;
 window.HTMLElement.prototype.setPointerCapture = () => {};
 window.HTMLElement.prototype.releasePointerCapture = () => {};
+
+// Patch getComputedStyle for vaul (Drawer): jsdom returns "" for CSS
+// transform, but vaul expects a valid value like "none" for its
+// swipe-to-close pointer tracking.
+const _origGetComputedStyle = window.getComputedStyle;
+window.getComputedStyle = (elt: Element, pseudoElt?: string | null) => {
+  const style = _origGetComputedStyle(elt, pseudoElt);
+  if (!style.transform) {
+    Object.defineProperty(style, "transform", { value: "none" });
+  }
+  return style;
+};
