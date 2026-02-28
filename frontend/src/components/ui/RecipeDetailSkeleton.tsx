@@ -1,4 +1,5 @@
-import { Skeleton } from "./Skeleton";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Skeleton } from "./skeleton";
 
 export function RecipeDetailSkeleton() {
   return (
@@ -14,20 +15,28 @@ export function RecipeDetailSkeleton() {
       </div>
 
       {/* Ingredients section */}
-      <Skeleton className="mt-6 h-5 w-24" />
-      <div className="mt-3 space-y-2">
-        {Array.from({ length: 4 }, (_, i) => (
-          <Skeleton key={i} className="h-5 w-full" />
-        ))}
-      </div>
+      <Card className="mt-6">
+        <CardHeader className="pb-3">
+          <Skeleton className="h-5 w-24" />
+        </CardHeader>
+        <CardContent className="space-y-2">
+          {Array.from({ length: 4 }, (_, i) => (
+            <Skeleton key={i} className="h-5 w-full" />
+          ))}
+        </CardContent>
+      </Card>
 
       {/* Steps section */}
-      <Skeleton className="mt-6 h-5 w-20" />
-      <div className="mt-3 space-y-3">
-        {Array.from({ length: 3 }, (_, i) => (
-          <Skeleton key={i} className="h-16 w-full rounded-lg" />
-        ))}
-      </div>
+      <Card className="mt-4">
+        <CardHeader className="pb-3">
+          <Skeleton className="h-5 w-20" />
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {Array.from({ length: 3 }, (_, i) => (
+            <Skeleton key={i} className="h-16 w-full rounded-lg" />
+          ))}
+        </CardContent>
+      </Card>
     </div>
   );
 }

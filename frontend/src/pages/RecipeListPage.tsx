@@ -19,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { cn } from "@/lib/utils";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Spinner } from "../components/ui/Spinner";
 import { useAuth } from "../hooks/useAuth";
 import { queryKeys } from "../hooks/queryKeys";
@@ -56,11 +56,6 @@ function sortRecipes(recipes: RecipeSummary[], sort: SortOption, locale: string)
       return sorted.sort((a, b) => b.updated_at.localeCompare(a.updated_at));
   }
 }
-
-const TABS: { key: ListType; labelKey: string }[] = [
-  { key: "KNOWN", labelKey: "recipes.known" },
-  { key: "TO_TRY", labelKey: "recipes.toTry" },
-];
 
 export default function RecipeListPage() {
   const { t, i18n } = useTranslation();
@@ -119,6 +114,10 @@ export default function RecipeListPage() {
     } catch {
       // localStorage unavailable
     }
+  }
+
+  function handleTabChange(value: string) {
+    setActiveTab(value as ListType);
   }
 
   const filteredRecipes = sortRecipes(
@@ -217,28 +216,21 @@ export default function RecipeListPage() {
       <h1 className="text-2xl font-bold">{t("recipes.title")}</h1>
 
       {/* Tabs */}
-      <div className="mt-3 flex border-b border-gray-200">
-        {TABS.map((tab) => (
-          <Button
-            key={tab.key}
-            variant="ghost"
-            onClick={() => setActiveTab(tab.key)}
-            className={cn(
-              "flex-1 rounded-none py-2 text-sm font-medium",
-              activeTab === tab.key
-                ? "border-b-2 border-orange-500 text-orange-500"
-                : "text-gray-500 hover:text-gray-700",
-            )}
-          >
-            {t(tab.labelKey)}
-          </Button>
-        ))}
-      </div>
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="mt-3">
+        <TabsList className="w-full">
+          <TabsTrigger value="KNOWN" className="flex-1">
+            {t("recipes.known")}
+          </TabsTrigger>
+          <TabsTrigger value="TO_TRY" className="flex-1">
+            {t("recipes.toTry")}
+          </TabsTrigger>
+        </TabsList>
+      </Tabs>
 
       {/* Search + actions */}
       <div className="mt-3 flex items-center gap-2">
         <div className="relative flex-1">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <Input
             type="text"
             value={search}
@@ -291,7 +283,7 @@ export default function RecipeListPage() {
           <SlidersHorizontal size={14} />
           {t("tags.filter")}
           {selectedTags.length > 0 && (
-            <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-orange-500 px-1 text-[10px] font-semibold text-white">
+            <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-semibold text-primary-foreground">
               {selectedTags.length}
             </span>
           )}
