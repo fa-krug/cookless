@@ -11,6 +11,8 @@ import { streamGenerateRecipes, useBulkCreateRecipes } from "../hooks/useGenerat
 import { toast } from "sonner";
 import { Spinner } from "./ui/Spinner";
 import { Button } from "@/components/ui/button";
+import { IconButton } from "@/components/ui/IconButton";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface GenerateRecipesPreviewProps {
   config: GenerateRecipesPayload;
@@ -132,18 +134,18 @@ export function GenerateRecipesPreview({ config, onClose }: GenerateRecipesPrevi
       {/* Header */}
       <div className="flex items-center justify-between border-b px-4 py-3">
         <h2 className="text-lg font-semibold">{t("generateRecipes.preview")}</h2>
-        <Button
+        <IconButton
           variant="ghost"
-          size="icon"
           onClick={handleCancel}
+          tooltip={t("common.cancel")}
           aria-label={t("common.cancel")}
         >
           <X size={20} />
-        </Button>
+        </IconButton>
       </div>
 
       {/* Scrollable recipe list */}
-      <div className="flex-1 overflow-y-auto px-4 py-3">
+      <ScrollArea className="flex-1 px-4 py-3">
         {error && (
           <div className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</div>
         )}
@@ -226,7 +228,7 @@ export function GenerateRecipesPreview({ config, onClose }: GenerateRecipesPrevi
             <p>{t("generateRecipes.noResults")}</p>
           </div>
         )}
-      </div>
+      </ScrollArea>
 
       {/* Footer */}
       <div className="flex items-center justify-between border-t px-4 py-3">

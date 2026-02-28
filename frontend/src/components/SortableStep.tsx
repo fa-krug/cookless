@@ -4,6 +4,7 @@ import { GripVertical, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { CookingStepPayload } from "../api/types";
 import { Button } from "@/components/ui/button";
+import { IconButton } from "@/components/ui/IconButton";
 
 interface SortableStepProps {
   id: string;
@@ -55,16 +56,16 @@ export default function SortableStep({
           <span className="text-sm font-medium text-gray-500">
             {t("steps.stepNumber", { number: step.step_number })}
           </span>
-          <Button
+          <IconButton
             type="button"
             variant="ghost"
-            size="icon"
             className="h-7 w-7 shrink-0 text-red-600 hover:bg-red-50"
             onClick={onRemove}
+            tooltip={t("common.remove")}
             aria-label={t("common.remove")}
           >
             <X size={16} />
-          </Button>
+          </IconButton>
         </div>
         <div
           className="mt-1 cursor-pointer rounded px-1 py-1 hover:bg-gray-50"

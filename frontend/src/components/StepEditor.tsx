@@ -9,6 +9,7 @@ import ProgramStepForm from "./ProgramStepForm";
 import SortableStep from "./SortableStep";
 import ResponsiveOverlay from "./ui/ResponsiveOverlay";
 import { Button } from "@/components/ui/button";
+import { IconButton } from "@/components/ui/IconButton";
 import { Textarea } from "@/components/ui/textarea";
 
 export type StepRow = CookingStepPayload;
@@ -58,15 +59,15 @@ export default function StepEditor({ steps, onChange, label, isMachine }: StepEd
     <div>
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-medium">{label}</h3>
-        <Button
+        <IconButton
           type="button"
-          size="icon"
           className="h-8 w-8"
           onClick={addStep}
+          tooltip={t("steps.add")}
           aria-label={t("steps.add")}
         >
           <Plus size={18} />
-        </Button>
+        </IconButton>
       </div>
 
       {steps.length === 0 && (

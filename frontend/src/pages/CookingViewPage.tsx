@@ -1,5 +1,6 @@
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { IconButton } from "@/components/ui/IconButton";
 import { cn } from "@/lib/utils";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -56,15 +57,15 @@ export default function CookingViewPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">{recipe.title}</h1>
-        <Button
+        <IconButton
           type="button"
           variant="ghost"
-          size="icon"
           onClick={() => navigate(-1)}
+          tooltip={t("common.back")}
           aria-label={t("common.back")}
         >
           <ArrowLeft size={20} />
-        </Button>
+        </IconButton>
       </div>
 
       {/* Wake lock indicator */}

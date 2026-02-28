@@ -5,6 +5,7 @@ import { MemoryRouter } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Recipe } from "../api/types";
 import RecipeListPage from "../pages/RecipeListPage";
+import { TooltipProvider } from "../components/ui/tooltip";
 
 vi.mock("../hooks/useAuth", () => ({
   useAuth: () => ({ user: { active_household: { ai_enabled: false, gemini_api_key: "" } } }),
@@ -100,13 +101,13 @@ function createQueryClient() {
 function renderPage() {
   const queryClient = createQueryClient();
   return render(
-    
+    <TooltipProvider delayDuration={0}>
       <QueryClientProvider client={queryClient}>
         <MemoryRouter>
           <RecipeListPage />
         </MemoryRouter>
       </QueryClientProvider>
-    ,
+    </TooltipProvider>,
   );
 }
 

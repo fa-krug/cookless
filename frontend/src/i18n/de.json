@@ -21,7 +21,11 @@
     "recipes": "Rezepte",
     "plan": "Planung",
     "shopping": "Einkaufen",
-    "settings": "Einstellungen"
+    "settings": "Einstellungen",
+    "collapseSidebar": "Seitenleiste einklappen",
+    "expandSidebar": "Seitenleiste ausklappen",
+    "account": "Konto",
+    "manageHousehold": "Haushalt verwalten"
   },
   "auth": {
     "login": "Anmelden",

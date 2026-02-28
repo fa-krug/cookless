@@ -1,5 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Drawer as ShadDrawer,
   DrawerContent,
@@ -33,7 +34,7 @@ export default function Drawer({
             {t("common.close")}
           </Button>
         </DrawerHeader>
-        <div className="overflow-y-auto px-4 pb-6">{children}</div>
+        <ScrollArea className="flex-1 px-4 pb-6">{children}</ScrollArea>
       </DrawerContent>
     </ShadDrawer>
   );
