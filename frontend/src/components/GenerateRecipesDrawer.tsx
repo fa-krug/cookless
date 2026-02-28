@@ -1,6 +1,11 @@
-import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Sparkles } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  generateRecipesSchema,
+  type GenerateRecipesFormValues,
+} from "@/lib/schemas/generate-recipes";
 
 import ResponsiveOverlay from "./ui/ResponsiveOverlay";
 import { useCloseDetailsOnClickOutside } from "../hooks/useCloseDetailsOnClickOutside";
@@ -32,23 +37,32 @@ export default function GenerateRecipesDrawer({
   const { data: groupedTags } = useTags();
   const tagSectionRef = useCloseDetailsOnClickOutside<HTMLDivElement>();
 
-  const [count, setCount] = useState(10);
-  const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
-  const [freeText, setFreeText] = useState("");
-  const [generateImages, setGenerateImages] = useState(true);
+  const form = useForm<GenerateRecipesFormValues>({
+    resolver: zodResolver(generateRecipesSchema),
+    defaultValues: {
+      count: 10,
+      selectedTagIds: [],
+      freeText: "",
+      generateImages: true,
+    },
+  });
 
-  function handleGenerate() {
+  const count = form.watch("count");
+  const selectedTagIds = form.watch("selectedTagIds");
+  const generateImages = form.watch("generateImages");
+
+  function handleGenerate(values: GenerateRecipesFormValues) {
     onGenerate({
-      count,
-      tagIds: selectedTagIds,
-      freeText,
-      generateImages,
+      count: values.count,
+      tagIds: values.selectedTagIds,
+      freeText: values.freeText,
+      generateImages: values.generateImages,
     });
   }
 
   return (
     <ResponsiveOverlay open={isOpen} onClose={onClose} title={t("generateRecipes.title")} size="md">
-      <div className="space-y-5">
+      <form onSubmit={form.handleSubmit(handleGenerate)} className="space-y-5">
         {/* Count slider */}
         <div>
           <div className="flex items-center justify-between">
@@ -62,7 +76,7 @@ export default function GenerateRecipesDrawer({
             min={1}
             max={20}
             value={count}
-            onChange={(e) => setCount(Number(e.target.value))}
+            onChange={(e) => form.setValue("count", Number(e.target.value))}
             className="mt-2 w-full accent-orange-500"
           />
         </div>
@@ -99,11 +113,11 @@ export default function GenerateRecipesDrawer({
                             <Checkbox
                               checked={selectedTagIds.includes(tag.id)}
                               onCheckedChange={(checked) => {
-                                setSelectedTagIds((prev) =>
-                                  checked
-                                    ? [...prev, tag.id]
-                                    : prev.filter((id) => id !== tag.id),
-                                );
+                                const prev = form.getValues("selectedTagIds");
+                                const next = checked
+                                  ? [...prev, tag.id]
+                                  : prev.filter((id) => id !== tag.id);
+                                form.setValue("selectedTagIds", next);
                               }}
                             />
                             <span className="text-sm">
@@ -127,8 +141,7 @@ export default function GenerateRecipesDrawer({
           </Label>
           <Textarea
             rows={3}
-            value={freeText}
-            onChange={(e) => setFreeText(e.target.value)}
+            {...form.register("freeText")}
             placeholder={t("generateRecipes.freeTextPlaceholder")}
             className="mt-1"
           />
@@ -138,7 +151,7 @@ export default function GenerateRecipesDrawer({
         <label className="flex cursor-pointer items-center gap-2">
           <Checkbox
             checked={generateImages}
-            onCheckedChange={(checked) => setGenerateImages(checked === true)}
+            onCheckedChange={(checked) => form.setValue("generateImages", checked === true)}
           />
           <span className="text-sm text-gray-700">
             {t("generateRecipes.generateImages")}
@@ -146,11 +159,11 @@ export default function GenerateRecipesDrawer({
         </label>
 
         {/* Generate button */}
-        <Button type="button" className="w-full" onClick={handleGenerate}>
+        <Button type="submit" className="w-full">
           <Sparkles size={16} />
           {t("generateRecipes.generate")}
         </Button>
-      </div>
+      </form>
     </ResponsiveOverlay>
   );
 }

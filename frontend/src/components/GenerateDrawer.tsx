@@ -2,6 +2,12 @@ import { Sparkles } from "lucide-react";
 import { Spinner } from "./ui/Spinner";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  generatePlanSchema,
+  type GeneratePlanFormValues,
+} from "@/lib/schemas/generate-plan";
 import { ApiError } from "../api/client";
 import { TAG_CATEGORIES, type MealPlan } from "../api/types";
 import { useSetupPlan } from "../hooks/useMealPlan";
@@ -20,20 +26,6 @@ interface GenerateDrawerProps {
   existingPlan?: MealPlan | null;
 }
 
-/** Check that all selected shopping days are at least 3 apart (mod 7). */
-function validateShoppingDayGap(days: number[]): boolean {
-  if (days.length < 2) return true;
-  const sorted = [...days].sort((a, b) => a - b);
-  for (let i = 0; i < sorted.length; i++) {
-    for (let j = i + 1; j < sorted.length; j++) {
-      const diff = sorted[j] - sorted[i];
-      const circularDiff = Math.min(diff, 7 - diff);
-      if (circularDiff < 3) return false;
-    }
-  }
-  return true;
-}
-
 interface DrawerFormProps {
   existingPlan?: MealPlan | null;
   onClose: () => void;
@@ -44,61 +36,45 @@ function DrawerForm({ existingPlan, onClose }: DrawerFormProps) {
   const setupPlan = useSetupPlan();
   const { data: groupedTags } = useTags();
 
-  const [iterationWeeks, setIterationWeeks] = useState(
-    existingPlan?.iteration_weeks ?? 1,
-  );
-  const [shoppingDays, setShoppingDays] = useState<number[]>(
-    existingPlan?.shopping_days ?? [],
-  );
-  const [servings, setServings] = useState(existingPlan?.servings ?? 2);
-  const [knownRatio, setKnownRatio] = useState(
-    existingPlan?.known_ratio ?? 0.7,
-  );
-  const [defaultLeftoverDays, setDefaultLeftoverDays] = useState(
-    existingPlan?.default_leftover_days ?? 1,
-  );
-  const [excludedTagIds, setExcludedTagIds] = useState<Set<string>>(
-    new Set(existingPlan?.excluded_tag_ids ?? []),
-  );
-  const [shoppingDayError, setShoppingDayError] = useState<
-    false | "required" | "tooClose"
-  >(false);
+  const form = useForm<GeneratePlanFormValues>({
+    resolver: zodResolver(generatePlanSchema),
+    defaultValues: {
+      iterationWeeks: existingPlan?.iteration_weeks ?? 1,
+      shoppingDays: existingPlan?.shopping_days ?? [],
+      servings: existingPlan?.servings ?? 2,
+      knownRatio: existingPlan?.known_ratio ?? 0.7,
+      defaultLeftoverDays: existingPlan?.default_leftover_days ?? 1,
+      excludedTagIds: existingPlan?.excluded_tag_ids ?? [],
+    },
+  });
+
+  const iterationWeeks = form.watch("iterationWeeks");
+  const shoppingDays = form.watch("shoppingDays");
+  const knownRatio = form.watch("knownRatio");
+  const excludedTagIds = form.watch("excludedTagIds");
 
   function toggleShoppingDay(day: number) {
-    setShoppingDays((prev) => {
-      let next: number[];
-      if (prev.includes(day)) {
-        next = prev.filter((d) => d !== day);
-      } else if (prev.length < 2) {
-        next = [...prev, day];
-      } else {
-        return prev;
-      }
-      setShoppingDayError(
-        next.length === 0 ? "required" : !validateShoppingDayGap(next) ? "tooClose" : false,
-      );
-      return next;
-    });
+    const prev = form.getValues("shoppingDays");
+    let next: number[];
+    if (prev.includes(day)) {
+      next = prev.filter((d) => d !== day);
+    } else if (prev.length < 2) {
+      next = [...prev, day];
+    } else {
+      return;
+    }
+    form.setValue("shoppingDays", next, { shouldValidate: true });
   }
 
-  function handleSubmit() {
-    if (shoppingDays.length === 0) {
-      setShoppingDayError("required");
-      return;
-    }
-    if (!validateShoppingDayGap(shoppingDays)) {
-      setShoppingDayError("tooClose");
-      return;
-    }
-
+  function handleSubmit(values: GeneratePlanFormValues) {
     setupPlan.mutate(
       {
-        iteration_weeks: iterationWeeks,
-        shopping_days: shoppingDays,
-        servings,
-        known_ratio: knownRatio,
-        default_leftover_days: defaultLeftoverDays,
-        excluded_tag_ids: Array.from(excludedTagIds),
+        iteration_weeks: values.iterationWeeks,
+        shopping_days: values.shoppingDays,
+        servings: values.servings,
+        known_ratio: values.knownRatio,
+        default_leftover_days: values.defaultLeftoverDays,
+        excluded_tag_ids: values.excludedTagIds,
       },
       {
         onSuccess: () => onClose(),
@@ -118,9 +94,10 @@ function DrawerForm({ existingPlan, onClose }: DrawerFormProps) {
 
   const weekdays = t("plan.weekdays", { returnObjects: true }) as string[];
   const isUpdate = !!existingPlan;
+  const shoppingDayError = form.formState.errors.shoppingDays;
 
   return (
-    <div className="space-y-4">
+    <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
       {/* Iteration length */}
       <div className="mb-4">
         <Label>
@@ -130,9 +107,10 @@ function DrawerForm({ existingPlan, onClose }: DrawerFormProps) {
           {[1, 2, 3].map((w) => (
             <Button
               key={w}
+              type="button"
               variant={iterationWeeks === w ? "default" : "secondary"}
               size="sm"
-              onClick={() => setIterationWeeks(w)}
+              onClick={() => form.setValue("iterationWeeks", w)}
             >
               {t("plan.weeks", { count: w })}
             </Button>
@@ -149,6 +127,7 @@ function DrawerForm({ existingPlan, onClose }: DrawerFormProps) {
           {weekdays.map((day, idx) => (
             <Button
               key={idx}
+              type="button"
               variant={shoppingDays.includes(idx) ? "default" : "secondary"}
               size="sm"
               className="flex-1 px-1"
@@ -160,9 +139,11 @@ function DrawerForm({ existingPlan, onClose }: DrawerFormProps) {
         </div>
         {shoppingDayError && (
           <p className="mt-1 text-xs text-red-500">
-            {shoppingDayError === "required"
+            {shoppingDayError.message === "shopping_days_required"
               ? t("plan.shoppingDaysRequired")
-              : t("plan.shoppingDaysTooClose")}
+              : shoppingDayError.message === "shopping_days_too_close"
+                ? t("plan.shoppingDaysTooClose")
+                : shoppingDayError.message}
           </p>
         )}
       </div>
@@ -176,8 +157,7 @@ function DrawerForm({ existingPlan, onClose }: DrawerFormProps) {
           type="number"
           min={1}
           max={12}
-          value={servings}
-          onChange={(e) => setServings(Number(e.target.value))}
+          {...form.register("servings", { valueAsNumber: true })}
           className="w-20"
         />
       </div>
@@ -193,7 +173,7 @@ function DrawerForm({ existingPlan, onClose }: DrawerFormProps) {
           max={1}
           step={0.1}
           value={knownRatio}
-          onChange={(e) => setKnownRatio(Number(e.target.value))}
+          onChange={(e) => form.setValue("knownRatio", Number(e.target.value))}
           className="w-full accent-orange-500"
         />
         <div className="mt-1 flex justify-between text-xs text-gray-400">
@@ -211,8 +191,7 @@ function DrawerForm({ existingPlan, onClose }: DrawerFormProps) {
           type="number"
           min={0}
           max={3}
-          value={defaultLeftoverDays}
-          onChange={(e) => setDefaultLeftoverDays(Number(e.target.value))}
+          {...form.register("defaultLeftoverDays", { valueAsNumber: true })}
           className="w-20"
         />
       </div>
@@ -234,7 +213,7 @@ function DrawerForm({ existingPlan, onClose }: DrawerFormProps) {
                 </h4>
                 <div className="flex flex-wrap gap-2">
                   {tags.map((tag) => {
-                    const isExcluded = excludedTagIds.has(tag.id);
+                    const isExcluded = excludedTagIds.includes(tag.id);
                     return (
                       <label
                         key={tag.id}
@@ -248,15 +227,11 @@ function DrawerForm({ existingPlan, onClose }: DrawerFormProps) {
                         <Checkbox
                           checked={!isExcluded}
                           onCheckedChange={() => {
-                            setExcludedTagIds((prev) => {
-                              const next = new Set(prev);
-                              if (next.has(tag.id)) {
-                                next.delete(tag.id);
-                              } else {
-                                next.add(tag.id);
-                              }
-                              return next;
-                            });
+                            const prev = form.getValues("excludedTagIds");
+                            const next = prev.includes(tag.id)
+                              ? prev.filter((id) => id !== tag.id)
+                              : [...prev, tag.id];
+                            form.setValue("excludedTagIds", next);
                           }}
                         />
                         {i18n.language === "de" ? tag.name_de : tag.name_en}
@@ -272,7 +247,7 @@ function DrawerForm({ existingPlan, onClose }: DrawerFormProps) {
 
       <Button
         className="w-full"
-        onClick={handleSubmit}
+        type="submit"
         disabled={setupPlan.isPending}
       >
         {setupPlan.isPending ? <Spinner /> : <Sparkles size={16} />}
@@ -282,7 +257,7 @@ function DrawerForm({ existingPlan, onClose }: DrawerFormProps) {
             ? t("plan.updateConfig")
             : t("plan.setup")}
       </Button>
-    </div>
+    </form>
   );
 }
 

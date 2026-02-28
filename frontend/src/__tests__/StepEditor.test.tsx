@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
-import StepEditor, { type StepRow } from "../components/StepEditor";
+import StepEditor from "../components/StepEditor";
 import { TooltipProvider } from "../components/ui/tooltip";
 
 const renderWithTooltip = (ui: React.ReactNode) =>
@@ -15,14 +15,29 @@ vi.mock("react-i18next", () => ({
 }));
 
 describe("StepEditor", () => {
-  const threeSteps: StepRow[] = [
-    { step_number: 1, instruction: "Chop onions" },
-    { step_number: 2, instruction: "Heat oil" },
-    { step_number: 3, instruction: "Fry onions" },
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const threeFields: any[] = [
+    { id: "field-1", step_number: 1, instruction: "Chop onions" },
+    { id: "field-2", step_number: 2, instruction: "Heat oil" },
+    { id: "field-3", step_number: 3, instruction: "Fry onions" },
   ];
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  function makeProps(overrides: Record<string, any> = {}) {
+    return {
+      fields: threeFields,
+      append: vi.fn(),
+      remove: vi.fn(),
+      update: vi.fn(),
+      move: vi.fn(),
+      label: "By Hand",
+      ...overrides,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any;
+  }
+
   it("renders all steps with drag handles", () => {
-    renderWithTooltip(<StepEditor steps={threeSteps} onChange={vi.fn()} label="By Hand" />);
+    renderWithTooltip(<StepEditor {...makeProps()} />);
 
     expect(screen.getByText("By Hand")).toBeInTheDocument();
     expect(screen.getAllByRole("button", { name: "steps.reorder" })).toHaveLength(3);
@@ -32,7 +47,7 @@ describe("StepEditor", () => {
   });
 
   it("drag handles are keyboard-accessible", () => {
-    renderWithTooltip(<StepEditor steps={threeSteps} onChange={vi.fn()} label="By Hand" />);
+    renderWithTooltip(<StepEditor {...makeProps()} />);
 
     const handles = screen.getAllByRole("button", { name: "steps.reorder" });
     for (const handle of handles) {
@@ -42,33 +57,27 @@ describe("StepEditor", () => {
   });
 
   it("adds a new step", async () => {
-    const onChange = vi.fn();
-    renderWithTooltip(<StepEditor steps={threeSteps} onChange={onChange} label="By Hand" />);
+    const append = vi.fn();
+    renderWithTooltip(<StepEditor {...makeProps({ append })} />);
 
     await userEvent.click(screen.getByRole("button", { name: "steps.add" }));
 
-    expect(onChange).toHaveBeenCalledWith([
-      ...threeSteps,
-      { step_number: 4, instruction: "" },
-    ]);
+    expect(append).toHaveBeenCalledWith({ step_number: 4, instruction: "" });
   });
 
-  it("removes a step and renumbers", async () => {
-    const onChange = vi.fn();
-    renderWithTooltip(<StepEditor steps={threeSteps} onChange={onChange} label="By Hand" />);
+  it("removes a step", async () => {
+    const removeFn = vi.fn();
+    renderWithTooltip(<StepEditor {...makeProps({ remove: removeFn })} />);
 
     const removeButtons = screen.getAllByRole("button", { name: "common.remove" });
     await userEvent.click(removeButtons[1]); // remove "Heat oil"
 
-    expect(onChange).toHaveBeenCalledWith([
-      { step_number: 1, instruction: "Chop onions" },
-      { step_number: 2, instruction: "Fry onions" },
-    ]);
+    expect(removeFn).toHaveBeenCalledWith(1);
   });
 
   it("updates instruction text via drawer", async () => {
-    const onChange = vi.fn();
-    renderWithTooltip(<StepEditor steps={threeSteps} onChange={onChange} label="By Hand" />);
+    const update = vi.fn();
+    renderWithTooltip(<StepEditor {...makeProps({ update })} />);
 
     // Click the step text to open drawer
     await userEvent.click(screen.getByText("Chop onions"));
@@ -77,23 +86,22 @@ describe("StepEditor", () => {
     const textarea = screen.getByPlaceholderText("steps.instruction");
     await userEvent.type(textarea, "!");
 
-    expect(onChange).toHaveBeenCalledWith([
-      { step_number: 1, instruction: "Chop onions!" },
-      { step_number: 2, instruction: "Heat oil" },
-      { step_number: 3, instruction: "Fry onions" },
-    ]);
+    expect(update).toHaveBeenCalledWith(
+      0,
+      expect.objectContaining({ instruction: "Chop onions!", step_number: 1 }),
+    );
   });
 
   it("shows empty state when no steps", () => {
-    renderWithTooltip(<StepEditor steps={[]} onChange={vi.fn()} label="By Hand" />);
+    renderWithTooltip(<StepEditor {...makeProps({ fields: [] })} />);
 
     expect(screen.getByText("steps.noSteps")).toBeInTheDocument();
   });
 
   it("renders program selector for machine steps in drawer", async () => {
-    const steps: StepRow[] = [{ step_number: 1, instruction: "" }];
+    const fields = [{ id: "field-1", step_number: 1, instruction: "" }];
     renderWithTooltip(
-      <StepEditor steps={steps} onChange={vi.fn()} label="Machine" isMachine />,
+      <StepEditor {...makeProps({ fields, isMachine: true })} />,
     );
 
     // Click step to open drawer with program selector
@@ -104,9 +112,9 @@ describe("StepEditor", () => {
   });
 
   it("does not show program selector for non-machine steps", async () => {
-    const steps: StepRow[] = [{ step_number: 1, instruction: "" }];
+    const fields = [{ id: "field-1", step_number: 1, instruction: "" }];
     renderWithTooltip(
-      <StepEditor steps={steps} onChange={vi.fn()} label="By Hand" />,
+      <StepEditor {...makeProps({ fields })} />,
     );
 
     // Click to open drawer

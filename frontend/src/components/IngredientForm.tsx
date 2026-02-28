@@ -1,6 +1,13 @@
 import { Plus, X } from "lucide-react";
 import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import type {
+  FieldArrayWithId,
+  UseFieldArrayAppend,
+  UseFieldArrayRemove,
+  UseFieldArrayUpdate,
+} from "react-hook-form";
+import type { RecipeFormValues } from "@/lib/schemas/recipe";
 import type { Ingredient, Unit } from "../api/types";
 import { Button } from "@/components/ui/button";
 import { IconButton } from "@/components/ui/IconButton";
@@ -16,24 +23,22 @@ import {
 import ResponsiveOverlay from "./ui/ResponsiveOverlay";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
-export interface IngredientRow {
-  ingredient: number;
-  ingredientName: string;
-  quantity: string;
-  unit: number;
-  order: number;
-}
+export type IngredientRow = RecipeFormValues["ingredients"][number];
 
 interface IngredientFormProps {
-  ingredients: IngredientRow[];
-  onChange: (ingredients: IngredientRow[]) => void;
+  fields: FieldArrayWithId<RecipeFormValues, "ingredients">[];
+  append: UseFieldArrayAppend<RecipeFormValues, "ingredients">;
+  remove: UseFieldArrayRemove;
+  update: UseFieldArrayUpdate<RecipeFormValues, "ingredients">;
   allIngredients: Ingredient[];
   allUnits: Unit[];
 }
 
 export default function IngredientForm({
-  ingredients,
-  onChange,
+  fields,
+  append,
+  remove,
+  update,
   allIngredients,
   allUnits,
 }: IngredientFormProps) {
@@ -42,29 +47,25 @@ export default function IngredientForm({
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
 
   function addRow() {
-    const newIndex = ingredients.length;
-    onChange([
-      ...ingredients,
-      {
-        ingredient: 0,
-        ingredientName: "",
-        quantity: "",
-        unit: allUnits.length > 0 ? allUnits[0].id : 0,
-        order: newIndex,
-      },
-    ]);
+    const newIndex = fields.length;
+    append({
+      ingredient: 0,
+      ingredientName: "",
+      quantity: "",
+      unit: allUnits.length > 0 ? allUnits[0].id : 0,
+      order: newIndex,
+    });
     setEditingIndex(newIndex);
   }
 
   function removeRow(index: number) {
     setEditingIndex(null);
-    const updated = ingredients.filter((_, i) => i !== index);
-    onChange(updated.map((row, i) => ({ ...row, order: i })));
+    remove(index);
   }
 
   function updateRow(index: number, partial: Partial<IngredientRow>) {
-    const updated = ingredients.map((row, i) => (i === index ? { ...row, ...partial } : row));
-    onChange(updated);
+    const current = fields[index];
+    update(index, { ...current, ...partial });
   }
 
   const nameKey = lang === "de" ? "name_de" : "name_en";
@@ -84,12 +85,12 @@ export default function IngredientForm({
         </IconButton>
       </div>
 
-      {ingredients.length === 0 && (
+      {fields.length === 0 && (
         <p className="mt-2 text-sm text-gray-500">{t("ingredients.noIngredients")}</p>
       )}
 
       <div className="mt-3 space-y-2">
-        {ingredients.map((row, index) => {
+        {fields.map((row, index) => {
           const unitObj = allUnits.find((u) => u.id === row.unit);
           const unitLabel = unitObj?.abbreviation || unitObj?.[nameKey] || "";
           const displayText = row.ingredientName
@@ -99,7 +100,7 @@ export default function IngredientForm({
 
           return (
             <div
-              key={index}
+              key={row.id}
               className="flex cursor-pointer items-center gap-2 rounded-lg border border-gray-200 px-3 py-2.5"
               onClick={() => setEditingIndex(index)}
               role="button"
@@ -134,9 +135,9 @@ export default function IngredientForm({
         })}
       </div>
 
-      {editingIndex !== null && ingredients[editingIndex] && (
+      {editingIndex !== null && fields[editingIndex] && (
         <IngredientEditDrawer
-          row={ingredients[editingIndex]}
+          row={fields[editingIndex]}
           index={editingIndex}
           lang={lang}
           allIngredients={allIngredients}

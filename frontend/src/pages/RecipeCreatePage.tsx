@@ -5,6 +5,7 @@ import { Spinner } from "../components/ui/Spinner";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { type ListType } from "../api/types";
+import type { RecipeFormValues } from "@/lib/schemas/recipe";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { IconButton } from "@/components/ui/IconButton";
@@ -34,11 +35,11 @@ export default function RecipeCreatePage() {
   const createRecipe = useCreateRecipe();
   const [showFilterDrawer, setShowFilterDrawer] = useState(false);
 
-  const form = useRecipeForm({ listType });
+  const { form, ingredientFields, manualStepFields, machineStepFields, buildPayload } =
+    useRecipeForm({ listType });
 
-  async function handleSave(e: React.FormEvent) {
-    e.preventDefault();
-    const payload = await form.buildPayload();
+  async function handleSave(values: RecipeFormValues) {
+    const payload = await buildPayload(values);
     createRecipe.mutate(payload, {
       onSuccess: (newRecipe) => {
         queryClient.invalidateQueries({ queryKey: queryKeys.ingredients });
@@ -49,6 +50,9 @@ export default function RecipeCreatePage() {
     });
   }
 
+  const title = form.watch("title");
+  const tagIds = form.watch("tagIds");
+
   return (
     <div className="p-4">
       <div className="flex items-center justify-between">
@@ -58,13 +62,12 @@ export default function RecipeCreatePage() {
         </IconButton>
       </div>
 
-      <form onSubmit={handleSave} className="mt-4 space-y-6">
+      <form onSubmit={form.handleSubmit(handleSave)} className="mt-4 space-y-6">
         {/* Title */}
         <div>
           <Input
             type="text"
-            value={form.title}
-            onChange={(e) => form.setTitle(e.target.value)}
+            {...form.register("title")}
             placeholder={t("recipes.titlePlaceholder")}
             className="rounded-lg px-3 py-2 text-lg font-medium"
           />
@@ -79,9 +82,7 @@ export default function RecipeCreatePage() {
             <Input
               type="number"
               min={1}
-              value={form.defaultServings}
-              onChange={(e) => form.setDefaultServings(e.target.valueAsNumber || 0)}
-              onBlur={() => form.setDefaultServings((v) => Math.max(1, v))}
+              {...form.register("defaultServings", { valueAsNumber: true })}
             />
           </div>
           <div>
@@ -91,8 +92,7 @@ export default function RecipeCreatePage() {
             <Input
               type="number"
               min={0}
-              value={form.prepTime}
-              onChange={(e) => form.setPrepTime(e.target.value)}
+              {...form.register("prepTime")}
               placeholder={t("recipes.minutes")}
             />
           </div>
@@ -103,8 +103,7 @@ export default function RecipeCreatePage() {
             <Input
               type="number"
               min={0}
-              value={form.cookTime}
-              onChange={(e) => form.setCookTime(e.target.value)}
+              {...form.register("cookTime")}
               placeholder={t("recipes.minutes")}
             />
           </div>
@@ -112,23 +111,31 @@ export default function RecipeCreatePage() {
 
         {/* Ingredients */}
         <IngredientForm
-          ingredients={form.ingredients}
-          onChange={form.setIngredients}
+          fields={ingredientFields.fields}
+          append={ingredientFields.append}
+          remove={ingredientFields.remove}
+          update={ingredientFields.update}
           allIngredients={allIngredients}
           allUnits={allUnits}
         />
 
         {/* Manual Steps */}
         <StepEditor
-          steps={form.manualSteps}
-          onChange={form.setManualSteps}
+          fields={manualStepFields.fields}
+          append={manualStepFields.append}
+          remove={manualStepFields.remove}
+          update={manualStepFields.update}
+          move={manualStepFields.move}
           label={t("steps.manualSteps")}
         />
 
         {/* Machine Steps */}
         <StepEditor
-          steps={form.machineSteps}
-          onChange={form.setMachineSteps}
+          fields={machineStepFields.fields}
+          append={machineStepFields.append}
+          remove={machineStepFields.remove}
+          update={machineStepFields.update}
+          move={machineStepFields.move}
           label={t("steps.machineSteps")}
           isMachine
         />
@@ -138,16 +145,16 @@ export default function RecipeCreatePage() {
           <Button type="button" variant="outline" size="sm" onClick={() => setShowFilterDrawer(true)}>
             <SlidersHorizontal size={14} />
             {t("tags.filter")}
-            {form.tagIds.length > 0 && (
+            {tagIds.length > 0 && (
               <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-orange-500 px-1 text-[10px] font-semibold text-white">
-                {form.tagIds.length}
+                {tagIds.length}
               </span>
             )}
           </Button>
         </div>
 
         {/* Save button */}
-        <Button type="submit" className="w-full" disabled={createRecipe.isPending || !form.title.trim()}>
+        <Button type="submit" className="w-full" disabled={createRecipe.isPending || !title.trim()}>
           {createRecipe.isPending ? <Spinner /> : <Save size={16} />}
           {t("common.save")}
         </Button>
@@ -158,8 +165,8 @@ export default function RecipeCreatePage() {
           open={showFilterDrawer}
           onClose={() => setShowFilterDrawer(false)}
           groupedTags={groupedTags}
-          selectedTags={form.tagIds}
-          onChange={form.setTagIds}
+          selectedTags={tagIds}
+          onChange={(ids) => form.setValue("tagIds", ids)}
         />
       )}
     </div>

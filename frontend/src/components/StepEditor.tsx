@@ -3,7 +3,15 @@ import { SortableContext, arrayMove, verticalListSortingStrategy } from "@dnd-ki
 import { Plus } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import type {
+  FieldArrayWithId,
+  UseFieldArrayAppend,
+  UseFieldArrayMove,
+  UseFieldArrayRemove,
+  UseFieldArrayUpdate,
+} from "react-hook-form";
 
+import type { RecipeFormValues, StepRowValues } from "@/lib/schemas/recipe";
 import type { CookingStepPayload } from "../api/types";
 import ProgramStepForm from "./ProgramStepForm";
 import SortableStep from "./SortableStep";
@@ -12,37 +20,53 @@ import { Button } from "@/components/ui/button";
 import { IconButton } from "@/components/ui/IconButton";
 import { Textarea } from "@/components/ui/textarea";
 
-export type StepRow = CookingStepPayload;
+export type StepRow = StepRowValues;
+
+type StepFieldName = "manualSteps" | "machineSteps";
 
 interface StepEditorProps {
-  steps: StepRow[];
-  onChange: (steps: StepRow[]) => void;
+  fields: FieldArrayWithId<RecipeFormValues, StepFieldName>[];
+  append: UseFieldArrayAppend<RecipeFormValues, StepFieldName>;
+  remove: UseFieldArrayRemove;
+  update: UseFieldArrayUpdate<RecipeFormValues, StepFieldName>;
+  move: UseFieldArrayMove;
   label: string;
   isMachine?: boolean;
 }
 
-export default function StepEditor({ steps, onChange, label, isMachine }: StepEditorProps) {
+export default function StepEditor({
+  fields,
+  append,
+  remove,
+  update,
+  move,
+  label,
+  isMachine,
+}: StepEditorProps) {
   const { t } = useTranslation();
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
 
-  const stepIds = steps.map((_, i) => `step-${i}`);
+  const stepIds = fields.map((f) => f.id);
 
   function addStep() {
-    const newIndex = steps.length;
-    onChange([...steps, { step_number: newIndex + 1, instruction: "" }]);
+    const newIndex = fields.length;
+    append({ step_number: newIndex + 1, instruction: "" });
     setEditingIndex(newIndex);
   }
 
   function removeStep(index: number) {
     setEditingIndex(null);
-    const updated = steps.filter((_, i) => i !== index);
-    onChange(updated.map((step, i) => ({ ...step, step_number: i + 1 })));
+    remove(index);
+    // Renumber remaining steps
+    fields.forEach((field, i) => {
+      if (i > index) {
+        update(i - 1, { ...field, step_number: i });
+      }
+    });
   }
 
   function updateStep(index: number, updated: StepRow) {
-    onChange(
-      steps.map((step, i) => (i === index ? { ...updated, step_number: step.step_number } : step)),
-    );
+    update(index, { ...updated, step_number: fields[index].step_number });
   }
 
   function handleDragEnd(event: DragEndEvent) {
@@ -51,8 +75,13 @@ export default function StepEditor({ steps, onChange, label, isMachine }: StepEd
 
     const oldIndex = stepIds.indexOf(active.id as string);
     const newIndex = stepIds.indexOf(over.id as string);
-    const reordered = arrayMove(steps, oldIndex, newIndex);
-    onChange(reordered.map((step, i) => ({ ...step, step_number: i + 1 })));
+    move(oldIndex, newIndex);
+
+    // Renumber all steps after move
+    const reordered = arrayMove([...fields], oldIndex, newIndex);
+    reordered.forEach((field, i) => {
+      update(i, { ...field, step_number: i + 1 });
+    });
   }
 
   return (
@@ -70,17 +99,17 @@ export default function StepEditor({ steps, onChange, label, isMachine }: StepEd
         </IconButton>
       </div>
 
-      {steps.length === 0 && (
+      {fields.length === 0 && (
         <p className="mt-2 text-sm text-gray-500">{t("steps.noSteps")}</p>
       )}
 
       <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
         <SortableContext items={stepIds} strategy={verticalListSortingStrategy}>
           <div className="mt-2 space-y-2">
-            {steps.map((step, index) => (
+            {fields.map((step, index) => (
               <SortableStep
-                key={stepIds[index]}
-                id={stepIds[index]}
+                key={step.id}
+                id={step.id}
                 step={step}
                 onRemove={() => removeStep(index)}
                 onTap={() => setEditingIndex(index)}
@@ -91,9 +120,9 @@ export default function StepEditor({ steps, onChange, label, isMachine }: StepEd
         </SortableContext>
       </DndContext>
 
-      {editingIndex !== null && steps[editingIndex] && (
+      {editingIndex !== null && fields[editingIndex] && (
         <StepEditDrawer
-          step={steps[editingIndex]}
+          step={fields[editingIndex]}
           isMachine={isMachine}
           onStepChange={(updated) => updateStep(editingIndex, updated)}
           onClose={() => setEditingIndex(null)}
@@ -124,10 +153,10 @@ function StepEditDrawer({ step, isMachine, onStepChange, onClose }: StepEditDraw
       title={t("steps.stepNumber", { number: step.step_number })}
     >
       {showProgram ? (
-        <ProgramStepForm step={step} onChange={onStepChange} />
+        <ProgramStepForm step={step as CookingStepPayload} onChange={onStepChange} />
       ) : showProgramSelector ? (
         <ProgramStepForm
-          step={step}
+          step={step as CookingStepPayload}
           onChange={onStepChange}
           onSelectFreeText={() => setFreeTextMode(true)}
         />

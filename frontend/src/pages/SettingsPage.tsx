@@ -16,6 +16,10 @@ import { Spinner } from "../components/ui/Spinner";
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { settingsPasswordSchema, type SettingsPasswordFormValues } from "@/lib/schemas/password";
+import { tokenCreateSchema, type TokenCreateFormValues } from "@/lib/schemas/settings";
 import { api } from "../api/client";
 import type { AccessTokenCreated } from "../api/types";
 import { type Passkey, type User } from "../api/types";
@@ -24,6 +28,13 @@ import { Button } from "@/components/ui/button";
 import { IconButton } from "@/components/ui/IconButton";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormControl,
+  FormMessage,
+} from "@/components/ui/form";
 import { ConfirmDialog } from "../components/ui/ConfirmDialog";
 import ResponsiveOverlay from "../components/ui/ResponsiveOverlay";
 import { extractApiDetail, mapPasswordError } from "../utils/passwordErrors";
@@ -50,23 +61,22 @@ export default function SettingsPage() {
   const [passkeysLoading, setPasskeysLoading] = useState(true);
   const [addingPasskey, setAddingPasskey] = useState(false);
 
-  // Password state
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmNewPassword, setConfirmNewPassword] = useState("");
-  const [passwordError, setPasswordError] = useState("");
+  // Password form
+  const passwordForm = useForm<SettingsPasswordFormValues>({
+    resolver: zodResolver(settingsPasswordSchema),
+    defaultValues: { currentPassword: "", newPassword: "", confirmPassword: "" },
+  });
   const [passwordSuccess, setPasswordSuccess] = useState("");
-  const [savingPassword, setSavingPassword] = useState(false);
 
   // Token state
   const { data: tokens = [], isLoading: tokensLoading } = useTokens();
   const createToken = useCreateToken();
   const deleteToken = useDeleteToken();
   const [showTokenForm, setShowTokenForm] = useState(false);
-  const [newTokenName, setNewTokenName] = useState("");
-  const [newTokenScopes, setNewTokenScopes] = useState<string[]>([]);
-  const [newTokenPreset, setNewTokenPreset] = useState<string>("90d");
-  const [newTokenCustomDate, setNewTokenCustomDate] = useState("");
+  const tokenForm = useForm<TokenCreateFormValues>({
+    resolver: zodResolver(tokenCreateSchema),
+    defaultValues: { name: "", scopes: [], preset: "90d", customDate: "" },
+  });
   const [createdToken, setCreatedToken] = useState<AccessTokenCreated | null>(null);
   const [copied, setCopied] = useState(false);
 
@@ -142,35 +152,25 @@ export default function SettingsPage() {
     }
   }
 
-  async function handlePasswordSubmit() {
-    setPasswordError("");
+  async function handlePasswordSubmit(values: SettingsPasswordFormValues) {
     setPasswordSuccess("");
-
-    if (newPassword !== confirmNewPassword) {
-      setPasswordError(t("password.passwordMismatch"));
-      return;
-    }
-
-    setSavingPassword(true);
     try {
-      const body: Record<string, string> = { new_password: newPassword };
+      const body: Record<string, string> = { new_password: values.newPassword };
       if (user?.has_password) {
-        body.current_password = currentPassword;
+        body.current_password = values.currentPassword;
       }
       await api.post("/api/v1/users/me/password/", body);
       await refreshUser();
-      setCurrentPassword("");
-      setNewPassword("");
-      setConfirmNewPassword("");
+      passwordForm.reset();
       const msg = user?.has_password
         ? t("password.passwordChanged")
         : t("password.passwordSet");
       setPasswordSuccess(msg);
       setTimeout(() => setPasswordSuccess(""), 2000);
     } catch (err) {
-      setPasswordError(mapPasswordError(extractApiDetail(err), t, "password"));
-    } finally {
-      setSavingPassword(false);
+      passwordForm.setError("root", {
+        message: mapPasswordError(extractApiDetail(err), t, "password"),
+      });
     }
   }
 
@@ -185,54 +185,59 @@ export default function SettingsPage() {
     });
     if (!result) return;
     const password = result as string;
-    setPasswordError("");
+    passwordForm.clearErrors();
     setPasswordSuccess("");
     try {
       await api.delete("/api/v1/users/me/password/", {
         current_password: password,
       });
       await refreshUser();
-      setCurrentPassword("");
+      passwordForm.reset();
       setPasswordSuccess(t("password.passwordRemoved"));
       setTimeout(() => setPasswordSuccess(""), 2000);
     } catch (err) {
-      setPasswordError(mapPasswordError(extractApiDetail(err), t, "password"));
+      passwordForm.setError("root", {
+        message: mapPasswordError(extractApiDetail(err), t, "password"),
+      });
     }
   }
 
   const SCOPE_GROUPS = ["recipes", "planner", "shopping", "households"] as const;
 
+  const tokenScopes = tokenForm.watch("scopes");
+  const tokenPreset = tokenForm.watch("preset");
+  const tokenName = tokenForm.watch("name");
+
   function toggleScope(scope: string) {
-    setNewTokenScopes((prev) =>
-      prev.includes(scope) ? prev.filter((s) => s !== scope) : [...prev, scope],
-    );
+    const current = tokenForm.getValues("scopes");
+    const next = current.includes(scope)
+      ? current.filter((s) => s !== scope)
+      : [...current, scope];
+    tokenForm.setValue("scopes", next);
   }
 
-  async function handleCreateToken() {
+  async function handleCreateToken(values: TokenCreateFormValues) {
     const payload: {
       name: string;
       scopes: string[];
       duration_preset?: string;
       expires_at?: string;
     } = {
-      name: newTokenName.trim(),
-      scopes: newTokenScopes,
+      name: values.name.trim(),
+      scopes: values.scopes,
     };
 
-    if (newTokenPreset === "custom" && newTokenCustomDate) {
-      payload.expires_at = new Date(newTokenCustomDate).toISOString();
-    } else if (newTokenPreset && newTokenPreset !== "never") {
-      payload.duration_preset = newTokenPreset;
+    if (values.preset === "custom" && values.customDate) {
+      payload.expires_at = new Date(values.customDate).toISOString();
+    } else if (values.preset && values.preset !== "never") {
+      payload.duration_preset = values.preset;
     }
 
     try {
       const result = await createToken.mutateAsync(payload);
       setCreatedToken(result);
       setShowTokenForm(false);
-      setNewTokenName("");
-      setNewTokenScopes([]);
-      setNewTokenPreset("90d");
-      setNewTokenCustomDate("");
+      tokenForm.reset();
       toast.success(t("tokens.tokenCreated"));
     } catch {
       toast.error(t("errors.tokenCreate"));
@@ -404,55 +409,81 @@ export default function SettingsPage() {
           <p className="mb-3 text-sm text-gray-500">{t("password.noPasswordSet")}</p>
         )}
 
-        {passwordError && (
-          <p className="mb-3 text-sm text-red-500">{passwordError}</p>
+        {passwordForm.formState.errors.root && (
+          <p className="mb-3 text-sm text-red-500">
+            {passwordForm.formState.errors.root.message}
+          </p>
         )}
         {passwordSuccess && (
           <p className="mb-3 text-sm text-green-600">{passwordSuccess}</p>
         )}
 
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            handlePasswordSubmit();
-          }}
-        >
-          {user?.has_password && (
-            <Input
-              type="password"
-              placeholder={t("password.currentPassword")}
-              value={currentPassword}
-              onChange={(e) => setCurrentPassword(e.target.value)}
-              className="mb-3"
+        <Form {...passwordForm}>
+          <form onSubmit={passwordForm.handleSubmit(handlePasswordSubmit)}>
+            {user?.has_password && (
+              <FormField
+                control={passwordForm.control}
+                name="currentPassword"
+                render={({ field }) => (
+                  <FormItem className="mb-3">
+                    <FormControl>
+                      <Input
+                        type="password"
+                        placeholder={t("password.currentPassword")}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
+            <FormField
+              control={passwordForm.control}
+              name="newPassword"
+              render={({ field }) => (
+                <FormItem className="mb-3">
+                  <FormControl>
+                    <Input
+                      type="password"
+                      placeholder={t("password.newPassword")}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          )}
-          <Input
-            type="password"
-            placeholder={t("password.newPassword")}
-            value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
-            className="mb-3"
-          />
-          <Input
-            type="password"
-            placeholder={t("password.confirmPassword")}
-            value={confirmNewPassword}
-            onChange={(e) => setConfirmNewPassword(e.target.value)}
-            className="mb-3"
-          />
-          <Button
-            type="submit"
-            className="w-full"
-            disabled={savingPassword || !newPassword || !confirmNewPassword}
-          >
-            {savingPassword ? <Spinner /> : <KeyRound size={16} />}
-            {savingPassword
-              ? t("common.loading")
-              : user?.has_password
-                ? t("password.changePassword")
-                : t("password.setPassword")}
-          </Button>
-        </form>
+            <FormField
+              control={passwordForm.control}
+              name="confirmPassword"
+              render={({ field }) => (
+                <FormItem className="mb-3">
+                  <FormControl>
+                    <Input
+                      type="password"
+                      placeholder={t("password.confirmPassword")}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={passwordForm.formState.isSubmitting}
+            >
+              {passwordForm.formState.isSubmitting ? <Spinner /> : <KeyRound size={16} />}
+              {passwordForm.formState.isSubmitting
+                ? t("common.loading")
+                : user?.has_password
+                  ? t("password.changePassword")
+                  : t("password.setPassword")}
+            </Button>
+          </form>
+        </Form>
 
         {user?.has_password && (
           <Button
@@ -569,94 +600,107 @@ export default function SettingsPage() {
 
         {/* Create form */}
         {showTokenForm ? (
-          <div className="mt-3 space-y-3 rounded-md border border-gray-200 p-3">
-            <Input
-              type="text"
-              value={newTokenName}
-              onChange={(e) => setNewTokenName(e.target.value)}
-              placeholder={t("tokens.namePlaceholder")}
-            />
-
-            <div>
-              <p className="mb-2 text-sm font-medium text-gray-700">{t("tokens.scopes")}</p>
-              <div className="space-y-2">
-                {SCOPE_GROUPS.map((group) => (
-                  <div key={group} className="flex items-center gap-3">
-                    <span className="w-24 text-sm text-gray-600">
-                      {t(`tokens.scopeGroups.${group}`)}
-                    </span>
-                    <Label className="flex items-center gap-1.5 text-xs font-normal">
-                      <input
-                        type="checkbox"
-                        checked={newTokenScopes.includes(`${group}:read`)}
-                        onChange={() => toggleScope(`${group}:read`)}
-                        className="rounded border-gray-300 text-orange-500 focus:ring-orange-500"
+          <Form {...tokenForm}>
+            <form
+              onSubmit={tokenForm.handleSubmit(handleCreateToken)}
+              className="mt-3 space-y-3 rounded-md border border-gray-200 p-3"
+            >
+              <FormField
+                control={tokenForm.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <Input
+                        type="text"
+                        placeholder={t("tokens.namePlaceholder")}
+                        {...field}
                       />
-                      {t("tokens.scopeRead")}
-                    </Label>
-                    <Label className="flex items-center gap-1.5 text-xs font-normal">
-                      <input
-                        type="checkbox"
-                        checked={newTokenScopes.includes(`${group}:write`)}
-                        onChange={() => toggleScope(`${group}:write`)}
-                        className="rounded border-gray-300 text-orange-500 focus:ring-orange-500"
-                      />
-                      {t("tokens.scopeWrite")}
-                    </Label>
-                  </div>
-                ))}
-              </div>
-            </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            <div>
-              <p className="mb-2 text-sm font-medium text-gray-700">{t("tokens.expiration")}</p>
-              <div className="flex flex-wrap gap-2">
-                {(["30d", "90d", "1y", "never", "custom"] as const).map((preset) => (
-                  <Button
-                    key={preset}
-                    size="sm"
-                    variant={newTokenPreset === preset ? "default" : "secondary"}
-                    type="button"
-                    onClick={() => setNewTokenPreset(preset)}
-                  >
-                    {t(`tokens.preset${preset.charAt(0).toUpperCase() + preset.slice(1)}`)}
-                  </Button>
-                ))}
+              <div>
+                <p className="mb-2 text-sm font-medium text-gray-700">{t("tokens.scopes")}</p>
+                <div className="space-y-2">
+                  {SCOPE_GROUPS.map((group) => (
+                    <div key={group} className="flex items-center gap-3">
+                      <span className="w-24 text-sm text-gray-600">
+                        {t(`tokens.scopeGroups.${group}`)}
+                      </span>
+                      <Label className="flex items-center gap-1.5 text-xs font-normal">
+                        <input
+                          type="checkbox"
+                          checked={tokenScopes.includes(`${group}:read`)}
+                          onChange={() => toggleScope(`${group}:read`)}
+                          className="rounded border-gray-300 text-orange-500 focus:ring-orange-500"
+                        />
+                        {t("tokens.scopeRead")}
+                      </Label>
+                      <Label className="flex items-center gap-1.5 text-xs font-normal">
+                        <input
+                          type="checkbox"
+                          checked={tokenScopes.includes(`${group}:write`)}
+                          onChange={() => toggleScope(`${group}:write`)}
+                          className="rounded border-gray-300 text-orange-500 focus:ring-orange-500"
+                        />
+                        {t("tokens.scopeWrite")}
+                      </Label>
+                    </div>
+                  ))}
+                </div>
               </div>
-              {newTokenPreset === "custom" && (
-                <Input
-                  type="date"
-                  value={newTokenCustomDate}
-                  onChange={(e) => setNewTokenCustomDate(e.target.value)}
-                  min={new Date().toISOString().split("T")[0]}
-                  className="mt-2"
-                />
-              )}
-            </div>
 
-            <div className="flex gap-2">
-              <Button
-                className="flex-1"
-                type="button"
-                onClick={handleCreateToken}
-                disabled={
-                  !newTokenName.trim() ||
-                  newTokenScopes.length === 0 ||
-                  createToken.isPending
-                }
-              >
-                {createToken.isPending ? <Spinner /> : <Code size={16} />}
-                {t("tokens.createToken")}
-              </Button>
-              <Button
-                variant="ghost"
-                type="button"
-                onClick={() => setShowTokenForm(false)}
-              >
-                {t("common.cancel")}
-              </Button>
-            </div>
-          </div>
+              <div>
+                <p className="mb-2 text-sm font-medium text-gray-700">{t("tokens.expiration")}</p>
+                <div className="flex flex-wrap gap-2">
+                  {(["30d", "90d", "1y", "never", "custom"] as const).map((preset) => (
+                    <Button
+                      key={preset}
+                      size="sm"
+                      variant={tokenPreset === preset ? "default" : "secondary"}
+                      type="button"
+                      onClick={() => tokenForm.setValue("preset", preset)}
+                    >
+                      {t(`tokens.preset${preset.charAt(0).toUpperCase() + preset.slice(1)}`)}
+                    </Button>
+                  ))}
+                </div>
+                {tokenPreset === "custom" && (
+                  <Input
+                    type="date"
+                    {...tokenForm.register("customDate")}
+                    min={new Date().toISOString().split("T")[0]}
+                    className="mt-2"
+                  />
+                )}
+              </div>
+
+              <div className="flex gap-2">
+                <Button
+                  className="flex-1"
+                  type="submit"
+                  disabled={
+                    !tokenName.trim() ||
+                    tokenScopes.length === 0 ||
+                    createToken.isPending
+                  }
+                >
+                  {createToken.isPending ? <Spinner /> : <Code size={16} />}
+                  {t("tokens.createToken")}
+                </Button>
+                <Button
+                  variant="ghost"
+                  type="button"
+                  onClick={() => setShowTokenForm(false)}
+                >
+                  {t("common.cancel")}
+                </Button>
+              </div>
+            </form>
+          </Form>
         ) : (
           <Button
             variant="outline"

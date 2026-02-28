@@ -2,13 +2,13 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { GripVertical, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import type { CookingStepPayload } from "../api/types";
+import type { StepRowValues } from "@/lib/schemas/recipe";
 import { Button } from "@/components/ui/button";
 import { IconButton } from "@/components/ui/IconButton";
 
 interface SortableStepProps {
   id: string;
-  step: CookingStepPayload;
+  step: StepRowValues;
   onRemove: () => void;
   onTap: () => void;
   isMachine?: boolean;
