@@ -7,12 +7,11 @@ import type { IngredientCategory, ShoppingListItem } from "../api/types";
 import ShoppingCategory from "../components/ShoppingCategory";
 import { EmptyState } from "../components/ui/EmptyState";
 import { useBulkToggle, useShoppingList, useToggleItem } from "../hooks/useShoppingList";
-import { useToast } from "../hooks/useToast";
+import { toast } from "sonner";
 
 export default function ShoppingListDetailPage() {
   const { id } = useParams();
   const { t } = useTranslation();
-  const { addToast } = useToast();
   const { data: shoppingList, isLoading } = useShoppingList(id);
   const toggleItem = useToggleItem();
   const bulkToggle = useBulkToggle();
@@ -48,14 +47,14 @@ export default function ShoppingListDetailPage() {
     bulkToggle.mutate(
       { item_ids: checkedItemIds, is_checked: false },
       {
-        onError: () => addToast(t("errors.shoppingUpdate"), "error"),
+        onError: () => toast.error(t("errors.shoppingUpdate")),
       },
     );
   }
 
   function handleToggleItem(itemId: string) {
     toggleItem.mutate(itemId, {
-      onError: () => addToast(t("errors.shoppingUpdate"), "error"),
+      onError: () => toast.error(t("errors.shoppingUpdate")),
     });
   }
 

@@ -12,7 +12,7 @@ import {
   useNextIteration,
   useRenewIteration,
 } from "../hooks/useMealPlan";
-import { useToast } from "../hooks/useToast";
+import { toast } from "sonner";
 
 function getToday(): string {
   const d = new Date();
@@ -21,7 +21,6 @@ function getToday(): string {
 
 export default function MealPlanPage() {
   const { t } = useTranslation();
-  const { addToast } = useToast();
   const { data: plans, isLoading } = useMealPlans();
   const nextIteration = useNextIteration();
   const renewIteration = useRenewIteration();
@@ -53,13 +52,13 @@ export default function MealPlanPage() {
   function handleRenew() {
     if (!activeIteration) return;
     renewIteration.mutate(activeIteration.id, {
-      onError: () => addToast(t("errors.planGenerate"), "error"),
+      onError: () => toast.error(t("errors.planGenerate")),
     });
   }
 
   function handleNextIteration() {
     nextIteration.mutate(undefined, {
-      onError: () => addToast(t("errors.planGenerate"), "error"),
+      onError: () => toast.error(t("errors.planGenerate")),
     });
   }
 

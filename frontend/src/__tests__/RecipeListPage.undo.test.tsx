@@ -4,7 +4,7 @@ import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Recipe } from "../api/types";
-import { ToastProvider } from "../contexts/ToastContext";
+import { Toaster } from "../components/ui/sonner";
 import RecipeListPage from "../pages/RecipeListPage";
 
 vi.mock("../hooks/useAuth", () => ({
@@ -73,13 +73,14 @@ function renderPage() {
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
   });
   return render(
-    <ToastProvider>
+    <>
       <QueryClientProvider client={queryClient}>
         <MemoryRouter>
           <RecipeListPage />
         </MemoryRouter>
       </QueryClientProvider>
-    </ToastProvider>,
+      <Toaster />
+    </>,
   );
 }
 

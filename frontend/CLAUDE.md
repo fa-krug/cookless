@@ -21,6 +21,7 @@ For watch mode tests: `npx vitest` (no npm script defined).
 - **React Router DOM v7** -- client routing
 - **react-i18next** -- i18n (en/de)
 - **@dnd-kit** (core + sortable + utilities) -- drag-and-drop for cooking steps
+- **sonner** -- toast notifications
 - **lucide-react** -- icon library
 - **shadcn/ui** -- UI primitives (Dialog, AlertDialog, Drawer/vaul, Sheet, Button, Input, etc.)
 - **@radix-ui** -- headless primitives (Dialog, AlertDialog, Select, Checkbox, Label, Slot)
@@ -49,6 +50,7 @@ src/
       Skeleton.tsx      # base pulse skeleton
       *Skeleton.tsx     # per-page skeletons (RecipeList, RecipeDetail, MealPlan, ShoppingList, Settings)
       EmptyState.tsx    # icon + title + subtitle + action (Link or button)
+      sonner.tsx        # shadcn themed Sonner toast wrapper
       SortSelect.tsx    # controlled <select>
       useMediaQuery.ts  # SSR-safe media query hook
     AppLogo.tsx         # "Cookless" branding
@@ -67,8 +69,6 @@ src/
   contexts/
     AuthContext.tsx      # AuthProvider + useAuth hook
     authContextValue.ts  # AuthContextValue interface
-    ToastContext.tsx      # ToastProvider + useToast hook
-    toastContextValue.ts # ToastContextValue interface
   hooks/
     useAuth.ts          # re-exports from AuthContext
     useRecipes.ts       # useRecipes, useRecipe, useCreateRecipe, useUpdateRecipe, useMoveRecipe, useDeleteRecipe
@@ -78,7 +78,6 @@ src/
     useMealPlan.ts      # useMealPlans, useMealPlan, useSetupPlan, useRenewIteration, useNextIteration
     useShoppingList.ts  # useShoppingLists, useShoppingList, useToggleItem, useBulkToggle
     useHousehold.ts     # useHouseholds, useCreateHousehold, useSwitchHousehold, useUpdateHousehold, useDeleteHousehold, useLeaveHousehold, useCreateInvite, useAcceptInvite, useRemoveMember, useTransferOwnership
-    useToast.ts         # re-exports from ToastContext
     useConfirm.ts       # imperative confirm dialog: confirm(options) -> Promise<string|boolean>
     useInstallPrompt.ts # PWA beforeinstallprompt listener
     useOnlineSync.ts    # replays offline toggles on reconnect via SW messaging
@@ -177,23 +176,18 @@ interface AuthContextValue {
 - `login`/`register` delegate to `webauthn.ts`
 - All methods are stable `useCallback` references; value memoized with `useMemo`
 
-### ToastContext
+### Toast (Sonner)
+
+Toasts use `sonner` — no context/provider needed. Import and call directly:
 
 ```typescript
-interface ToastContextValue {
-  addToast(message, type: "error" | "success", options?: ToastOptions): void
-  removeToast(id: number): void
-}
-
-interface ToastOptions {
-  action?: { label: string; onClick: () => void }
-  duration?: number   // default 4000ms
-}
+import { toast } from "sonner";
+toast.success("Saved!");
+toast.error("Something went wrong");
+toast.success("Deleted", { duration: 5000, action: { label: "Undo", onClick: fn } });
 ```
 
-- Max 3 toasts visible, auto-dismiss after duration
-- Toast with `action` shows inline button; without action, clickable to dismiss
-- `animate-slide-down` entrance animation
+`<Toaster />` from `components/ui/sonner.tsx` is mounted in `main.tsx`.
 
 ### AppProviders
 
@@ -310,13 +304,11 @@ function renderPage() {
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
   });
   return render(
-    <ToastProvider>
-      <QueryClientProvider client={queryClient}>
-        <MemoryRouter>
-          <ComponentUnderTest />
-        </MemoryRouter>
-      </QueryClientProvider>
-    </ToastProvider>,
+    <QueryClientProvider client={queryClient}>
+      <MemoryRouter>
+        <ComponentUnderTest />
+      </MemoryRouter>
+    </QueryClientProvider>,
   );
 }
 ```
