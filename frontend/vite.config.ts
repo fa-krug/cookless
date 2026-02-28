@@ -10,6 +10,11 @@ const hasLocalCerts = fs.existsSync(path.join(certDir, 'cert.pem'))
 
 // https://vite.dev/config/
 export default defineConfig({
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src'),
+    },
+  },
   plugins: [
     react(),
     tailwindcss(),
