@@ -16,6 +16,7 @@ import {
   X,
 } from "lucide-react";
 import ResponsiveOverlay from "../components/ui/ResponsiveOverlay";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Spinner } from "../components/ui/Spinner";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -119,6 +120,17 @@ function MembersList({
         {household.members.map((member) => (
           <li key={member.id} className="flex items-center justify-between py-2">
             <div className="flex items-center gap-2">
+              <Avatar className="h-7 w-7 text-xs">
+                <AvatarFallback
+                  className={
+                    member.role === "OWNER"
+                      ? "bg-orange-100 text-orange-700"
+                      : "bg-gray-100 text-gray-600"
+                  }
+                >
+                  {member.email.charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
               <span className="text-sm text-gray-900">{member.email}</span>
               <span
                 className={`rounded-full px-2 py-0.5 text-xs font-medium ${

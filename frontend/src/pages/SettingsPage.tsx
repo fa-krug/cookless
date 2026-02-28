@@ -26,6 +26,7 @@ import { type Passkey, type User } from "../api/types";
 import { addPasskey } from "../api/webauthn";
 import { Button } from "@/components/ui/button";
 import { IconButton } from "@/components/ui/IconButton";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -315,37 +316,38 @@ export default function SettingsPage() {
       {/* Language */}
       <div className="mb-4 rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
         <h2 className="mb-3 text-lg font-semibold text-gray-900">{t("settings.language")}</h2>
-        <div className="flex gap-2">
+        <ToggleGroup
+          type="single"
+          value={language}
+          onValueChange={(val) => val && handleLanguageChange(val)}
+        >
           {(["en", "de"] as const).map((lang) => (
-            <Button
-              key={lang}
-              variant={language === lang ? "default" : "secondary"}
-              onClick={() => handleLanguageChange(lang)}
-            >
+            <ToggleGroupItem key={lang} value={lang}>
               {t(`settings.languages.${lang}`)}
-            </Button>
+            </ToggleGroupItem>
           ))}
-        </div>
+        </ToggleGroup>
       </div>
 
       {/* Theme */}
       <div className="mb-4 rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
         <h2 className="mb-3 text-lg font-semibold text-gray-900">{t("settings.theme")}</h2>
-        <div className="flex gap-2">
+        <ToggleGroup
+          type="single"
+          value={theme}
+          onValueChange={(val) => {
+            if (!val || (val !== "light" && val !== "dark")) return;
+            setTheme(val);
+            localStorage.setItem("theme", val);
+            document.documentElement.classList.toggle("dark", val === "dark");
+          }}
+        >
           {(["light", "dark"] as const).map((t_) => (
-            <Button
-              key={t_}
-              variant={theme === t_ ? "default" : "secondary"}
-              onClick={() => {
-                setTheme(t_);
-                localStorage.setItem("theme", t_);
-                document.documentElement.classList.toggle("dark", t_ === "dark");
-              }}
-            >
+            <ToggleGroupItem key={t_} value={t_}>
               {t(`settings.themes.${t_}`)}
-            </Button>
+            </ToggleGroupItem>
           ))}
-        </div>
+        </ToggleGroup>
       </div>
 
       {/* Passkeys */}
