@@ -38,13 +38,13 @@ export default function SortableStep({
     <div
       ref={setNodeRef}
       style={style}
-      className={`flex items-start gap-2 rounded-lg border ${hasProgram ? "border-orange-500/20 bg-orange-50 p-2" : "border-gray-200 p-2"} ${isDragging ? "z-10 scale-105 bg-white shadow-lg" : ""}`}
+      className={`flex items-start gap-2 rounded-lg border ${hasProgram ? "border-primary/20 bg-primary/10 p-2" : "border-border p-2"} ${isDragging ? "z-10 scale-105 bg-card shadow-lg" : ""}`}
     >
       <Button
         type="button"
         variant="ghost"
         size="icon"
-        className="h-auto shrink-0 cursor-grab touch-none p-0 pt-1 text-gray-400 hover:bg-transparent hover:text-gray-600 active:cursor-grabbing"
+        className="h-auto shrink-0 cursor-grab touch-none p-0 pt-1 text-muted-foreground hover:bg-transparent hover:text-muted-foreground active:cursor-grabbing"
         aria-label={t("steps.reorder")}
         {...attributes}
         {...listeners}
@@ -53,13 +53,13 @@ export default function SortableStep({
       </Button>
       <div className="min-w-0 flex-1">
         <div className="flex items-center justify-between">
-          <span className="text-sm font-medium text-gray-500">
+          <span className="text-sm font-medium text-muted-foreground">
             {t("steps.stepNumber", { number: step.step_number })}
           </span>
           <IconButton
             type="button"
             variant="ghost"
-            className="h-7 w-7 shrink-0 text-red-600 hover:bg-red-50"
+            className="h-7 w-7 shrink-0 text-destructive hover:bg-destructive/10"
             onClick={onRemove}
             tooltip={t("common.remove")}
             aria-label={t("common.remove")}
@@ -68,7 +68,7 @@ export default function SortableStep({
           </IconButton>
         </div>
         <div
-          className="mt-1 cursor-pointer rounded px-1 py-1 hover:bg-gray-50"
+          className="mt-1 cursor-pointer rounded px-1 py-1 hover:bg-muted"
           onClick={onTap}
           role="button"
           tabIndex={0}
@@ -80,7 +80,7 @@ export default function SortableStep({
           }}
         >
           <p
-            className={`text-sm ${previewText ? "" : "italic text-gray-400"}`}
+            className={`text-sm ${previewText ? "" : "italic text-muted-foreground"}`}
           >
             {previewText || t("steps.instruction")}
           </p>

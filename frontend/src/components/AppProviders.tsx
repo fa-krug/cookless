@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import type { ReactNode } from "react";
 import { AuthProvider } from "../contexts/AuthContext";
+import { ThemeProvider } from "./theme-provider";
 import { TooltipProvider } from "./ui/tooltip";
 
 export default function AppProviders({ children }: { children: ReactNode }) {
@@ -22,11 +23,13 @@ export default function AppProviders({ children }: { children: ReactNode }) {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider delayDuration={300}>
-        <AuthProvider>
-          {children}
-        </AuthProvider>
-      </TooltipProvider>
+      <ThemeProvider>
+        <TooltipProvider delayDuration={300}>
+          <AuthProvider>
+            {children}
+          </AuthProvider>
+        </TooltipProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }

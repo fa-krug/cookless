@@ -86,7 +86,7 @@ export default function IngredientForm({
       </div>
 
       {fields.length === 0 && (
-        <p className="mt-2 text-sm text-gray-500">{t("ingredients.noIngredients")}</p>
+        <p className="mt-2 text-sm text-muted-foreground">{t("ingredients.noIngredients")}</p>
       )}
 
       <div className="mt-3 space-y-2">
@@ -101,7 +101,7 @@ export default function IngredientForm({
           return (
             <div
               key={row.id}
-              className="flex cursor-pointer items-center gap-2 rounded-lg border border-gray-200 px-3 py-2.5"
+              className="flex cursor-pointer items-center gap-2 rounded-lg border border-border px-3 py-2.5"
               onClick={() => setEditingIndex(index)}
               role="button"
               tabIndex={0}
@@ -113,7 +113,7 @@ export default function IngredientForm({
               }}
             >
               <span
-                className={`min-w-0 flex-1 truncate text-sm ${isEmpty ? "italic text-gray-400" : ""}`}
+                className={`min-w-0 flex-1 truncate text-sm ${isEmpty ? "italic text-muted-foreground" : ""}`}
               >
                 {displayText}
               </span>
@@ -124,7 +124,7 @@ export default function IngredientForm({
                   e.stopPropagation();
                   removeRow(index);
                 }}
-                className="h-8 w-8 shrink-0 text-red-600 hover:bg-red-50"
+                className="h-8 w-8 shrink-0 text-destructive hover:bg-destructive/10"
                 tooltip={t("common.remove")}
                 aria-label={t("common.remove")}
               >
@@ -242,7 +242,7 @@ function IngredientEditDrawer({
             placeholder={t("ingredients.search")}
           />
           {showDropdown && filtered.length > 0 && (
-            <ul className="absolute z-10 mt-1 w-full rounded-md border border-gray-200 bg-white shadow-lg">
+            <ul className="absolute z-10 mt-1 w-full rounded-md border border-border bg-card shadow-lg">
               <ScrollArea className="max-h-40">
                 {filtered.slice(0, 20).map((ing) => (
                   <li key={ing.id}>
@@ -251,7 +251,7 @@ function IngredientEditDrawer({
                       variant="ghost"
                       onMouseDown={(e) => e.preventDefault()}
                       onClick={() => selectIngredient(ing)}
-                      className="w-full justify-start px-3 py-1.5 text-sm font-normal hover:bg-orange-50"
+                      className="w-full justify-start px-3 py-1.5 text-sm font-normal hover:bg-primary/10"
                     >
                       {ing[nameKey]}
                     </Button>

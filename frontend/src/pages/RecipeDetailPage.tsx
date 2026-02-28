@@ -45,7 +45,7 @@ export default function RecipeDetailPage() {
   if (!recipe || !id) {
     return (
       <div className="p-4">
-        <p className="text-center text-sm text-gray-500">{t("common.error")}</p>
+        <p className="text-center text-sm text-muted-foreground">{t("common.error")}</p>
       </div>
     );
   }
@@ -221,8 +221,8 @@ function RecipeForm({ recipe, recipeId, allIngredients, allUnits }: RecipeFormPr
             className="h-48 w-full rounded-lg object-cover"
           />
         ) : (
-          <div className="flex h-48 w-full items-center justify-center rounded-lg bg-gray-100">
-            <UtensilsCrossed size={48} className={`text-gray-400 ${generateImage.isPending ? "animate-pulse" : ""}`} />
+          <div className="flex h-48 w-full items-center justify-center rounded-lg bg-muted">
+            <UtensilsCrossed size={48} className={`text-muted-foreground ${generateImage.isPending ? "animate-pulse" : ""}`} />
           </div>
         )}
 
@@ -249,7 +249,7 @@ function RecipeForm({ recipe, recipeId, allIngredients, allUnits }: RecipeFormPr
             <Button
               variant="outline"
               size="sm"
-              className="border-orange-300 text-orange-600 hover:bg-orange-50"
+              className="border-primary/30 text-primary hover:bg-primary/10"
               type="button"
               onClick={handleGenerateImage}
               disabled={imageInProgress}
@@ -263,7 +263,7 @@ function RecipeForm({ recipe, recipeId, allIngredients, allUnits }: RecipeFormPr
             <Button
               variant="outline"
               size="sm"
-              className="border-red-300 text-red-600 hover:bg-red-50"
+              className="border-destructive/30 text-destructive hover:bg-destructive/10"
               type="button"
               onClick={handleDeleteImage}
               disabled={imageInProgress}
@@ -365,7 +365,7 @@ function RecipeForm({ recipe, recipeId, allIngredients, allUnits }: RecipeFormPr
                 <SlidersHorizontal size={14} />
                 {t("tags.filter")}
                 {tagIds.length > 0 && (
-                  <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-orange-500 px-1 text-[10px] font-semibold text-white">
+                  <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-semibold text-white">
                     {tagIds.length}
                   </span>
                 )}
@@ -389,7 +389,7 @@ function RecipeForm({ recipe, recipeId, allIngredients, allUnits }: RecipeFormPr
           {/* Move button */}
           <Button
             variant="outline"
-            className="w-full border-orange-500 text-orange-500 hover:bg-orange-50"
+            className="w-full border-primary text-primary hover:bg-primary/10"
             type="button"
             onClick={handleMove}
             disabled={moveRecipe.isPending}
@@ -402,7 +402,7 @@ function RecipeForm({ recipe, recipeId, allIngredients, allUnits }: RecipeFormPr
           <div className="flex gap-3">
             <Button
               variant="outline"
-              className="flex-1 border-orange-500 text-orange-500 hover:bg-orange-50"
+              className="flex-1 border-primary text-primary hover:bg-primary/10"
               type="submit"
               disabled={updateRecipe.isPending}
             >
@@ -411,7 +411,7 @@ function RecipeForm({ recipe, recipeId, allIngredients, allUnits }: RecipeFormPr
             </Button>
             <Button
               variant="outline"
-              className="border-red-300 text-red-600 hover:bg-red-50"
+              className="border-destructive/30 text-destructive hover:bg-destructive/10"
               type="button"
               onClick={handleDelete}
               disabled={deleteRecipe.isPending}

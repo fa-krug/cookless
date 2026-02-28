@@ -31,14 +31,14 @@ export default function TagFilterPopover({
               if (tags.length === 0) return null;
               return (
                 <div key={category}>
-                  <h4 className="mb-1 text-xs font-medium uppercase text-gray-500">
+                  <h4 className="mb-1 text-xs font-medium uppercase text-muted-foreground">
                     {t(`tags.${category}`)}
                   </h4>
                   <div className="space-y-0.5">
                     {tags.map((tag) => (
                       <label
                         key={tag.id}
-                        className="flex cursor-pointer items-center gap-2 rounded px-2 py-1.5 hover:bg-gray-50"
+                        className="flex cursor-pointer items-center gap-2 rounded px-2 py-1.5 hover:bg-muted"
                       >
                         <Checkbox
                           checked={selectedTags.includes(tag.id)}

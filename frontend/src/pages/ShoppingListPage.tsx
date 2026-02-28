@@ -61,13 +61,13 @@ function ShoppingListView({ shoppingList }: { shoppingList: ShoppingList }) {
   return (
     <div>
       <div className="mb-3 flex items-center justify-between">
-        <p className="text-sm text-gray-400">
+        <p className="text-sm text-muted-foreground">
           {t("shopping.linkedToPlan")}
         </p>
         <Button
           variant="ghost"
           size="sm"
-          className="text-orange-500 hover:bg-orange-50"
+          className="text-primary hover:bg-primary/10"
           onClick={handleUncheckAll}
           disabled={!hasCheckedItems || bulkToggle.isPending}
         >
@@ -108,7 +108,7 @@ export default function ShoppingListPage() {
   return (
     <div className="p-4">
       <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">{t("shopping.title")}</h1>
+        <h1 className="text-2xl font-bold text-foreground">{t("shopping.title")}</h1>
       </div>
 
       {isLoading && <ShoppingListSkeleton />}

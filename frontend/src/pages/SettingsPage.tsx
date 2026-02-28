@@ -43,6 +43,8 @@ import { SettingsSkeleton } from "../components/ui/SettingsSkeleton";
 import { useAuth } from "../hooks/useAuth";
 import { useConfirm } from "../hooks/useConfirm";
 import { toast } from "sonner";
+import { useTheme } from "../hooks/useTheme";
+import type { Theme } from "../hooks/useTheme";
 import { useTokens, useCreateToken, useDeleteToken } from "../hooks/useTokens";
 
 export default function SettingsPage() {
@@ -52,9 +54,7 @@ export default function SettingsPage() {
   const navigate = useNavigate();
 
   const [language, setLanguage] = useState(i18n.language);
-  const [theme, setTheme] = useState<"light" | "dark">(() =>
-    document.documentElement.classList.contains("dark") ? "dark" : "light",
-  );
+  const { theme, setTheme } = useTheme();
   const [householdOpen, setHouseholdOpen] = useState(false);
 
   // Passkey state
@@ -269,23 +269,23 @@ export default function SettingsPage() {
 
   return (
     <div className="p-4">
-      <h1 className="mb-4 text-2xl font-bold text-gray-900">{t("settings.title")}</h1>
+      <h1 className="mb-4 text-2xl font-bold text-foreground">{t("settings.title")}</h1>
 
       {/* Household */}
       {user?.active_household && (
         <Button
           variant="ghost"
-          className="mb-4 flex h-auto w-full items-center justify-start rounded-lg border border-gray-200 bg-white p-4 shadow-sm"
+          className="mb-4 flex h-auto w-full items-center justify-start rounded-lg border border-border bg-card p-4 shadow-sm"
           onClick={() => setHouseholdOpen(true)}
         >
-          <Home size={20} className="mr-3 text-gray-400" />
+          <Home size={20} className="mr-3 text-muted-foreground" />
           <div className="min-w-0 flex-1 text-left">
-            <p className="text-xs text-gray-500">{t("household.title")}</p>
-            <p className="truncate text-sm font-semibold text-gray-900">
+            <p className="text-xs text-muted-foreground">{t("household.title")}</p>
+            <p className="truncate text-sm font-semibold text-foreground">
               {user.active_household.name}
             </p>
           </div>
-          <ChevronRight size={20} className="text-gray-400" />
+          <ChevronRight size={20} className="text-muted-foreground" />
         </Button>
       )}
 
@@ -295,9 +295,9 @@ export default function SettingsPage() {
         title={t("household.title")}
       >
         <div className="p-4">
-          <div className="mb-4 rounded-lg border border-gray-200 p-4">
-            <p className="text-xs text-gray-500">{t("household.currentHousehold")}</p>
-            <p className="text-lg font-semibold text-gray-900">
+          <div className="mb-4 rounded-lg border border-border p-4">
+            <p className="text-xs text-muted-foreground">{t("household.currentHousehold")}</p>
+            <p className="text-lg font-semibold text-foreground">
               {user?.active_household?.name}
             </p>
           </div>
@@ -314,8 +314,8 @@ export default function SettingsPage() {
       </ResponsiveOverlay>
 
       {/* Language */}
-      <div className="mb-4 rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
-        <h2 className="mb-3 text-lg font-semibold text-gray-900">{t("settings.language")}</h2>
+      <div className="mb-4 rounded-lg border border-border bg-card p-4 shadow-sm">
+        <h2 className="mb-3 text-lg font-semibold text-foreground">{t("settings.language")}</h2>
         <ToggleGroup
           type="single"
           value={language}
@@ -330,19 +330,17 @@ export default function SettingsPage() {
       </div>
 
       {/* Theme */}
-      <div className="mb-4 rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
-        <h2 className="mb-3 text-lg font-semibold text-gray-900">{t("settings.theme")}</h2>
+      <div className="mb-4 rounded-lg border border-border bg-card p-4 shadow-sm">
+        <h2 className="mb-3 text-lg font-semibold text-foreground">{t("settings.theme")}</h2>
         <ToggleGroup
           type="single"
           value={theme}
           onValueChange={(val) => {
-            if (!val || (val !== "light" && val !== "dark")) return;
-            setTheme(val);
-            localStorage.setItem("theme", val);
-            document.documentElement.classList.toggle("dark", val === "dark");
+            if (!val) return;
+            setTheme(val as Theme);
           }}
         >
-          {(["light", "dark"] as const).map((t_) => (
+          {(["light", "dark", "system"] as const).map((t_) => (
             <ToggleGroupItem key={t_} value={t_}>
               {t(`settings.themes.${t_}`)}
             </ToggleGroupItem>
@@ -351,8 +349,8 @@ export default function SettingsPage() {
       </div>
 
       {/* Passkeys */}
-      <div className="mb-4 rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
-        <h2 className="mb-3 text-lg font-semibold text-gray-900">{t("passkeys.title")}</h2>
+      <div className="mb-4 rounded-lg border border-border bg-card p-4 shadow-sm">
+        <h2 className="mb-3 text-lg font-semibold text-foreground">{t("passkeys.title")}</h2>
 
         {passkeysLoading ? (
           <SettingsSkeleton />
@@ -361,13 +359,13 @@ export default function SettingsPage() {
             {passkeys.map((passkey) => (
               <div
                 key={passkey.id}
-                className="flex items-center justify-between rounded-md border border-gray-200 px-3 py-2"
+                className="flex items-center justify-between rounded-md border border-border px-3 py-2"
               >
                 <div>
-                  <p className="text-sm font-medium text-gray-900">
+                  <p className="text-sm font-medium text-foreground">
                     {passkey.device_name || "Passkey"}
                   </p>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-muted-foreground">
                     {t("passkeys.added", {
                       date: new Date(passkey.created_at).toLocaleDateString(),
                     })}
@@ -375,7 +373,7 @@ export default function SettingsPage() {
                 </div>
                 <IconButton
                   variant="ghost"
-                  className="h-8 w-8 text-red-500 hover:bg-red-50"
+                  className="h-8 w-8 text-destructive hover:bg-destructive/10"
                   onClick={() => handleDeletePasskey(passkey.id)}
                   disabled={passkeys.length <= 1 && !user?.has_password}
                   tooltip={
@@ -394,7 +392,7 @@ export default function SettingsPage() {
 
         <Button
           variant="outline"
-          className="mt-3 w-full border-orange-500 text-orange-500 hover:bg-orange-50"
+          className="mt-3 w-full border-primary text-primary hover:bg-primary/10"
           onClick={handleAddPasskey}
           disabled={addingPasskey}
         >
@@ -404,15 +402,15 @@ export default function SettingsPage() {
       </div>
 
       {/* Password */}
-      <div className="mb-4 rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
-        <h2 className="mb-3 text-lg font-semibold text-gray-900">{t("password.title")}</h2>
+      <div className="mb-4 rounded-lg border border-border bg-card p-4 shadow-sm">
+        <h2 className="mb-3 text-lg font-semibold text-foreground">{t("password.title")}</h2>
 
         {!user?.has_password && (
-          <p className="mb-3 text-sm text-gray-500">{t("password.noPasswordSet")}</p>
+          <p className="mb-3 text-sm text-muted-foreground">{t("password.noPasswordSet")}</p>
         )}
 
         {passwordForm.formState.errors.root && (
-          <p className="mb-3 text-sm text-red-500">
+          <p className="mb-3 text-sm text-destructive">
             {passwordForm.formState.errors.root.message}
           </p>
         )}
@@ -490,7 +488,7 @@ export default function SettingsPage() {
         {user?.has_password && (
           <Button
             variant="outline"
-            className="mt-3 w-full border-red-500 text-red-500 hover:bg-red-50"
+            className="mt-3 w-full border-destructive text-destructive hover:bg-destructive/10"
             onClick={handleRemovePassword}
             disabled={!user?.has_passkey}
             title={!user?.has_passkey ? t("passkeys.cannotDeleteLast") : ""}
@@ -502,14 +500,14 @@ export default function SettingsPage() {
       </div>
 
       {/* API Tokens */}
-      <div className="mb-4 rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
+      <div className="mb-4 rounded-lg border border-border bg-card p-4 shadow-sm">
         <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-gray-900">{t("tokens.title")}</h2>
+          <h2 className="text-lg font-semibold text-foreground">{t("tokens.title")}</h2>
           <a
             href="/api/v1/docs"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1 text-xs text-orange-500 hover:text-orange-700"
+            className="flex items-center gap-1 text-xs text-primary hover:text-primary/80"
           >
             {t("tokens.docsLink")}
             <ExternalLink size={12} />
@@ -518,15 +516,15 @@ export default function SettingsPage() {
 
         {/* Created token display */}
         {createdToken && (
-          <div className="mb-4 rounded-md border border-orange-300 bg-orange-50 p-3">
-            <p className="mb-1 text-xs font-medium text-orange-800">{t("tokens.tokenLabel")}</p>
+          <div className="mb-4 rounded-md border border-primary/30 bg-primary/10 p-3">
+            <p className="mb-1 text-xs font-medium text-primary">{t("tokens.tokenLabel")}</p>
             <div className="flex items-center gap-2">
-              <code className="min-w-0 flex-1 break-all rounded bg-white px-2 py-1 font-mono text-xs text-gray-900">
+              <code className="min-w-0 flex-1 break-all rounded bg-background px-2 py-1 font-mono text-xs text-foreground">
                 {createdToken.token}
               </code>
               <IconButton
                 variant="ghost"
-                className="h-8 w-8 shrink-0 text-orange-600 hover:bg-orange-100"
+                className="h-8 w-8 shrink-0 text-primary hover:bg-primary/10"
                 type="button"
                 onClick={() => copyToken(createdToken.token)}
                 tooltip={copied ? t("tokens.tokenLabel") : t("tokens.tokenLabel")}
@@ -534,10 +532,10 @@ export default function SettingsPage() {
                 {copied ? <Check size={16} /> : <Copy size={16} />}
               </IconButton>
             </div>
-            <p className="mt-2 text-xs text-orange-700">{t("tokens.tokenWarning")}</p>
+            <p className="mt-2 text-xs text-primary/80">{t("tokens.tokenWarning")}</p>
             <Button
               variant="link"
-              className="mt-2 h-auto p-0 text-xs text-orange-600"
+              className="mt-2 h-auto p-0 text-xs text-primary"
               type="button"
               onClick={() => setCreatedToken(null)}
             >
@@ -550,35 +548,35 @@ export default function SettingsPage() {
         {tokensLoading ? (
           <SettingsSkeleton />
         ) : tokens.length === 0 && !showTokenForm ? (
-          <p className="text-sm text-gray-500">{t("tokens.noTokens")}</p>
+          <p className="text-sm text-muted-foreground">{t("tokens.noTokens")}</p>
         ) : (
           <div className="space-y-3">
             {tokens.map((token) => (
               <div
                 key={token.id}
-                className="flex items-center justify-between rounded-md border border-gray-200 px-3 py-2"
+                className="flex items-center justify-between rounded-md border border-border px-3 py-2"
               >
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
-                    <p className="text-sm font-medium text-gray-900">{token.name}</p>
+                    <p className="text-sm font-medium text-foreground">{token.name}</p>
                     {token.expires_at && new Date(token.expires_at) < new Date() && (
-                      <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs text-red-700">
+                      <span className="rounded-full bg-destructive/10 px-2 py-0.5 text-xs text-destructive">
                         {t("tokens.expired")}
                       </span>
                     )}
                   </div>
-                  <p className="font-mono text-xs text-gray-400">{token.token_prefix}...</p>
+                  <p className="font-mono text-xs text-muted-foreground">{token.token_prefix}...</p>
                   <div className="mt-1 flex flex-wrap gap-1">
                     {token.scopes.map((scope) => (
                       <span
                         key={scope}
-                        className="rounded bg-gray-100 px-1.5 py-0.5 text-xs text-gray-600"
+                        className="rounded bg-muted px-1.5 py-0.5 text-xs text-muted-foreground"
                       >
                         {scope}
                       </span>
                     ))}
                   </div>
-                  <p className="mt-1 text-xs text-gray-500">
+                  <p className="mt-1 text-xs text-muted-foreground">
                     {token.last_used_at
                       ? t("tokens.lastUsed", {
                           date: new Date(token.last_used_at).toLocaleDateString(),
@@ -588,7 +586,7 @@ export default function SettingsPage() {
                 </div>
                 <IconButton
                   variant="ghost"
-                  className="h-8 w-8 shrink-0 text-red-500 hover:bg-red-50"
+                  className="h-8 w-8 shrink-0 text-destructive hover:bg-destructive/10"
                   onClick={() => handleDeleteToken(token.id)}
                   tooltip={t("tokens.deleteToken")}
                   aria-label={t("tokens.deleteToken")}
@@ -605,7 +603,7 @@ export default function SettingsPage() {
           <Form {...tokenForm}>
             <form
               onSubmit={tokenForm.handleSubmit(handleCreateToken)}
-              className="mt-3 space-y-3 rounded-md border border-gray-200 p-3"
+              className="mt-3 space-y-3 rounded-md border border-border p-3"
             >
               <FormField
                 control={tokenForm.control}
@@ -625,11 +623,11 @@ export default function SettingsPage() {
               />
 
               <div>
-                <p className="mb-2 text-sm font-medium text-gray-700">{t("tokens.scopes")}</p>
+                <p className="mb-2 text-sm font-medium text-foreground">{t("tokens.scopes")}</p>
                 <div className="space-y-2">
                   {SCOPE_GROUPS.map((group) => (
                     <div key={group} className="flex items-center gap-3">
-                      <span className="w-24 text-sm text-gray-600">
+                      <span className="w-24 text-sm text-muted-foreground">
                         {t(`tokens.scopeGroups.${group}`)}
                       </span>
                       <Label className="flex items-center gap-1.5 text-xs font-normal">
@@ -637,7 +635,7 @@ export default function SettingsPage() {
                           type="checkbox"
                           checked={tokenScopes.includes(`${group}:read`)}
                           onChange={() => toggleScope(`${group}:read`)}
-                          className="rounded border-gray-300 text-orange-500 focus:ring-orange-500"
+                          className="rounded border-border text-primary focus:ring-primary"
                         />
                         {t("tokens.scopeRead")}
                       </Label>
@@ -646,7 +644,7 @@ export default function SettingsPage() {
                           type="checkbox"
                           checked={tokenScopes.includes(`${group}:write`)}
                           onChange={() => toggleScope(`${group}:write`)}
-                          className="rounded border-gray-300 text-orange-500 focus:ring-orange-500"
+                          className="rounded border-border text-primary focus:ring-primary"
                         />
                         {t("tokens.scopeWrite")}
                       </Label>
@@ -656,7 +654,7 @@ export default function SettingsPage() {
               </div>
 
               <div>
-                <p className="mb-2 text-sm font-medium text-gray-700">{t("tokens.expiration")}</p>
+                <p className="mb-2 text-sm font-medium text-foreground">{t("tokens.expiration")}</p>
                 <div className="flex flex-wrap gap-2">
                   {(["30d", "90d", "1y", "never", "custom"] as const).map((preset) => (
                     <Button
@@ -706,7 +704,7 @@ export default function SettingsPage() {
         ) : (
           <Button
             variant="outline"
-            className="mt-3 w-full border-orange-500 text-orange-500 hover:bg-orange-50"
+            className="mt-3 w-full border-primary text-primary hover:bg-primary/10"
             onClick={() => setShowTokenForm(true)}
           >
             <Plus size={16} />
@@ -719,20 +717,20 @@ export default function SettingsPage() {
       {user?.is_staff && (
         <a
           href="/admin/"
-          className="mb-4 flex w-full items-center rounded-lg border border-gray-200 bg-white p-4 shadow-sm"
+          className="mb-4 flex w-full items-center rounded-lg border border-border bg-card p-4 shadow-sm"
         >
-          <Shield size={20} className="mr-3 text-gray-400" />
+          <Shield size={20} className="mr-3 text-muted-foreground" />
           <div className="min-w-0 flex-1 text-left">
-            <p className="text-sm font-semibold text-gray-900">{t("settings.admin")}</p>
+            <p className="text-sm font-semibold text-foreground">{t("settings.admin")}</p>
           </div>
-          <ChevronRight size={20} className="text-gray-400" />
+          <ChevronRight size={20} className="text-muted-foreground" />
         </a>
       )}
 
       {/* Account / Logout */}
-      <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
-        <h2 className="mb-3 text-lg font-semibold text-gray-900">{t("settings.account")}</h2>
-        {user && <p className="mb-3 text-sm text-gray-600">{user.email}</p>}
+      <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
+        <h2 className="mb-3 text-lg font-semibold text-foreground">{t("settings.account")}</h2>
+        {user && <p className="mb-3 text-sm text-muted-foreground">{user.email}</p>}
         <Button
           variant="destructive"
           className="w-full"

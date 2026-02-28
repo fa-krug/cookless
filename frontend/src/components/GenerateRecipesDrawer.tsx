@@ -69,7 +69,7 @@ export default function GenerateRecipesDrawer({
             <Label>
               {t("generateRecipes.count")}
             </Label>
-            <span className="text-sm font-semibold text-orange-600">{count}</span>
+            <span className="text-sm font-semibold text-primary">{count}</span>
           </div>
           <input
             type="range"
@@ -77,7 +77,7 @@ export default function GenerateRecipesDrawer({
             max={20}
             value={count}
             onChange={(e) => form.setValue("count", Number(e.target.value))}
-            className="mt-2 w-full accent-orange-500"
+            className="mt-2 w-full accent-primary"
           />
         </div>
 
@@ -95,20 +95,20 @@ export default function GenerateRecipesDrawer({
                 );
                 return (
                   <details key={category} className="relative">
-                    <summary className="flex cursor-pointer select-none items-center gap-1 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm">
+                    <summary className="flex cursor-pointer select-none items-center gap-1 rounded-lg border border-border bg-card px-3 py-1.5 text-sm">
                       {t(`tags.${category}`)}
                       {selectedInCategory.length > 0 && (
-                        <span className="ml-1 rounded-full bg-orange-500 px-1.5 text-xs text-white">
+                        <span className="ml-1 rounded-full bg-primary px-1.5 text-xs text-primary-foreground">
                           {selectedInCategory.length}
                         </span>
                       )}
                     </summary>
-                    <div className="absolute z-10 mt-1 min-w-48 rounded-lg border border-gray-200 bg-white shadow-lg">
+                    <div className="absolute z-10 mt-1 min-w-48 rounded-lg border border-border bg-card shadow-lg">
                       <ScrollArea className="max-h-60 p-2">
                         {tags.map((tag) => (
                           <label
                             key={tag.id}
-                            className="flex cursor-pointer items-center gap-2 rounded px-2 py-1 hover:bg-gray-50"
+                            className="flex cursor-pointer items-center gap-2 rounded px-2 py-1 hover:bg-muted"
                           >
                             <Checkbox
                               checked={selectedTagIds.includes(tag.id)}
@@ -153,7 +153,7 @@ export default function GenerateRecipesDrawer({
             checked={generateImages}
             onCheckedChange={(checked) => form.setValue("generateImages", checked === true)}
           />
-          <span className="text-sm text-gray-700">
+          <span className="text-sm text-foreground">
             {t("generateRecipes.generateImages")}
           </span>
         </label>

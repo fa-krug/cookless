@@ -100,7 +100,7 @@ export default function StepEditor({
       </div>
 
       {fields.length === 0 && (
-        <p className="mt-2 text-sm text-gray-500">{t("steps.noSteps")}</p>
+        <p className="mt-2 text-sm text-muted-foreground">{t("steps.noSteps")}</p>
       )}
 
       <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
@@ -172,7 +172,7 @@ function StepEditDrawer({ step, isMachine, onStepChange, onClose }: StepEditDraw
             <Button
               type="button"
               variant="outline"
-              className="mt-3 w-full border-dashed border-orange-400 text-orange-500 hover:bg-orange-50"
+              className="mt-3 w-full border-dashed border-primary text-primary hover:bg-primary/10"
               onClick={() => {
                 setFreeTextMode(false);
                 onStepChange({ ...step, program_type: null, instruction: "" });

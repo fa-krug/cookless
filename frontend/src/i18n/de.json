@@ -384,7 +384,8 @@
     "theme": "Design",
     "themes": {
       "light": "Hell",
-      "dark": "Dunkel"
+      "dark": "Dunkel",
+      "system": "Automatisch"
     },
     "logout": "Abmelden",
     "logoutConfirm": "Möchtest du dich wirklich abmelden?",

@@ -123,7 +123,7 @@ export default function IterationCard({
         onClick={isArchived ? () => setCollapsed((c) => !c) : undefined}
       >
         <h3
-          className={`text-sm font-semibold ${isArchived ? "text-gray-400" : "text-gray-700"}`}
+          className={`text-sm font-semibold ${isArchived ? "text-muted-foreground" : "text-foreground"}`}
         >
           {headerLabel}
           {isArchived && (
@@ -137,7 +137,7 @@ export default function IterationCard({
           <Button
             variant="outline"
             size="sm"
-            className="border-orange-300 text-orange-500 hover:bg-orange-50"
+            className="border-primary/50 text-primary hover:bg-primary/10"
             onClick={onRenew}
             disabled={isRenewing}
           >
@@ -167,25 +167,25 @@ export default function IterationCard({
                 ref={isToday ? todayRef : undefined}
                 className={`rounded-lg border shadow-sm ${
                   isToday
-                    ? "border-orange-400 bg-orange-50 ring-2 ring-orange-300"
+                    ? "border-primary bg-primary/10 ring-2 ring-primary/50"
                     : isShoppingDay
-                      ? "border-l-4 border-l-blue-300 border-t border-r border-b border-t-gray-200 border-r-gray-200 border-b-gray-200 bg-white"
-                      : "border-gray-200 bg-white"
+                      ? "border-l-4 border-l-blue-300 border-t border-r border-b border-t-border border-r-border border-b-border bg-card"
+                      : "border-border bg-card"
                 }`}
               >
                 <div
                   className={`border-b px-4 py-2 ${
-                    isToday ? "border-orange-200" : "border-gray-100"
+                    isToday ? "border-primary/30" : "border-border"
                   }`}
                 >
                   <h3
                     className={`flex items-center text-sm font-semibold ${
-                      isToday ? "text-orange-600" : "text-gray-700"
+                      isToday ? "text-primary" : "text-foreground"
                     }`}
                   >
                     {formatDate(date, i18n.language)}
                     {isToday && (
-                      <span className="ml-2 text-xs font-normal text-orange-500">
+                      <span className="ml-2 text-xs font-normal text-primary">
                         {t("plan.today")}
                       </span>
                     )}
@@ -195,7 +195,7 @@ export default function IterationCard({
                   </h3>
                 </div>
 
-                <div className="divide-y divide-gray-50">
+                <div className="divide-y divide-border">
                   {/* Shopping list link on shopping days */}
                   {isShoppingDay && shoppingInfo && (
                     <button
@@ -218,21 +218,21 @@ export default function IterationCard({
                         recipe &&
                         setPreviewEntry({ recipeId: recipe.id, servings: entry.servings })
                       }
-                      className="flex w-full items-center gap-2 px-4 py-3 text-left hover:bg-gray-50"
+                      className="flex w-full items-center gap-2 px-4 py-3 text-left hover:bg-muted"
                     >
-                      <span className="w-14 shrink-0 text-xs font-medium uppercase text-gray-400">
+                      <span className="w-14 shrink-0 text-xs font-medium uppercase text-muted-foreground">
                         {t("plan.lunch")}
                       </span>
                       <span
                         className={`min-w-0 flex-1 truncate text-sm ${
                           entry.is_leftover
-                            ? "italic text-gray-400"
-                            : "font-medium text-gray-900"
+                            ? "italic text-muted-foreground"
+                            : "font-medium text-foreground"
                         }`}
                       >
                         {recipeName}
                         {entry.is_leftover && (
-                          <span className="ml-1.5 text-xs font-normal not-italic text-gray-400">
+                          <span className="ml-1.5 text-xs font-normal not-italic text-muted-foreground">
                             ({t("plan.leftover")})
                           </span>
                         )}
@@ -242,10 +242,10 @@ export default function IterationCard({
 
                   {/* Static dinner label */}
                   <div className="flex items-center gap-2 px-4 py-3">
-                    <span className="w-14 shrink-0 text-xs font-medium uppercase text-gray-400">
+                    <span className="w-14 shrink-0 text-xs font-medium uppercase text-muted-foreground">
                       {t("plan.dinner")}
                     </span>
-                    <span className="text-sm text-gray-400">
+                    <span className="text-sm text-muted-foreground">
                       {t("plan.coldDish")}
                     </span>
                   </div>

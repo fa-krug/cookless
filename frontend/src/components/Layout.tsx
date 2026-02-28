@@ -28,7 +28,7 @@ export default function Layout() {
   }
 
   return (
-    <div className="flex min-h-screen bg-white md:flex-row">
+    <div className="flex min-h-screen bg-background md:flex-row">
       <BottomNav />
       <div
         className={cn(

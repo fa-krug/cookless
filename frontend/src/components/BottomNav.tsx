@@ -64,7 +64,7 @@ export default function BottomNav() {
   return (
     <>
       {/* Mobile: bottom bar */}
-      <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-gray-200 bg-white pb-[env(safe-area-inset-bottom)] md:hidden">
+      <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-background pb-[env(safe-area-inset-bottom)] md:hidden">
         <div className="flex items-center justify-around">
           {navItems.map((item) => (
             <NavLink
@@ -72,7 +72,7 @@ export default function BottomNav() {
               to={item.to}
               className={({ isActive }) =>
                 `flex flex-1 flex-col items-center gap-0.5 py-2 text-xs ${
-                  isActive ? "text-orange-500" : "text-gray-500"
+                  isActive ? "text-primary" : "text-muted-foreground"
                 }`
               }
             >
@@ -86,7 +86,7 @@ export default function BottomNav() {
       {/* Desktop: sidebar */}
       <nav
         className={cn(
-          "fixed left-0 top-0 hidden h-full flex-col border-r border-gray-200 bg-white transition-[width] duration-200 md:flex",
+          "fixed left-0 top-0 hidden h-full flex-col border-r border-border bg-background transition-[width] duration-200 md:flex",
           collapsed ? "w-16" : "w-56",
         )}
       >
@@ -134,8 +134,8 @@ export default function BottomNav() {
                       cn(
                         "flex items-center justify-center rounded-lg p-2.5 text-sm font-medium",
                         isActive
-                          ? "bg-orange-50 text-orange-600"
-                          : "text-gray-600 hover:bg-gray-50 hover:text-gray-900",
+                          ? "bg-primary/10 text-primary"
+                          : "text-muted-foreground hover:bg-muted hover:text-foreground",
                       )
                     }
                   >
@@ -152,8 +152,8 @@ export default function BottomNav() {
                   cn(
                     "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium",
                     isActive
-                      ? "bg-orange-50 text-orange-600"
-                      : "text-gray-600 hover:bg-gray-50 hover:text-gray-900",
+                      ? "bg-primary/10 text-primary"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground",
                   )
                 }
               >
@@ -168,7 +168,7 @@ export default function BottomNav() {
         {user && (
           <div
             className={cn(
-              "border-t border-gray-200",
+              "border-t border-border",
               collapsed ? "p-2" : "p-3",
             )}
           >

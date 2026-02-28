@@ -114,9 +114,9 @@ function MembersList({
   }
 
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
-      <h2 className="mb-3 text-lg font-semibold text-gray-900">{t("household.members")}</h2>
-      <ul className="divide-y divide-gray-100">
+    <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
+      <h2 className="mb-3 text-lg font-semibold text-foreground">{t("household.members")}</h2>
+      <ul className="divide-y divide-border">
         {household.members.map((member) => (
           <li key={member.id} className="flex items-center justify-between py-2">
             <div className="flex items-center gap-2">
@@ -124,19 +124,19 @@ function MembersList({
                 <AvatarFallback
                   className={
                     member.role === "OWNER"
-                      ? "bg-orange-100 text-orange-700"
-                      : "bg-gray-100 text-gray-600"
+                      ? "bg-primary/10 text-primary"
+                      : "bg-muted text-muted-foreground"
                   }
                 >
                   {member.email.charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
-              <span className="text-sm text-gray-900">{member.email}</span>
+              <span className="text-sm text-foreground">{member.email}</span>
               <span
                 className={`rounded-full px-2 py-0.5 text-xs font-medium ${
                   member.role === "OWNER"
-                    ? "bg-orange-100 text-orange-700"
-                    : "bg-gray-100 text-gray-600"
+                    ? "bg-primary/10 text-primary"
+                    : "bg-muted text-muted-foreground"
                 }`}
               >
                 {member.role === "OWNER" ? t("household.owner") : t("household.member")}
@@ -149,7 +149,7 @@ function MembersList({
                     variant="ghost"
                     onClick={() => handleTransferOwnership(member.id, member.email)}
                     disabled={transferOwnership.isPending}
-                    className="h-8 w-8 text-orange-500 hover:bg-orange-50 hover:text-orange-700"
+                    className="h-8 w-8 text-primary hover:bg-primary/10 hover:text-primary"
                     tooltip={t("household.transferOwnership")}
                     aria-label={t("household.transferOwnership")}
                   >
@@ -160,7 +160,7 @@ function MembersList({
                   variant="ghost"
                   onClick={() => handleRemove(member.id)}
                   disabled={removeMember.isPending}
-                  className="h-8 w-8 text-red-500 hover:bg-red-50 hover:text-red-700"
+                  className="h-8 w-8 text-destructive hover:bg-destructive/10 hover:text-destructive"
                   tooltip={t("common.remove")}
                   aria-label={t("common.remove")}
                 >
@@ -200,8 +200,8 @@ function InviteSection({ householdId }: { householdId: string }) {
   }
 
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
-      <h2 className="mb-3 text-lg font-semibold text-gray-900">{t("household.generateInvite")}</h2>
+    <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
+      <h2 className="mb-3 text-lg font-semibold text-foreground">{t("household.generateInvite")}</h2>
       <Button
         onClick={handleGenerate}
         disabled={createInvite.isPending}
@@ -211,9 +211,9 @@ function InviteSection({ householdId }: { householdId: string }) {
       </Button>
 
       {invite && (
-        <div className="mt-3 rounded-md bg-gray-50 p-3">
+        <div className="mt-3 rounded-md bg-muted p-3">
           <div className="flex items-center gap-2">
-            <code className="min-w-0 flex-1 truncate rounded bg-gray-200 px-2 py-1 text-sm font-mono">
+            <code className="min-w-0 flex-1 truncate rounded bg-muted px-2 py-1 text-sm font-mono">
               {invite.code}
             </code>
             <Button
@@ -225,7 +225,7 @@ function InviteSection({ householdId }: { householdId: string }) {
               {copied ? t("household.copied") : t("household.copyLink")}
             </Button>
           </div>
-          <p className="mt-2 text-xs text-gray-500">
+          <p className="mt-2 text-xs text-muted-foreground">
             {t("household.inviteExpiry", {
               date: new Date(invite.expires_at).toLocaleDateString(),
             })}
@@ -260,8 +260,8 @@ function JoinHouseholdSection() {
   const code = form.watch("code");
 
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
-      <h2 className="mb-3 text-lg font-semibold text-gray-900">{t("household.joinHousehold")}</h2>
+    <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
+      <h2 className="mb-3 text-lg font-semibold text-foreground">{t("household.joinHousehold")}</h2>
       <form onSubmit={form.handleSubmit(handleJoin)} className="flex gap-2">
         <Input
           type="text"
@@ -304,8 +304,8 @@ function CreateHouseholdSection() {
   const name = form.watch("name");
 
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
-      <h2 className="mb-3 text-lg font-semibold text-gray-900">
+    <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
+      <h2 className="mb-3 text-lg font-semibold text-foreground">
         {t("household.createHousehold")}
       </h2>
       <form onSubmit={form.handleSubmit(handleCreate)} className="flex gap-2">
@@ -452,7 +452,7 @@ export default function HouseholdPage() {
   return (
     <div className="p-4">
       <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">{t("household.title")}</h1>
+        <h1 className="text-2xl font-bold text-foreground">{t("household.title")}</h1>
         {households && households.length > 1 && (
           <IconButton
             variant="ghost"
@@ -465,18 +465,18 @@ export default function HouseholdPage() {
         )}
       </div>
 
-      {isLoading && <p className="text-sm text-gray-500">{t("common.loading")}</p>}
+      {isLoading && <p className="text-sm text-muted-foreground">{t("common.loading")}</p>}
 
       {!isLoading && (!households || households.length === 0) && !activeHousehold && (
         <div className="mb-6 mt-8 text-center">
-          <p className="text-gray-500">{t("household.noHousehold")}</p>
+          <p className="text-muted-foreground">{t("household.noHousehold")}</p>
         </div>
       )}
 
       {/* Current household info */}
       {activeHousehold && (
-        <div className="mb-4 rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
-          <h2 className="mb-2 text-lg font-semibold text-gray-900">
+        <div className="mb-4 rounded-lg border border-border bg-card p-4 shadow-sm">
+          <h2 className="mb-2 text-lg font-semibold text-foreground">
             {t("household.currentHousehold")}
           </h2>
           {isEditing ? (
@@ -520,7 +520,7 @@ export default function HouseholdPage() {
             </form>
           ) : (
             <div className="flex items-center gap-2">
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-muted-foreground">
                 {activeHousehold.name} &middot; {t("household.members")} (
                 {activeHousehold.members.length})
               </p>
@@ -531,7 +531,7 @@ export default function HouseholdPage() {
                     editForm.setValue("name", activeHousehold.name);
                     setIsEditing(true);
                   }}
-                  className="h-7 w-7 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                  className="h-7 w-7 text-muted-foreground hover:bg-muted hover:text-muted-foreground"
                   tooltip={t("household.editName")}
                   aria-label={t("household.editName")}
                 >
@@ -574,11 +574,11 @@ export default function HouseholdPage() {
 
       {/* AI Settings */}
       {activeHousehold && (
-        <div className="mb-4 rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
+        <div className="mb-4 rounded-lg border border-border bg-card p-4 shadow-sm">
           <div className="mb-3 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Sparkles size={20} className="text-gray-400" />
-              <h2 className="text-lg font-semibold text-gray-900">{t("ai.title")}</h2>
+              <Sparkles size={20} className="text-muted-foreground" />
+              <h2 className="text-lg font-semibold text-foreground">{t("ai.title")}</h2>
             </div>
             <button
               onClick={handleAiToggle}
@@ -586,18 +586,18 @@ export default function HouseholdPage() {
               aria-checked={aiEnabled}
               disabled={!isOwner}
               className={`relative inline-flex h-6 w-11 shrink-0 rounded-full transition-colors ${
-                aiEnabled ? "bg-orange-500" : "bg-gray-200"
+                aiEnabled ? "bg-primary" : "bg-muted"
               } ${isOwner ? "cursor-pointer" : "cursor-not-allowed opacity-60"}`}
             >
               <span
-                className={`inline-block h-5 w-5 translate-y-0.5 rounded-full bg-white shadow transition-transform ${
+                className={`inline-block h-5 w-5 translate-y-0.5 rounded-full bg-background shadow transition-transform ${
                   aiEnabled ? "translate-x-5.5" : "translate-x-0.5"
                 }`}
               />
             </button>
           </div>
 
-          <p className="mb-3 text-sm text-gray-500">{t("ai.description")}</p>
+          <p className="mb-3 text-sm text-muted-foreground">{t("ai.description")}</p>
 
           {aiEnabled && (
             <>
@@ -615,7 +615,7 @@ export default function HouseholdPage() {
                   }}
                   onBlur={handleGeminiKeyBlur}
                   disabled={!isOwner}
-                  className={cn("min-w-0 flex-1", !isOwner && "cursor-not-allowed bg-gray-50 opacity-60")}
+                  className={cn("min-w-0 flex-1", !isOwner && "cursor-not-allowed bg-muted opacity-60")}
                 />
                 <Button
                   variant="secondary"
@@ -627,7 +627,7 @@ export default function HouseholdPage() {
                     keyStatus === "valid"
                       ? "bg-green-100 text-green-700"
                       : keyStatus === "invalid"
-                        ? "bg-red-100 text-red-700"
+                        ? "bg-destructive/10 text-destructive"
                         : ""
                   )}
                 >
@@ -654,11 +654,11 @@ export default function HouseholdPage() {
 
       {/* Manage Tags */}
       {activeHousehold && (
-        <div className="mb-4 rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
+        <div className="mb-4 rounded-lg border border-border bg-card p-4 shadow-sm">
           <div className="mb-3 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Tags size={20} className="text-gray-400" />
-              <h2 className="text-lg font-semibold text-gray-900">{t("tags.manageTags")}</h2>
+              <Tags size={20} className="text-muted-foreground" />
+              <h2 className="text-lg font-semibold text-foreground">{t("tags.manageTags")}</h2>
             </div>
             {isOwner && (
               <Button
@@ -691,18 +691,18 @@ export default function HouseholdPage() {
                 const tags = groupedTags[category] || [];
                 return (
                   <details key={category} className="rounded-lg border">
-                    <summary className="cursor-pointer rounded-lg bg-gray-50 px-4 py-2 font-medium">
+                    <summary className="cursor-pointer rounded-lg bg-muted px-4 py-2 font-medium">
                       {t(`tags.${category}`)}
-                      <span className="ml-2 text-sm text-gray-500">({tags.length})</span>
+                      <span className="ml-2 text-sm text-muted-foreground">({tags.length})</span>
                     </summary>
                     <div className="space-y-1 p-3">
                       {tags.length === 0 && (
-                        <p className="text-sm text-gray-400">{t("tags.noTags")}</p>
+                        <p className="text-sm text-muted-foreground">{t("tags.noTags")}</p>
                       )}
                       {tags.map((tag) => (
                         <div
                           key={tag.id}
-                          className="flex items-center justify-between rounded px-2 py-1 hover:bg-gray-50"
+                          className="flex items-center justify-between rounded px-2 py-1 hover:bg-muted"
                         >
                           {isOwner && editingTag === tag.id ? (
                             <div className="flex flex-1 items-center justify-between gap-2">
@@ -741,7 +741,7 @@ export default function HouseholdPage() {
                                   variant="ghost"
                                   type="button"
                                   onClick={() => setEditingTag(null)}
-                                  className="h-7 w-7 text-gray-400 hover:bg-gray-100"
+                                  className="h-7 w-7 text-muted-foreground hover:bg-muted"
                                   tooltip={t("common.cancel")}
                                   aria-label={t("common.cancel")}
                                 >
@@ -756,7 +756,7 @@ export default function HouseholdPage() {
                                   {i18n.language === "de" ? tag.name_de : tag.name_en}
                                 </span>
                                 {tag.is_default && (
-                                  <span className="rounded bg-gray-100 px-1.5 py-0.5 text-xs text-gray-400">
+                                  <span className="rounded bg-muted px-1.5 py-0.5 text-xs text-muted-foreground">
                                     default
                                   </span>
                                 )}
@@ -771,7 +771,7 @@ export default function HouseholdPage() {
                                       setEditNameEn(tag.name_en);
                                       setEditNameDe(tag.name_de);
                                     }}
-                                    className="h-7 w-7 text-gray-400 hover:bg-gray-100 hover:text-orange-600"
+                                    className="h-7 w-7 text-muted-foreground hover:bg-muted hover:text-primary"
                                     tooltip={t("tags.editTag")}
                                     aria-label={t("tags.editTag")}
                                   >
@@ -791,7 +791,7 @@ export default function HouseholdPage() {
                                         deleteTag.mutate(tag.id);
                                       }
                                     }}
-                                    className="h-7 w-7 text-gray-400 hover:bg-red-50 hover:text-red-600"
+                                    className="h-7 w-7 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
                                     tooltip={t("tags.deleteTag")}
                                     aria-label={t("tags.deleteTag")}
                                   >
@@ -849,7 +849,7 @@ export default function HouseholdPage() {
                                 setNewTagEn("");
                                 setNewTagDe("");
                               }}
-                              className="h-7 w-7 text-gray-400 hover:bg-gray-100"
+                              className="h-7 w-7 text-muted-foreground hover:bg-muted"
                               tooltip={t("common.cancel")}
                               aria-label={t("common.cancel")}
                             >
@@ -862,7 +862,7 @@ export default function HouseholdPage() {
                           variant="link"
                           type="button"
                           onClick={() => setAddingCategory(category)}
-                          className="mt-2 w-full justify-start pt-2 text-sm text-orange-600 hover:text-orange-700"
+                          className="mt-2 w-full justify-start pt-2 text-sm text-primary hover:text-primary"
                         >
                           + {t("tags.addTag")}
                         </Button>
@@ -877,12 +877,12 @@ export default function HouseholdPage() {
 
       {/* Leave household (non-owner only) */}
       {activeHousehold && !isOwner && (
-        <div className="mb-4 rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
+        <div className="mb-4 rounded-lg border border-border bg-card p-4 shadow-sm">
           <Button
             variant="outline"
             onClick={handleLeave}
             disabled={leaveHousehold.isPending}
-            className="border-red-300 text-red-600 hover:bg-red-50"
+            className="border-destructive text-destructive hover:bg-destructive/10"
           >
             {leaveHousehold.isPending ? <Spinner /> : <LogOut size={16} />}
             {t("household.leaveHousehold")}
@@ -892,8 +892,8 @@ export default function HouseholdPage() {
 
       {/* Delete household (owner only, danger zone) */}
       {activeHousehold && isOwner && (
-        <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-950/50">
-          <h2 className="mb-2 text-lg font-semibold text-red-900 dark:text-red-300">
+        <div className="mb-4 rounded-lg border border-destructive/30 bg-destructive/10 p-4 dark:border-destructive/30 dark:bg-destructive/10">
+          <h2 className="mb-2 text-lg font-semibold text-destructive dark:text-destructive">
             {t("household.deleteHousehold")}
           </h2>
           {!showDeleteConfirm ? (
@@ -905,7 +905,7 @@ export default function HouseholdPage() {
             </Button>
           ) : (
             <div>
-              <p className="mb-2 text-sm text-red-800 dark:text-red-300">
+              <p className="mb-2 text-sm text-destructive dark:text-destructive">
                 {t("household.deleteConfirm", { name: activeHousehold.name })}
               </p>
               <div className="flex gap-2">
@@ -914,7 +914,7 @@ export default function HouseholdPage() {
                   value={deleteConfirmName}
                   onChange={(e) => setDeleteConfirmName(e.target.value)}
                   placeholder={t("household.deleteConfirmPlaceholder")}
-                  className="flex-1 border-red-300 focus-visible:ring-red-500 dark:border-red-700 dark:bg-red-950 dark:text-red-200 dark:placeholder-red-400"
+                  className="flex-1 border-destructive focus-visible:ring-destructive dark:border-destructive dark:bg-destructive/10 dark:text-destructive dark:placeholder-destructive/60"
                 />
                 <Button
                   variant="destructive"
@@ -969,13 +969,13 @@ export default function HouseholdPage() {
               className={cn(
                 "w-full justify-start px-4 py-3 text-sm font-medium",
                 h.id === activeHouseholdId
-                  ? "bg-orange-50 text-orange-700 ring-1 ring-orange-300"
-                  : "bg-gray-50 text-gray-700 hover:bg-gray-100"
+                  ? "bg-primary/10 text-primary ring-1 ring-primary/30"
+                  : "bg-muted text-foreground hover:bg-muted"
               )}
             >
               {h.name}
               {h.id === activeHouseholdId && (
-                <Check size={16} className="float-right mt-0.5 text-orange-500" />
+                <Check size={16} className="float-right mt-0.5 text-primary" />
               )}
             </Button>
           ))}
