@@ -1,4 +1,4 @@
-import { Skeleton } from "./Skeleton";
+import { Skeleton } from "./skeleton";
 
 export function ShoppingListSkeleton() {
   return (

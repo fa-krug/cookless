@@ -1,4 +1,5 @@
-import { Skeleton } from "./Skeleton";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Skeleton } from "./skeleton";
 
 export function MealPlanSkeleton() {
   return (
@@ -7,13 +8,15 @@ export function MealPlanSkeleton() {
       <Skeleton className="h-6 w-40" />
       {/* Day cards */}
       {Array.from({ length: 3 }, (_, i) => (
-        <div key={i} className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
-          <Skeleton className="h-5 w-24" />
-          <div className="mt-3 space-y-2">
+        <Card key={i}>
+          <CardHeader className="pb-2">
+            <Skeleton className="h-5 w-24" />
+          </CardHeader>
+          <CardContent className="space-y-2">
             <Skeleton className="h-4 w-full" />
             <Skeleton className="h-4 w-3/4" />
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       ))}
     </div>
   );
