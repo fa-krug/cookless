@@ -11,7 +11,9 @@ import {
   type Recipe,
   type RecipeSummary,
 } from "../api/types";
-import Input from "../components/ui/Input";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import IngredientForm from "../components/IngredientForm";
 import StepEditor from "../components/StepEditor";
 import TagFilterDrawer from "../components/TagFilterDrawer";
@@ -197,14 +199,15 @@ function RecipeForm({ recipe, recipeId, allIngredients, allUnits }: RecipeFormPr
     <div className="p-4">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">{t("recipes.editRecipe")}</h1>
-        <button
+        <Button
+          variant="ghost"
+          size="icon"
           type="button"
           onClick={() => navigate("/recipes")}
-          className="rounded-md p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
           aria-label={t("common.back")}
         >
           <ArrowLeft size={20} />
-        </button>
+        </Button>
       </div>
 
       {/* Image section */}
@@ -229,38 +232,43 @@ function RecipeForm({ recipe, recipeId, allIngredients, allUnits }: RecipeFormPr
             onChange={handleUploadImage}
             className="hidden"
           />
-          <button
+          <Button
+            variant="outline"
+            size="sm"
             type="button"
             onClick={() => fileInputRef.current?.click()}
             disabled={imageInProgress}
-            className="flex items-center gap-1 rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50"
           >
             {uploadImage.isPending ? <Spinner /> : <Upload size={14} />}
             <span className="hidden sm:inline">{t("recipeImage.upload")}</span>
-          </button>
+          </Button>
 
           {household?.ai_enabled && (
-            <button
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-orange-300 text-orange-600 hover:bg-orange-50"
               type="button"
               onClick={handleGenerateImage}
               disabled={imageInProgress}
-              className="flex items-center gap-1 rounded-md border border-orange-300 px-3 py-1.5 text-sm text-orange-600 hover:bg-orange-50 disabled:opacity-50"
             >
               {generateImage.isPending ? <Spinner /> : <Sparkles size={14} />}
               <span className="hidden sm:inline">{generateImage.isPending ? t("recipeImage.generating") : t("recipeImage.generate")}</span>
-            </button>
+            </Button>
           )}
 
           {recipe.image && (
-            <button
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-red-300 text-red-600 hover:bg-red-50"
               type="button"
               onClick={handleDeleteImage}
               disabled={imageInProgress}
-              className="flex items-center gap-1 rounded-md border border-red-300 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 disabled:opacity-50"
             >
               <Trash2 size={14} />
               <span className="hidden sm:inline">{t("recipeImage.remove")}</span>
-            </button>
+            </Button>
           )}
         </div>
       </div>
@@ -280,9 +288,9 @@ function RecipeForm({ recipe, recipeId, allIngredients, allUnits }: RecipeFormPr
         {/* Servings, Prep Time, Cook Time */}
         <div className="grid grid-cols-3 gap-2">
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">
+            <Label>
               {t("recipes.servings")}
-            </label>
+            </Label>
             <Input
               type="number"
               min={1}
@@ -292,9 +300,9 @@ function RecipeForm({ recipe, recipeId, allIngredients, allUnits }: RecipeFormPr
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">
+            <Label>
               {t("recipes.prepTime")}
-            </label>
+            </Label>
             <Input
               type="number"
               min={0}
@@ -304,9 +312,9 @@ function RecipeForm({ recipe, recipeId, allIngredients, allUnits }: RecipeFormPr
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">
+            <Label>
               {t("recipes.cookTime")}
-            </label>
+            </Label>
             <Input
               type="number"
               min={0}
@@ -338,10 +346,11 @@ function RecipeForm({ recipe, recipeId, allIngredients, allUnits }: RecipeFormPr
 
         {/* Tags */}
         <div>
-          <button
+          <Button
+            variant="outline"
+            size="sm"
             type="button"
             onClick={() => setShowFilterDrawer(true)}
-            className="flex items-center gap-1.5 rounded-lg border border-gray-300 px-3 py-1.5 text-sm text-gray-600 hover:border-gray-400"
           >
             <SlidersHorizontal size={14} />
             {t("tags.filter")}
@@ -350,51 +359,54 @@ function RecipeForm({ recipe, recipeId, allIngredients, allUnits }: RecipeFormPr
                 {form.tagIds.length}
               </span>
             )}
-          </button>
+          </Button>
         </div>
 
         {/* Action buttons */}
         <div className="space-y-3">
           {/* Cook button */}
-          <button
+          <Button
+            className="w-full"
             type="button"
             onClick={() => navigate(`/cook/${recipeId}`)}
-            className="flex w-full items-center justify-center gap-2 rounded-lg bg-orange-500 px-4 py-2 text-sm font-medium text-white hover:bg-orange-600"
           >
             <ChefHat size={16} />
             {t("cooking.start")}
-          </button>
+          </Button>
 
           {/* Move button */}
-          <button
+          <Button
+            variant="outline"
+            className="w-full border-orange-500 text-orange-500 hover:bg-orange-50"
             type="button"
             onClick={handleMove}
             disabled={moveRecipe.isPending}
-            className="flex w-full items-center justify-center gap-2 rounded-lg border border-orange-500 px-4 py-2 text-sm font-medium text-orange-500 hover:bg-orange-50 disabled:opacity-50"
           >
             {moveRecipe.isPending ? <Spinner /> : <ArrowLeftRight size={16} />}
             {recipe.list_type === "KNOWN" ? t("recipes.moveToTry") : t("recipes.moveToKnown")}
-          </button>
+          </Button>
 
           {/* Save / Delete row */}
           <div className="flex gap-3">
-            <button
+            <Button
+              variant="outline"
+              className="flex-1 border-orange-500 text-orange-500 hover:bg-orange-50"
               type="submit"
               disabled={updateRecipe.isPending}
-              className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-orange-500 px-4 py-2 text-sm font-medium text-orange-500 hover:bg-orange-50 disabled:opacity-50"
             >
               {updateRecipe.isPending ? <Spinner /> : <Save size={16} />}
               {t("common.save")}
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="outline"
+              className="border-red-300 text-red-600 hover:bg-red-50"
               type="button"
               onClick={handleDelete}
               disabled={deleteRecipe.isPending}
-              className="flex items-center gap-2 rounded-lg border border-red-300 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 disabled:opacity-50"
             >
               {deleteRecipe.isPending ? <Spinner /> : <Trash2 size={16} />}
               {t("common.delete")}
-            </button>
+            </Button>
           </div>
         </div>
       </form>

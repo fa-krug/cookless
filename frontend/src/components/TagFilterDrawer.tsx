@@ -1,5 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { TAG_CATEGORIES, type GroupedTags } from "../api/types";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import ResponsiveOverlay from "./ui/ResponsiveOverlay";
 
 interface TagFilterDrawerProps {
@@ -36,17 +38,15 @@ export default function TagFilterDrawer({
                     key={tag.id}
                     className="flex cursor-pointer items-center gap-2 rounded px-2 py-1.5 hover:bg-gray-50"
                   >
-                    <input
-                      type="checkbox"
+                    <Checkbox
                       checked={selectedTags.includes(tag.id)}
-                      onChange={(e) => {
+                      onCheckedChange={(checked) => {
                         onChange(
-                          e.target.checked
+                          checked
                             ? [...selectedTags, tag.id]
                             : selectedTags.filter((id) => id !== tag.id),
                         );
                       }}
-                      className="rounded accent-orange-500"
                     />
                     <span className="text-sm">
                       {i18n.language === "de" ? tag.name_de : tag.name_en}
@@ -59,13 +59,9 @@ export default function TagFilterDrawer({
         })}
 
         {selectedTags.length > 0 && (
-          <button
-            type="button"
-            onClick={() => onChange([])}
-            className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50"
-          >
+          <Button type="button" variant="outline" className="w-full" onClick={() => onChange([])}>
             {t("tags.clearFilters")}
-          </button>
+          </Button>
         )}
       </div>
     </ResponsiveOverlay>

@@ -1,5 +1,6 @@
 import { useCallback, useState } from "react";
 import type { ReactNode } from "react";
+import { Button } from "@/components/ui/button";
 import { ToastContext } from "./toastContextValue";
 import type { ToastAction, ToastOptions } from "./toastContextValue";
 
@@ -51,16 +52,18 @@ export function ToastProvider({ children }: { children: ReactNode }) {
             <div className="flex items-center gap-3">
               <span>{toast.message}</span>
               {toast.action && (
-                <button
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="shrink-0 border-white/40 px-2 py-0.5 text-xs text-white hover:bg-white/20 hover:text-white"
                   onClick={(e) => {
                     e.stopPropagation();
                     toast.action!.onClick();
                     removeToast(toast.id);
                   }}
-                  className="shrink-0 rounded border border-white/40 px-2 py-0.5 text-xs font-semibold text-white hover:bg-white/20"
                 >
                   {toast.action.label}
-                </button>
+                </Button>
               )}
             </div>
           </div>

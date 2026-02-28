@@ -7,6 +7,7 @@ import type { MealPlanEntry, PlanIteration, RecipeSummary } from "../api/types";
 import { useAllRecipeSummaries, useRecipe } from "../hooks/useRecipes";
 import { useShoppingLists } from "../hooks/useShoppingList";
 import RecipePreviewModal from "./RecipePreviewModal";
+import { Button } from "@/components/ui/button";
 
 interface IterationCardProps {
   iteration: PlanIteration;
@@ -133,14 +134,16 @@ export default function IterationCard({
           )}
         </h3>
         {!isArchived && onRenew && (
-          <button
+          <Button
+            variant="outline"
+            size="sm"
+            className="border-orange-300 text-orange-500 hover:bg-orange-50"
             onClick={onRenew}
             disabled={isRenewing}
-            className="flex items-center gap-1.5 rounded-lg border border-orange-300 px-3 py-1 text-xs font-medium text-orange-500 hover:bg-orange-50 disabled:opacity-50"
           >
             {isRenewing ? <Spinner size={14} /> : <RefreshCw size={14} />}
             {t("plan.renew")}
-          </button>
+          </Button>
         )}
       </div>
 

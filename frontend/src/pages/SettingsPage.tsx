@@ -20,6 +20,9 @@ import { api } from "../api/client";
 import type { AccessTokenCreated } from "../api/types";
 import { type Passkey, type User } from "../api/types";
 import { addPasskey } from "../api/webauthn";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { ConfirmDialog } from "../components/ui/ConfirmDialog";
 import ResponsiveOverlay from "../components/ui/ResponsiveOverlay";
 import { extractApiDetail, mapPasswordError } from "../utils/passwordErrors";
@@ -264,9 +267,10 @@ export default function SettingsPage() {
 
       {/* Household */}
       {user?.active_household && (
-        <button
+        <Button
+          variant="ghost"
+          className="mb-4 flex h-auto w-full items-center justify-start rounded-lg border border-gray-200 bg-white p-4 shadow-sm"
           onClick={() => setHouseholdOpen(true)}
-          className="mb-4 flex w-full items-center rounded-lg border border-gray-200 bg-white p-4 shadow-sm"
         >
           <Home size={20} className="mr-3 text-gray-400" />
           <div className="min-w-0 flex-1 text-left">
@@ -276,7 +280,7 @@ export default function SettingsPage() {
             </p>
           </div>
           <ChevronRight size={20} className="text-gray-400" />
-        </button>
+        </Button>
       )}
 
       <ResponsiveOverlay
@@ -291,15 +295,15 @@ export default function SettingsPage() {
               {user?.active_household?.name}
             </p>
           </div>
-          <button
+          <Button
+            className="w-full"
             onClick={() => {
               setHouseholdOpen(false);
               navigate("/household");
             }}
-            className="flex w-full items-center justify-center gap-2 rounded-md bg-orange-500 px-4 py-3 text-sm font-medium text-white hover:bg-orange-600"
           >
             {t("household.manage")}
-          </button>
+          </Button>
         </div>
       </ResponsiveOverlay>
 
@@ -308,17 +312,13 @@ export default function SettingsPage() {
         <h2 className="mb-3 text-lg font-semibold text-gray-900">{t("settings.language")}</h2>
         <div className="flex gap-2">
           {(["en", "de"] as const).map((lang) => (
-            <button
+            <Button
               key={lang}
+              variant={language === lang ? "default" : "secondary"}
               onClick={() => handleLanguageChange(lang)}
-              className={`rounded-md px-4 py-2 text-sm font-medium ${
-                language === lang
-                  ? "bg-orange-500 text-white"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-              }`}
             >
               {t(`settings.languages.${lang}`)}
-            </button>
+            </Button>
           ))}
         </div>
       </div>
@@ -328,21 +328,17 @@ export default function SettingsPage() {
         <h2 className="mb-3 text-lg font-semibold text-gray-900">{t("settings.theme")}</h2>
         <div className="flex gap-2">
           {(["light", "dark"] as const).map((t_) => (
-            <button
+            <Button
               key={t_}
+              variant={theme === t_ ? "default" : "secondary"}
               onClick={() => {
                 setTheme(t_);
                 localStorage.setItem("theme", t_);
                 document.documentElement.classList.toggle("dark", t_ === "dark");
               }}
-              className={`rounded-md px-4 py-2 text-sm font-medium ${
-                theme === t_
-                  ? "bg-orange-500 text-white"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-              }`}
             >
               {t(`settings.themes.${t_}`)}
-            </button>
+            </Button>
           ))}
         </div>
       </div>
@@ -370,7 +366,10 @@ export default function SettingsPage() {
                     })}
                   </p>
                 </div>
-                <button
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-red-500 hover:bg-red-50"
                   onClick={() => handleDeletePasskey(passkey.id)}
                   disabled={passkeys.length <= 1 && !user?.has_password}
                   title={
@@ -378,24 +377,24 @@ export default function SettingsPage() {
                       ? t("passkeys.cannotDeleteLast")
                       : ""
                   }
-                  className="rounded-md p-1.5 text-red-500 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-30"
                   aria-label={t("passkeys.deletePasskey")}
                 >
                   <Trash2 size={16} />
-                </button>
+                </Button>
               </div>
             ))}
           </div>
         )}
 
-        <button
+        <Button
+          variant="outline"
+          className="mt-3 w-full border-orange-500 text-orange-500 hover:bg-orange-50"
           onClick={handleAddPasskey}
           disabled={addingPasskey}
-          className="mt-3 flex w-full items-center justify-center gap-2 rounded-md border border-orange-500 px-4 py-2 text-sm font-medium text-orange-500 hover:bg-orange-50 disabled:opacity-50"
         >
           {addingPasskey ? <Spinner /> : <Plus size={16} />}
           {addingPasskey ? t("common.loading") : t("passkeys.addPasskey")}
-        </button>
+        </Button>
       </div>
 
       {/* Password */}
@@ -420,32 +419,32 @@ export default function SettingsPage() {
           }}
         >
           {user?.has_password && (
-            <input
+            <Input
               type="password"
               placeholder={t("password.currentPassword")}
               value={currentPassword}
               onChange={(e) => setCurrentPassword(e.target.value)}
-              className="mb-3 w-full rounded-md border border-gray-300 px-3 py-2 focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
+              className="mb-3"
             />
           )}
-          <input
+          <Input
             type="password"
             placeholder={t("password.newPassword")}
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
-            className="mb-3 w-full rounded-md border border-gray-300 px-3 py-2 focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
+            className="mb-3"
           />
-          <input
+          <Input
             type="password"
             placeholder={t("password.confirmPassword")}
             value={confirmNewPassword}
             onChange={(e) => setConfirmNewPassword(e.target.value)}
-            className="mb-3 w-full rounded-md border border-gray-300 px-3 py-2 focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
+            className="mb-3"
           />
-          <button
+          <Button
             type="submit"
+            className="w-full"
             disabled={savingPassword || !newPassword || !confirmNewPassword}
-            className="flex w-full items-center justify-center gap-2 rounded-md bg-orange-500 px-4 py-2 text-sm font-medium text-white hover:bg-orange-600 disabled:opacity-50"
           >
             {savingPassword ? <Spinner /> : <KeyRound size={16} />}
             {savingPassword
@@ -453,19 +452,20 @@ export default function SettingsPage() {
               : user?.has_password
                 ? t("password.changePassword")
                 : t("password.setPassword")}
-          </button>
+          </Button>
         </form>
 
         {user?.has_password && (
-          <button
+          <Button
+            variant="outline"
+            className="mt-3 w-full border-red-500 text-red-500 hover:bg-red-50"
             onClick={handleRemovePassword}
             disabled={!user?.has_passkey}
             title={!user?.has_passkey ? t("passkeys.cannotDeleteLast") : ""}
-            className="mt-3 flex w-full items-center justify-center gap-2 rounded-md border border-red-500 px-4 py-2 text-sm font-medium text-red-500 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
           >
             <ShieldMinus size={16} />
             {t("password.removePassword")}
-          </button>
+          </Button>
         )}
       </div>
 
@@ -492,22 +492,25 @@ export default function SettingsPage() {
               <code className="min-w-0 flex-1 break-all rounded bg-white px-2 py-1 font-mono text-xs text-gray-900">
                 {createdToken.token}
               </code>
-              <button
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 shrink-0 text-orange-600 hover:bg-orange-100"
                 type="button"
                 onClick={() => copyToken(createdToken.token)}
-                className="shrink-0 rounded-md p-1.5 text-orange-600 hover:bg-orange-100"
               >
                 {copied ? <Check size={16} /> : <Copy size={16} />}
-              </button>
+              </Button>
             </div>
             <p className="mt-2 text-xs text-orange-700">{t("tokens.tokenWarning")}</p>
-            <button
+            <Button
+              variant="link"
+              className="mt-2 h-auto p-0 text-xs text-orange-600"
               type="button"
               onClick={() => setCreatedToken(null)}
-              className="mt-2 text-xs text-orange-600 hover:text-orange-800"
             >
               {t("common.close")}
-            </button>
+            </Button>
           </div>
         )}
 
@@ -551,13 +554,15 @@ export default function SettingsPage() {
                       : t("tokens.neverUsed")}
                   </p>
                 </div>
-                <button
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 shrink-0 text-red-500 hover:bg-red-50"
                   onClick={() => handleDeleteToken(token.id)}
-                  className="shrink-0 rounded-md p-1.5 text-red-500 hover:bg-red-50"
                   aria-label={t("tokens.deleteToken")}
                 >
                   <Trash2 size={16} />
-                </button>
+                </Button>
               </div>
             ))}
           </div>
@@ -566,12 +571,11 @@ export default function SettingsPage() {
         {/* Create form */}
         {showTokenForm ? (
           <div className="mt-3 space-y-3 rounded-md border border-gray-200 p-3">
-            <input
+            <Input
               type="text"
               value={newTokenName}
               onChange={(e) => setNewTokenName(e.target.value)}
               placeholder={t("tokens.namePlaceholder")}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
             />
 
             <div>
@@ -582,7 +586,7 @@ export default function SettingsPage() {
                     <span className="w-24 text-sm text-gray-600">
                       {t(`tokens.scopeGroups.${group}`)}
                     </span>
-                    <label className="flex items-center gap-1.5 text-xs">
+                    <Label className="flex items-center gap-1.5 text-xs font-normal">
                       <input
                         type="checkbox"
                         checked={newTokenScopes.includes(`${group}:read`)}
@@ -590,8 +594,8 @@ export default function SettingsPage() {
                         className="rounded border-gray-300 text-orange-500 focus:ring-orange-500"
                       />
                       {t("tokens.scopeRead")}
-                    </label>
-                    <label className="flex items-center gap-1.5 text-xs">
+                    </Label>
+                    <Label className="flex items-center gap-1.5 text-xs font-normal">
                       <input
                         type="checkbox"
                         checked={newTokenScopes.includes(`${group}:write`)}
@@ -599,7 +603,7 @@ export default function SettingsPage() {
                         className="rounded border-gray-300 text-orange-500 focus:ring-orange-500"
                       />
                       {t("tokens.scopeWrite")}
-                    </label>
+                    </Label>
                   </div>
                 ))}
               </div>
@@ -609,33 +613,31 @@ export default function SettingsPage() {
               <p className="mb-2 text-sm font-medium text-gray-700">{t("tokens.expiration")}</p>
               <div className="flex flex-wrap gap-2">
                 {(["30d", "90d", "1y", "never", "custom"] as const).map((preset) => (
-                  <button
+                  <Button
                     key={preset}
+                    size="sm"
+                    variant={newTokenPreset === preset ? "default" : "secondary"}
                     type="button"
                     onClick={() => setNewTokenPreset(preset)}
-                    className={`rounded-md px-3 py-1.5 text-xs font-medium ${
-                      newTokenPreset === preset
-                        ? "bg-orange-500 text-white"
-                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                    }`}
                   >
                     {t(`tokens.preset${preset.charAt(0).toUpperCase() + preset.slice(1)}`)}
-                  </button>
+                  </Button>
                 ))}
               </div>
               {newTokenPreset === "custom" && (
-                <input
+                <Input
                   type="date"
                   value={newTokenCustomDate}
                   onChange={(e) => setNewTokenCustomDate(e.target.value)}
                   min={new Date().toISOString().split("T")[0]}
-                  className="mt-2 rounded-md border border-gray-300 px-3 py-2 focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
+                  className="mt-2"
                 />
               )}
             </div>
 
             <div className="flex gap-2">
-              <button
+              <Button
+                className="flex-1"
                 type="button"
                 onClick={handleCreateToken}
                 disabled={
@@ -643,28 +645,28 @@ export default function SettingsPage() {
                   newTokenScopes.length === 0 ||
                   createToken.isPending
                 }
-                className="flex flex-1 items-center justify-center gap-2 rounded-md bg-orange-500 px-4 py-2 text-sm font-medium text-white hover:bg-orange-600 disabled:opacity-50"
               >
                 {createToken.isPending ? <Spinner /> : <Code size={16} />}
                 {t("tokens.createToken")}
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="ghost"
                 type="button"
                 onClick={() => setShowTokenForm(false)}
-                className="rounded-md px-4 py-2 text-sm text-gray-500 hover:bg-gray-100"
               >
                 {t("common.cancel")}
-              </button>
+              </Button>
             </div>
           </div>
         ) : (
-          <button
+          <Button
+            variant="outline"
+            className="mt-3 w-full border-orange-500 text-orange-500 hover:bg-orange-50"
             onClick={() => setShowTokenForm(true)}
-            className="mt-3 flex w-full items-center justify-center gap-2 rounded-md border border-orange-500 px-4 py-2 text-sm font-medium text-orange-500 hover:bg-orange-50"
           >
             <Plus size={16} />
             {t("tokens.createToken")}
-          </button>
+          </Button>
         )}
       </div>
 
@@ -686,13 +688,14 @@ export default function SettingsPage() {
       <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
         <h2 className="mb-3 text-lg font-semibold text-gray-900">{t("settings.account")}</h2>
         {user && <p className="mb-3 text-sm text-gray-600">{user.email}</p>}
-        <button
+        <Button
+          variant="destructive"
+          className="w-full"
           onClick={handleLogout}
-          className="flex w-full items-center justify-center gap-2 rounded-md bg-red-500 px-4 py-3 text-sm font-medium text-white hover:bg-red-600"
         >
           <LogOut size={16} />
           {t("settings.logout")}
-        </button>
+        </Button>
       </div>
 
       {dialogProps && <ConfirmDialog {...dialogProps} />}

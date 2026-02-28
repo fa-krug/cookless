@@ -4,6 +4,9 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import AppLogo from "../components/AppLogo";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 
 export default function LoginPage() {
   const { t } = useTranslation();
@@ -54,16 +57,16 @@ export default function LoginPage() {
 
         <div className="rounded-2xl bg-white p-6 shadow-lg shadow-orange-900/5 ring-1 ring-gray-950/5">
           <form onSubmit={showPasswordForm ? handlePasswordLogin : handlePasskeyLogin}>
-            <label className="mb-1.5 block text-xs font-medium text-gray-500">
+            <Label className="mb-1.5 text-xs text-gray-500">
               {t("auth.emailPlaceholder")}
-            </label>
-            <input
+            </Label>
+            <Input
               type="email"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
-              className="mb-5 w-full rounded-lg border border-gray-200 bg-gray-50 px-3.5 py-2.5 text-gray-900 placeholder-gray-400 transition-colors focus:border-orange-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-orange-400/20"
+              className="mb-5"
             />
 
             {error && (
@@ -72,61 +75,55 @@ export default function LoginPage() {
 
             {showPasswordForm ? (
               <>
-                <label className="mb-1.5 block text-xs font-medium text-gray-500">
+                <Label className="mb-1.5 text-xs text-gray-500">
                   {t("auth.passwordPlaceholder")}
-                </label>
-                <input
+                </Label>
+                <Input
                   type="password"
                   required
                   autoFocus
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="mb-5 w-full rounded-lg border border-gray-200 bg-gray-50 px-3.5 py-2.5 text-gray-900 placeholder-gray-400 transition-colors focus:border-orange-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-orange-400/20"
+                  className="mb-5"
                 />
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="flex w-full items-center justify-center gap-2 rounded-lg bg-orange-500 px-5 py-2.5 text-sm font-semibold text-white shadow-sm shadow-orange-500/25 transition-all hover:bg-orange-600 hover:shadow-md hover:shadow-orange-500/25 active:scale-[0.98] disabled:opacity-50 disabled:shadow-none"
-                >
+                <Button type="submit" className="w-full" disabled={isLoading}>
                   {isLoading ? t("common.loading") : t("auth.signInWithPassword")}
-                </button>
-                <button
+                </Button>
+                <Button
                   type="button"
+                  variant="link"
+                  className="mt-3 w-full text-xs text-gray-400"
                   onClick={() => {
                     setShowPasswordForm(false);
                     setPassword("");
                     setError("");
                   }}
-                  className="mt-3 w-full text-center text-xs text-gray-400 transition-colors hover:text-orange-500"
                 >
                   {t("auth.signInWithPasskey")}
-                </button>
+                </Button>
               </>
             ) : (
               <>
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="flex w-full items-center justify-center gap-2 rounded-lg bg-orange-500 px-5 py-2.5 text-sm font-semibold text-white shadow-sm shadow-orange-500/25 transition-all hover:bg-orange-600 hover:shadow-md hover:shadow-orange-500/25 active:scale-[0.98] disabled:opacity-50 disabled:shadow-none"
-                >
+                <Button type="submit" className="w-full" disabled={isLoading}>
                   {isLoading ? t("common.loading") : t("auth.signInWithPasskey")}
-                </button>
+                </Button>
                 <div className="my-4 flex items-center gap-3">
                   <div className="h-px flex-1 bg-gray-200" />
                   <span className="text-xs text-gray-400">{t("auth.orDivider")}</span>
                   <div className="h-px flex-1 bg-gray-200" />
                 </div>
-                <button
+                <Button
                   type="button"
+                  variant="ghost"
+                  className="w-full"
                   disabled={isLoading}
                   onClick={() => {
                     setShowPasswordForm(true);
                     setError("");
                   }}
-                  className="flex w-full items-center justify-center gap-2 rounded-lg px-5 py-2.5 text-sm font-medium text-gray-500 transition-colors hover:bg-gray-50 hover:text-gray-700 disabled:opacity-50"
                 >
                   {t("auth.signInWithPassword")}
-                </button>
+                </Button>
               </>
             )}
           </form>

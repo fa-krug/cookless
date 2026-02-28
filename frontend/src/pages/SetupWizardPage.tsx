@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { Navigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useAuth } from "../hooks/useAuth";
 import { api } from "../api/client";
 import { addPasskey } from "../api/webauthn";
@@ -97,53 +100,50 @@ function ChangePasswordStep({ onComplete }: { onComplete: () => void }) {
       <div className="text-sm text-gray-500">{user?.email}</div>
 
       <div>
-        <label className="mb-1 block text-sm font-medium text-gray-700">
+        <Label>
           {t("setup.changePassword.currentPassword")}
-        </label>
-        <input
+        </Label>
+        <Input
           type="password"
           value={currentPassword}
           onChange={(e) => setCurrentPassword(e.target.value)}
-          className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
           required
         />
       </div>
 
       <div>
-        <label className="mb-1 block text-sm font-medium text-gray-700">
+        <Label>
           {t("setup.changePassword.newPassword")}
-        </label>
-        <input
+        </Label>
+        <Input
           type="password"
           value={newPassword}
           onChange={(e) => setNewPassword(e.target.value)}
-          className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
           required
         />
       </div>
 
       <div>
-        <label className="mb-1 block text-sm font-medium text-gray-700">
+        <Label>
           {t("setup.changePassword.confirmPassword")}
-        </label>
-        <input
+        </Label>
+        <Input
           type="password"
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
-          className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
           required
         />
       </div>
 
       {error && <p className="text-sm text-red-600">{error}</p>}
 
-      <button
+      <Button
         type="submit"
+        className="w-full"
         disabled={submitting}
-        className="w-full rounded-md bg-orange-500 px-4 py-2 font-medium text-white hover:bg-orange-600 disabled:opacity-50"
       >
         {submitting ? t("common.loading") : t("setup.changePassword.submit")}
-      </button>
+      </Button>
     </form>
   );
 }
@@ -196,22 +196,23 @@ function AddPasskeyStep({ onComplete }: { onComplete: () => void }) {
 
       {error && <p className="text-sm text-red-600">{error}</p>}
 
-      <button
+      <Button
+        className="w-full"
         onClick={handleAdd}
         disabled={adding || skipping}
-        className="flex w-full items-center justify-center gap-2 rounded-md bg-orange-500 px-4 py-2 font-medium text-white hover:bg-orange-600 disabled:opacity-50"
       >
         <KeyRound size={18} />
         {adding ? t("common.loading") : t("setup.addPasskey.add")}
-      </button>
+      </Button>
 
-      <button
+      <Button
+        variant="outline"
+        className="w-full"
         onClick={handleSkip}
         disabled={adding || skipping}
-        className="w-full rounded-md border border-gray-300 px-4 py-2 text-sm text-gray-600 hover:bg-gray-50 disabled:opacity-50"
       >
         {skipping ? t("common.loading") : t("setup.addPasskey.skip")}
-      </button>
+      </Button>
     </div>
   );
 }
@@ -248,28 +249,27 @@ function CreateHouseholdStep({ onComplete }: { onComplete: () => void }) {
       </div>
 
       <div>
-        <label className="mb-1 block text-sm font-medium text-gray-700">
+        <Label>
           {t("setup.createHousehold.name")}
-        </label>
-        <input
+        </Label>
+        <Input
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder={t("setup.createHousehold.namePlaceholder")}
-          className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
           required
         />
       </div>
 
       {error && <p className="text-sm text-red-600">{error}</p>}
 
-      <button
+      <Button
         type="submit"
+        className="w-full"
         disabled={submitting || !name.trim()}
-        className="w-full rounded-md bg-orange-500 px-4 py-2 font-medium text-white hover:bg-orange-600 disabled:opacity-50"
       >
         {submitting ? t("common.loading") : t("setup.createHousehold.submit")}
-      </button>
+      </Button>
     </form>
   );
 }

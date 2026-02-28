@@ -2,6 +2,10 @@ import { PenLine } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { CookingStepPayload, Direction, ProgramType } from "../api/types";
 import { MACHINE_PROGRAMS, getProgramDef } from "../constants/machinePrograms";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
+import { cn } from "@/lib/utils";
 
 interface ProgramStepFormProps {
   step: CookingStepPayload;
@@ -46,29 +50,31 @@ export default function ProgramStepForm({ step, onChange, onSelectFreeText }: Pr
     return (
       <div className="grid grid-cols-3 gap-1.5">
         {MACHINE_PROGRAMS.map((p) => (
-          <button
+          <Button
             key={p.type}
             type="button"
+            variant="outline"
+            className="flex h-auto flex-col items-center gap-1 px-2 py-2 text-xs hover:border-orange-400 hover:bg-orange-50"
             onClick={() => selectProgram(p.type)}
-            className="flex flex-col items-center gap-1 rounded-md border border-gray-200 px-2 py-2 text-xs hover:border-orange-400 hover:bg-orange-50"
           >
             <p.icon size={18} className="text-gray-600" />
             <span className="text-center leading-tight">
               {t(`steps.programs.${p.type}`)}
             </span>
-          </button>
+          </Button>
         ))}
-        <button
+        <Button
           type="button"
+          variant="outline"
+          className="flex h-auto flex-col items-center gap-1 px-2 py-2 text-xs hover:border-orange-400 hover:bg-orange-50"
           onClick={() => {
             clearProgram();
             onSelectFreeText?.();
           }}
-          className="flex flex-col items-center gap-1 rounded-md border border-gray-200 px-2 py-2 text-xs hover:border-orange-400 hover:bg-orange-50"
         >
           <PenLine size={18} className="text-gray-600" />
           <span className="text-center leading-tight">{t("steps.freeText")}</span>
-        </button>
+        </Button>
       </div>
     );
   }
@@ -94,13 +100,15 @@ export default function ProgramStepForm({ step, onChange, onSelectFreeText }: Pr
             {t(`steps.programs.${step.program_type}`)}
           </span>
         </div>
-        <button
+        <Button
           type="button"
+          variant="ghost"
+          size="sm"
+          className="text-xs"
           onClick={() => onChange({ ...step, program_type: null })}
-          className="rounded-md px-2 py-1 text-xs text-gray-500 hover:bg-gray-200 hover:text-gray-700"
         >
           {t("steps.changeProgram")}
-        </button>
+        </Button>
       </div>
 
       {/* Parameter inputs - only render params for this program */}
@@ -110,7 +118,7 @@ export default function ProgramStepForm({ step, onChange, onSelectFreeText }: Pr
             return (
               <label key="temperature" className="flex items-center gap-1 text-sm">
                 <span className="text-gray-500">{t("steps.params.temperature")}</span>
-                <input
+                <Input
                   type="number"
                   min={param.min}
                   max={param.max}
@@ -121,7 +129,7 @@ export default function ProgramStepForm({ step, onChange, onSelectFreeText }: Pr
                       temperature: e.target.value === "" ? null : Number(e.target.value),
                     })
                   }
-                  className="w-16 rounded border border-gray-300 px-1.5 py-1"
+                  className="h-8 w-16"
                 />
                 <span className="text-gray-400">°C</span>
               </label>
@@ -132,18 +140,18 @@ export default function ProgramStepForm({ step, onChange, onSelectFreeText }: Pr
             return (
               <div key="duration" className="flex items-center gap-1 text-sm">
                 <span className="text-gray-500">{t("steps.params.duration")}</span>
-                <input
+                <Input
                   type="number"
                   min={0}
                   value={durationMinutes || ""}
                   onChange={(e) =>
                     setDuration(e.target.value === "" ? 0 : Number(e.target.value), durationSecs)
                   }
-                  className="w-14 rounded border border-gray-300 px-1.5 py-1"
+                  className="h-8 w-14"
                   placeholder="min"
                 />
                 <span className="text-gray-400">:</span>
-                <input
+                <Input
                   type="number"
                   min={0}
                   max={59}
@@ -151,7 +159,7 @@ export default function ProgramStepForm({ step, onChange, onSelectFreeText }: Pr
                   onChange={(e) =>
                     setDuration(durationMinutes, e.target.value === "" ? 0 : Number(e.target.value))
                   }
-                  className="w-14 rounded border border-gray-300 px-1.5 py-1"
+                  className="h-8 w-14"
                   placeholder="sec"
                 />
               </div>
@@ -162,7 +170,7 @@ export default function ProgramStepForm({ step, onChange, onSelectFreeText }: Pr
             return (
               <label key="speed" className="flex items-center gap-1 text-sm">
                 <span className="text-gray-500">{t("steps.params.speed")}</span>
-                <input
+                <Input
                   type="number"
                   min={1}
                   max={10}
@@ -173,7 +181,7 @@ export default function ProgramStepForm({ step, onChange, onSelectFreeText }: Pr
                       speed: e.target.value === "" ? null : Number(e.target.value),
                     })
                   }
-                  className="w-14 rounded border border-gray-300 px-1.5 py-1"
+                  className="h-8 w-14"
                 />
               </label>
             );
@@ -185,18 +193,16 @@ export default function ProgramStepForm({ step, onChange, onSelectFreeText }: Pr
                 <span className="text-gray-500">{t("steps.params.direction")}</span>
                 <div className="flex overflow-hidden rounded border border-gray-300">
                   {(["LEFT", "RIGHT"] as Direction[]).map((d) => (
-                    <button
+                    <Button
                       key={d}
                       type="button"
+                      variant={step.direction === d ? "default" : "ghost"}
+                      size="sm"
+                      className={cn("rounded-none px-2.5 text-xs")}
                       onClick={() => onChange({ ...step, direction: d })}
-                      className={`px-2.5 py-1 text-xs ${
-                        step.direction === d
-                          ? "bg-orange-500 text-white"
-                          : "bg-white text-gray-700 hover:bg-gray-50"
-                      }`}
                     >
                       {t(`steps.directions.${d}`)}
-                    </button>
+                    </Button>
                   ))}
                 </div>
               </div>
@@ -206,11 +212,11 @@ export default function ProgramStepForm({ step, onChange, onSelectFreeText }: Pr
           if (param.field === "turbo") {
             return (
               <label key="turbo" className="flex items-center gap-1.5 text-sm">
-                <input
-                  type="checkbox"
+                <Checkbox
                   checked={step.turbo ?? false}
-                  onChange={(e) => onChange({ ...step, turbo: e.target.checked })}
-                  className="rounded border-gray-300 text-orange-500 focus:ring-orange-500"
+                  onCheckedChange={(checked) =>
+                    onChange({ ...step, turbo: checked === true })
+                  }
                 />
                 <span className="text-gray-500">{t("steps.params.turbo")}</span>
               </label>
@@ -221,7 +227,7 @@ export default function ProgramStepForm({ step, onChange, onSelectFreeText }: Pr
             return (
               <label key="weight" className="flex items-center gap-1 text-sm">
                 <span className="text-gray-500">{t("steps.params.weight")}</span>
-                <input
+                <Input
                   type="number"
                   min={1}
                   max={5000}
@@ -232,7 +238,7 @@ export default function ProgramStepForm({ step, onChange, onSelectFreeText }: Pr
                       weight_grams: e.target.value === "" ? null : Number(e.target.value),
                     })
                   }
-                  className="w-20 rounded border border-gray-300 px-1.5 py-1"
+                  className="h-8 w-20"
                 />
                 <span className="text-gray-400">g</span>
               </label>

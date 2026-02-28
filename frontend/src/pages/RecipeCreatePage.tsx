@@ -5,7 +5,9 @@ import { Spinner } from "../components/ui/Spinner";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { type ListType } from "../api/types";
-import Input from "../components/ui/Input";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import IngredientForm from "../components/IngredientForm";
 import StepEditor from "../components/StepEditor";
 import TagFilterDrawer from "../components/TagFilterDrawer";
@@ -51,14 +53,9 @@ export default function RecipeCreatePage() {
     <div className="p-4">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">{t("recipes.newRecipe")}</h1>
-        <button
-          type="button"
-          onClick={() => navigate("/recipes")}
-          className="rounded-md p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
-          aria-label={t("common.back")}
-        >
+        <Button type="button" variant="ghost" size="icon" onClick={() => navigate("/recipes")} aria-label={t("common.back")}>
           <ArrowLeft size={20} />
-        </button>
+        </Button>
       </div>
 
       <form onSubmit={handleSave} className="mt-4 space-y-6">
@@ -76,9 +73,9 @@ export default function RecipeCreatePage() {
         {/* Servings, Prep Time, Cook Time */}
         <div className="grid grid-cols-3 gap-2">
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">
+            <Label>
               {t("recipes.servings")}
-            </label>
+            </Label>
             <Input
               type="number"
               min={1}
@@ -88,9 +85,9 @@ export default function RecipeCreatePage() {
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">
+            <Label>
               {t("recipes.prepTime")}
-            </label>
+            </Label>
             <Input
               type="number"
               min={0}
@@ -100,9 +97,9 @@ export default function RecipeCreatePage() {
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">
+            <Label>
               {t("recipes.cookTime")}
-            </label>
+            </Label>
             <Input
               type="number"
               min={0}
@@ -138,11 +135,7 @@ export default function RecipeCreatePage() {
 
         {/* Tags */}
         <div>
-          <button
-            type="button"
-            onClick={() => setShowFilterDrawer(true)}
-            className="flex items-center gap-1.5 rounded-lg border border-gray-300 px-3 py-1.5 text-sm text-gray-600 hover:border-gray-400"
-          >
+          <Button type="button" variant="outline" size="sm" onClick={() => setShowFilterDrawer(true)}>
             <SlidersHorizontal size={14} />
             {t("tags.filter")}
             {form.tagIds.length > 0 && (
@@ -150,18 +143,14 @@ export default function RecipeCreatePage() {
                 {form.tagIds.length}
               </span>
             )}
-          </button>
+          </Button>
         </div>
 
         {/* Save button */}
-        <button
-          type="submit"
-          disabled={createRecipe.isPending || !form.title.trim()}
-          className="flex w-full items-center justify-center gap-2 rounded-lg bg-orange-500 px-4 py-2 text-sm font-medium text-white hover:bg-orange-600 disabled:opacity-50"
-        >
+        <Button type="submit" className="w-full" disabled={createRecipe.isPending || !form.title.trim()}>
           {createRecipe.isPending ? <Spinner /> : <Save size={16} />}
           {t("common.save")}
-        </button>
+        </Button>
       </form>
 
       {groupedTags && (

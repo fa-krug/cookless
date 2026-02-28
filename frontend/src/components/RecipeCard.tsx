@@ -3,6 +3,7 @@ import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import type { RecipeSummary, TagCategory } from "../api/types";
+import { Button } from "@/components/ui/button";
 
 const TAG_COLORS: Record<TagCategory, string> = {
   DIETARY: "bg-green-100 text-green-800",
@@ -77,13 +78,15 @@ export default function RecipeCard({ recipe, onDelete, highlight }: RecipeCardPr
           </div>
         )}
       </Link>
-      <button
+      <Button
+        variant="ghost"
+        size="icon"
+        className="ml-3 shrink-0 text-red-600 hover:bg-red-50"
         onClick={() => onDelete(recipe.id)}
-        className="ml-3 shrink-0 rounded-md p-2 text-red-600 hover:bg-red-50"
         aria-label={`${t("common.delete")} ${recipe.title}`}
       >
         <Trash2 size={18} />
-      </button>
+      </Button>
     </div>
   );
 }

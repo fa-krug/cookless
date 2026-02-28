@@ -1,5 +1,6 @@
 import { X } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { Button } from "@/components/ui/button";
 import { useDialog } from "../../hooks/useDialog";
 
 interface ModalProps {
@@ -32,13 +33,9 @@ export default function Modal({ open, onClose, title, children, size = "md" }: M
           <h2 id={titleId} className="text-lg font-semibold text-gray-900">
             {title}
           </h2>
-          <button
-            onClick={onClose}
-            aria-label={t("common.close")}
-            className="rounded-full p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
-          >
+          <Button variant="ghost" size="icon" onClick={onClose} aria-label={t("common.close")}>
             <X size={20} />
-          </button>
+          </Button>
         </div>
         {children}
       </div>

@@ -8,6 +8,11 @@ import { useSetupPlan } from "../hooks/useMealPlan";
 import { useTags } from "../hooks/useTags";
 import { useToast } from "../hooks/useToast";
 import ResponsiveOverlay from "./ui/ResponsiveOverlay";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { cn } from "@/lib/utils";
 
 interface GenerateDrawerProps {
   isOpen: boolean;
@@ -119,44 +124,39 @@ function DrawerForm({ existingPlan, onClose }: DrawerFormProps) {
     <div className="space-y-4">
       {/* Iteration length */}
       <div className="mb-4">
-        <label className="mb-1 block text-sm font-medium text-gray-700">
+        <Label>
           {t("plan.iterationWeeks")}
-        </label>
+        </Label>
         <div className="flex gap-2">
           {[1, 2, 3].map((w) => (
-            <button
+            <Button
               key={w}
+              variant={iterationWeeks === w ? "default" : "secondary"}
+              size="sm"
               onClick={() => setIterationWeeks(w)}
-              className={`rounded-lg px-4 py-2 text-sm font-medium ${
-                iterationWeeks === w
-                  ? "bg-orange-500 text-white"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-              }`}
             >
               {t("plan.weeks", { count: w })}
-            </button>
+            </Button>
           ))}
         </div>
       </div>
 
       {/* Shopping days */}
       <div className="mb-4">
-        <label className="mb-1 block text-sm font-medium text-gray-700">
+        <Label>
           {t("plan.shoppingDays")}
-        </label>
+        </Label>
         <div className="flex gap-1">
           {weekdays.map((day, idx) => (
-            <button
+            <Button
               key={idx}
+              variant={shoppingDays.includes(idx) ? "default" : "secondary"}
+              size="sm"
+              className="flex-1 px-1"
               onClick={() => toggleShoppingDay(idx)}
-              className={`flex-1 rounded-lg px-1 py-2 text-xs font-medium ${
-                shoppingDays.includes(idx)
-                  ? "bg-orange-500 text-white"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-              }`}
             >
               {day}
-            </button>
+            </Button>
           ))}
         </div>
         {shoppingDayError && (
@@ -170,24 +170,24 @@ function DrawerForm({ existingPlan, onClose }: DrawerFormProps) {
 
       {/* Servings */}
       <div className="mb-4">
-        <label className="mb-1 block text-sm font-medium text-gray-700">
+        <Label>
           {t("plan.servings")}
-        </label>
-        <input
+        </Label>
+        <Input
           type="number"
           min={1}
           max={12}
           value={servings}
           onChange={(e) => setServings(Number(e.target.value))}
-          className="w-20 rounded-lg border border-gray-300 px-3 py-2 text-sm"
+          className="w-20"
         />
       </div>
 
       {/* Known/New Ratio */}
       <div className="mb-4">
-        <label className="mb-1 block text-sm font-medium text-gray-700">
+        <Label>
           {t("plan.knownRatio")} — {Math.round(knownRatio * 100)}%
-        </label>
+        </Label>
         <input
           type="range"
           min={0}
@@ -205,16 +205,16 @@ function DrawerForm({ existingPlan, onClose }: DrawerFormProps) {
 
       {/* Default Leftover Days */}
       <div className="mb-4">
-        <label className="mb-1 block text-sm font-medium text-gray-700">
+        <Label>
           {t("plan.defaultLeftoverDays")}
-        </label>
-        <input
+        </Label>
+        <Input
           type="number"
           min={0}
           max={3}
           value={defaultLeftoverDays}
           onChange={(e) => setDefaultLeftoverDays(Number(e.target.value))}
-          className="w-20 rounded-lg border border-gray-300 px-3 py-2 text-sm"
+          className="w-20"
         />
       </div>
 
@@ -239,16 +239,16 @@ function DrawerForm({ existingPlan, onClose }: DrawerFormProps) {
                     return (
                       <label
                         key={tag.id}
-                        className={`flex items-center gap-1.5 text-sm px-2 py-1 rounded-lg border cursor-pointer ${
+                        className={cn(
+                          "flex items-center gap-1.5 text-sm px-2 py-1 rounded-lg border cursor-pointer",
                           isExcluded
                             ? "border-gray-200 bg-gray-50 text-gray-400 line-through"
-                            : "border-gray-300 bg-white"
-                        }`}
+                            : "border-gray-300 bg-white",
+                        )}
                       >
-                        <input
-                          type="checkbox"
+                        <Checkbox
                           checked={!isExcluded}
-                          onChange={() => {
+                          onCheckedChange={() => {
                             setExcludedTagIds((prev) => {
                               const next = new Set(prev);
                               if (next.has(tag.id)) {
@@ -259,7 +259,6 @@ function DrawerForm({ existingPlan, onClose }: DrawerFormProps) {
                               return next;
                             });
                           }}
-                          className="rounded accent-orange-500"
                         />
                         {i18n.language === "de" ? tag.name_de : tag.name_en}
                       </label>
@@ -272,10 +271,10 @@ function DrawerForm({ existingPlan, onClose }: DrawerFormProps) {
         </div>
       )}
 
-      <button
+      <Button
+        className="w-full"
         onClick={handleSubmit}
         disabled={setupPlan.isPending}
-        className="flex w-full items-center justify-center gap-2 rounded-lg bg-orange-500 px-4 py-3 text-sm font-semibold text-white hover:bg-orange-600 disabled:opacity-50"
       >
         {setupPlan.isPending ? <Spinner /> : <Sparkles size={16} />}
         {setupPlan.isPending
@@ -283,7 +282,7 @@ function DrawerForm({ existingPlan, onClose }: DrawerFormProps) {
           : isUpdate
             ? t("plan.updateConfig")
             : t("plan.setup")}
-      </button>
+      </Button>
     </div>
   );
 }

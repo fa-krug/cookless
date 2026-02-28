@@ -1,4 +1,5 @@
 import { ShoppingCart } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { useMemo } from "react";
 import { useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -92,13 +93,15 @@ export default function ShoppingListDetailPage() {
             <p className="text-sm text-gray-500">
               {t("shopping.linkedToPlan")} &middot; {formatDate(shoppingList.created_at)}
             </p>
-            <button
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-orange-500 hover:bg-orange-50"
               onClick={handleUncheckAll}
               disabled={!hasCheckedItems || bulkToggle.isPending}
-              className="rounded-md px-3 py-1.5 text-sm font-medium text-orange-500 hover:bg-orange-50 disabled:opacity-50"
             >
               {t("shopping.uncheckAll")}
-            </button>
+            </Button>
           </div>
 
           <div className="space-y-3">
