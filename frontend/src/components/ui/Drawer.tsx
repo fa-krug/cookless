@@ -25,7 +25,7 @@ export default function Drawer({
         <DrawerHeader>
           <DrawerTitle>{title}</DrawerTitle>
         </DrawerHeader>
-        <ScrollArea className="flex-1 px-4 pb-6">{children}</ScrollArea>
+        <ScrollArea className="min-h-0 flex-1 px-4 pb-6">{children}</ScrollArea>
       </DrawerContent>
     </ShadDrawer>
   );
