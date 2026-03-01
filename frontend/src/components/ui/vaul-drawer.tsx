@@ -7,14 +7,10 @@ import { cn } from "@/lib/utils"
 
 const Drawer = ({
   shouldScaleBackground = true,
-  snapPoints = [0.85, 1],
-  fadeFromIndex = 0,
   ...props
 }: React.ComponentProps<typeof DrawerPrimitive.Root>) => (
   <DrawerPrimitive.Root
     shouldScaleBackground={shouldScaleBackground}
-    snapPoints={snapPoints}
-    fadeFromIndex={fadeFromIndex}
     {...props}
   />
 )
@@ -47,7 +43,7 @@ const DrawerContent = React.forwardRef<
     <DrawerPrimitive.Content
       ref={ref}
       className={cn(
-        "fixed inset-x-0 bottom-0 z-50 mt-24 flex h-auto flex-col rounded-t-[10px] border bg-background",
+        "fixed inset-x-0 bottom-0 z-50 mt-24 flex max-h-[85dvh] flex-col overflow-hidden rounded-t-[10px] border bg-background",
         className
       )}
       {...props}
