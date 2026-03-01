@@ -136,9 +136,18 @@ html.dark {
   }
   body {
     @apply bg-background text-foreground;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  input,
+  textarea,
+  [contenteditable="true"] {
+    -webkit-user-select: text;
+    user-select: text;
   }
   html {
     -webkit-text-size-adjust: 100%;
+    -webkit-touch-callout: none;
   }
   /* Prevent iOS zoom on input focus (requires font-size >= 16px) */
   input,
