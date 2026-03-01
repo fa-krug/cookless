@@ -19,7 +19,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import IngredientForm from "../components/IngredientForm";
 import StepEditor from "../components/StepEditor";
-import TagFilterPopover from "../components/TagFilterDrawer";
+import TagFilterDrawer from "../components/TagFilterDrawer";
 import { RecipeDetailSkeleton } from "../components/ui/RecipeDetailSkeleton";
 import { useIngredients } from "../hooks/useIngredients";
 import { queryKeys } from "../hooks/queryKeys";
@@ -341,7 +341,7 @@ function RecipeForm({ recipe, recipeId, allIngredients, allUnits }: RecipeFormPr
         {/* Tags */}
         <div>
           {groupedTags && (
-            <TagFilterPopover
+            <TagFilterDrawer
               groupedTags={groupedTags}
               selectedTags={tagIds}
               onChange={(ids) => form.setValue("tagIds", ids)}
@@ -355,7 +355,7 @@ function RecipeForm({ recipe, recipeId, allIngredients, allUnits }: RecipeFormPr
                   </span>
                 )}
               </Button>
-            </TagFilterPopover>
+            </TagFilterDrawer>
           )}
         </div>
 

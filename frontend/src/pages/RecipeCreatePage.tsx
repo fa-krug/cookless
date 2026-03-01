@@ -11,7 +11,7 @@ import { IconButton } from "@/components/ui/IconButton";
 import { Label } from "@/components/ui/label";
 import IngredientForm from "../components/IngredientForm";
 import StepEditor from "../components/StepEditor";
-import TagFilterPopover from "../components/TagFilterDrawer";
+import TagFilterDrawer from "../components/TagFilterDrawer";
 import { useIngredients } from "../hooks/useIngredients";
 import { queryKeys } from "../hooks/queryKeys";
 import { useCreateRecipe } from "../hooks/useRecipes";
@@ -141,7 +141,7 @@ export default function RecipeCreatePage() {
         {/* Tags */}
         <div>
           {groupedTags && (
-            <TagFilterPopover
+            <TagFilterDrawer
               groupedTags={groupedTags}
               selectedTags={tagIds}
               onChange={(ids) => form.setValue("tagIds", ids)}
@@ -155,7 +155,7 @@ export default function RecipeCreatePage() {
                   </span>
                 )}
               </Button>
-            </TagFilterPopover>
+            </TagFilterDrawer>
           )}
         </div>
 

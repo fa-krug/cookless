@@ -8,7 +8,6 @@ interface ResponsiveOverlayProps {
   title: string;
   children: React.ReactNode;
   size?: "sm" | "md" | "lg";
-  maxHeight?: string;
 }
 
 export default function ResponsiveOverlay({
@@ -17,7 +16,6 @@ export default function ResponsiveOverlay({
   title,
   children,
   size = "md",
-  maxHeight = "85vh",
 }: ResponsiveOverlayProps) {
   const isDesktop = useMediaQuery("(min-width: 640px)");
 
@@ -30,7 +28,7 @@ export default function ResponsiveOverlay({
   }
 
   return (
-    <Drawer open={open} onClose={onClose} title={title} maxHeight={maxHeight}>
+    <Drawer open={open} onClose={onClose} title={title}>
       {children}
     </Drawer>
   );

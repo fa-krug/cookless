@@ -1,13 +1,6 @@
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import Drawer from "../components/ui/Drawer";
-
-vi.mock("react-i18next", () => ({
-  useTranslation: () => ({
-    t: (key: string) => key,
-    i18n: { language: "en", changeLanguage: vi.fn() },
-  }),
-}));
 
 describe("Drawer", () => {
   it("renders title and children when open", () => {
@@ -38,13 +31,13 @@ describe("Drawer", () => {
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 
-  it("renders close button with translated text", () => {
+  it("does not render a close button", () => {
     render(
       <Drawer open onClose={() => {}} title="Test">
         <p>Content</p>
       </Drawer>,
     );
-    expect(screen.getByText("common.close")).toBeInTheDocument();
+    expect(screen.queryByText("common.close")).not.toBeInTheDocument();
   });
 
   it("has accessible title", () => {

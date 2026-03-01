@@ -7,7 +7,7 @@ import { type GenerateRecipesPayload, type ListType, type RecipeSummary } from "
 import GenerateRecipesDrawer from "../components/GenerateRecipesDrawer";
 import { GenerateRecipesPreview } from "../components/GenerateRecipesPreview";
 import RecipeCard from "../components/RecipeCard";
-import TagFilterPopover from "../components/TagFilterDrawer";
+import TagFilterDrawer from "../components/TagFilterDrawer";
 import { EmptyState } from "../components/ui/EmptyState";
 import { RecipeListSkeleton } from "../components/ui/RecipeListSkeleton";
 import { Button } from "@/components/ui/button";
@@ -238,7 +238,7 @@ export default function RecipeListPage() {
           </SelectContent>
         </Select>
         {groupedTags && (
-          <TagFilterPopover
+          <TagFilterDrawer
             groupedTags={groupedTags}
             selectedTags={selectedTags}
             onChange={setSelectedTags}
@@ -252,7 +252,7 @@ export default function RecipeListPage() {
                 </span>
               )}
             </Button>
-          </TagFilterPopover>
+          </TagFilterDrawer>
         )}
       </div>
 
