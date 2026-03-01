@@ -6,6 +6,7 @@ from django.conf import settings
 from django.contrib import admin
 from django.http import JsonResponse
 from django.urls import path, re_path
+from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.generic import TemplateView
 from django.views.static import serve
 
@@ -32,6 +33,8 @@ urlpatterns += [
 ]
 
 # Catch-all for SPA routing - must be last
+# ensure_csrf_cookie so the frontend can read the CSRF token for API requests
+spa_view = ensure_csrf_cookie(TemplateView.as_view(template_name="index.html"))
 urlpatterns += [
-    re_path(r"^(?!api/|media/).*$", TemplateView.as_view(template_name="index.html")),
+    re_path(r"^(?!api/|media/).*$", spa_view),
 ]
