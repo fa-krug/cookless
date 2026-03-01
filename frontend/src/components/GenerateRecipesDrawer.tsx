@@ -8,7 +8,6 @@ import {
 } from "@/lib/schemas/generate-recipes";
 
 import ResponsiveOverlay from "./ui/ResponsiveOverlay";
-import { useCloseDetailsOnClickOutside } from "../hooks/useCloseDetailsOnClickOutside";
 import { useTags } from "../hooks/useTags";
 import { TAG_CATEGORIES } from "../api/types";
 import { Button } from "@/components/ui/button";
@@ -16,6 +15,8 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
+import { Slider } from "@/components/ui/slider";
 
 interface GenerateRecipesDrawerProps {
   isOpen: boolean;
@@ -35,7 +36,6 @@ export default function GenerateRecipesDrawer({
 }: GenerateRecipesDrawerProps) {
   const { t, i18n } = useTranslation();
   const { data: groupedTags } = useTags();
-  const tagSectionRef = useCloseDetailsOnClickOutside<HTMLDivElement>();
 
   const form = useForm<GenerateRecipesFormValues>({
     resolver: zodResolver(generateRecipesSchema),
@@ -71,19 +71,19 @@ export default function GenerateRecipesDrawer({
             </Label>
             <span className="text-sm font-semibold text-primary">{count}</span>
           </div>
-          <input
-            type="range"
+          <Slider
             min={1}
             max={20}
-            value={count}
-            onChange={(e) => form.setValue("count", Number(e.target.value))}
-            className="mt-2 w-full accent-primary"
+            step={1}
+            value={[count]}
+            onValueChange={([val]) => form.setValue("count", val)}
+            className="mt-2"
           />
         </div>
 
         {/* Tags */}
         {groupedTags && (
-          <div ref={tagSectionRef}>
+          <div>
             <Label>
               {t("generateRecipes.tags")}
             </Label>
@@ -94,16 +94,21 @@ export default function GenerateRecipesDrawer({
                   selectedTagIds.includes(tag.id),
                 );
                 return (
-                  <details key={category} className="relative">
-                    <summary className="flex cursor-pointer select-none items-center gap-1 rounded-lg border border-border bg-card px-3 py-1.5 text-sm">
-                      {t(`tags.${category}`)}
-                      {selectedInCategory.length > 0 && (
-                        <span className="ml-1 rounded-full bg-primary px-1.5 text-xs text-primary-foreground">
-                          {selectedInCategory.length}
-                        </span>
-                      )}
-                    </summary>
-                    <div className="absolute z-10 mt-1 min-w-48 rounded-lg border border-border bg-card shadow-lg">
+                  <Popover key={category}>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        className="flex cursor-pointer select-none items-center gap-1 rounded-lg border border-border bg-card px-3 py-1.5 text-sm"
+                      >
+                        {t(`tags.${category}`)}
+                        {selectedInCategory.length > 0 && (
+                          <span className="ml-1 rounded-full bg-primary px-1.5 text-xs text-primary-foreground">
+                            {selectedInCategory.length}
+                          </span>
+                        )}
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent className="min-w-48 p-0" align="start">
                       <ScrollArea className="max-h-60 p-2">
                         {tags.map((tag) => (
                           <label
@@ -126,8 +131,8 @@ export default function GenerateRecipesDrawer({
                           </label>
                         ))}
                       </ScrollArea>
-                    </div>
-                  </details>
+                    </PopoverContent>
+                  </Popover>
                 );
               })}
             </div>

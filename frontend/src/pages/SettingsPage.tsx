@@ -25,6 +25,7 @@ import type { AccessTokenCreated } from "../api/types";
 import { type Passkey, type User } from "../api/types";
 import { addPasskey } from "../api/webauthn";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { IconButton } from "@/components/ui/IconButton";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Input } from "@/components/ui/input";
@@ -631,20 +632,16 @@ export default function SettingsPage() {
                         {t(`tokens.scopeGroups.${group}`)}
                       </span>
                       <Label className="flex items-center gap-1.5 text-xs font-normal">
-                        <input
-                          type="checkbox"
+                        <Checkbox
                           checked={tokenScopes.includes(`${group}:read`)}
-                          onChange={() => toggleScope(`${group}:read`)}
-                          className="rounded border-border text-primary focus:ring-primary"
+                          onCheckedChange={() => toggleScope(`${group}:read`)}
                         />
                         {t("tokens.scopeRead")}
                       </Label>
                       <Label className="flex items-center gap-1.5 text-xs font-normal">
-                        <input
-                          type="checkbox"
+                        <Checkbox
                           checked={tokenScopes.includes(`${group}:write`)}
-                          onChange={() => toggleScope(`${group}:write`)}
-                          className="rounded border-border text-primary focus:ring-primary"
+                          onCheckedChange={() => toggleScope(`${group}:write`)}
                         />
                         {t("tokens.scopeWrite")}
                       </Label>

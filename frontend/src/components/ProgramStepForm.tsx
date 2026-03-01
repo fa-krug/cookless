@@ -5,7 +5,7 @@ import { MACHINE_PROGRAMS, getProgramDef } from "../constants/machinePrograms";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { cn } from "@/lib/utils";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 interface ProgramStepFormProps {
   step: CookingStepPayload;
@@ -191,20 +191,19 @@ export default function ProgramStepForm({ step, onChange, onSelectFreeText }: Pr
             return (
               <div key="direction" className="flex items-center gap-1 text-sm">
                 <span className="text-muted-foreground">{t("steps.params.direction")}</span>
-                <div className="flex overflow-hidden rounded border border-border">
+                <ToggleGroup
+                  type="single"
+                  value={step.direction ?? ""}
+                  onValueChange={(val) => {
+                    if (val) onChange({ ...step, direction: val as Direction });
+                  }}
+                >
                   {(["LEFT", "RIGHT"] as Direction[]).map((d) => (
-                    <Button
-                      key={d}
-                      type="button"
-                      variant={step.direction === d ? "default" : "ghost"}
-                      size="sm"
-                      className={cn("rounded-none px-2.5 text-xs")}
-                      onClick={() => onChange({ ...step, direction: d })}
-                    >
+                    <ToggleGroupItem key={d} value={d} size="sm" className="px-2.5 text-xs">
                       {t(`steps.directions.${d}`)}
-                    </Button>
+                    </ToggleGroupItem>
                   ))}
-                </div>
+                </ToggleGroup>
               </div>
             );
           }
