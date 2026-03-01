@@ -1,20 +1,14 @@
 import {
   ArrowLeftRight,
   Check,
-  ChevronDown,
   Clipboard,
   Link,
   LogOut,
   Pencil,
   Plus,
-  RotateCcw,
   Shield,
-  Sparkles,
-  Tags,
-  Trash2,
   UserMinus,
   UserPlus,
-  X,
 } from "lucide-react";
 import ResponsiveOverlay from "../components/ui/ResponsiveOverlay";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -29,19 +23,11 @@ import {
   type HouseholdNameFormValues,
   type JoinHouseholdFormValues,
 } from "@/lib/schemas/household";
-import { api } from "../api/client";
-import { TAG_CATEGORIES, type Household, type Invite, type TagCategory } from "../api/types";
+import type { Household, Invite } from "../api/types";
 import { ConfirmDialog } from "../components/ui/ConfirmDialog";
 import { toast } from "sonner";
 import { useAuth } from "../hooks/useAuth";
 import { useConfirm } from "../hooks/useConfirm";
-import {
-  useCreateTag,
-  useDeleteTag,
-  useResetTags,
-  useTags,
-  useUpdateTag,
-} from "../hooks/useTags";
 import {
   useAcceptInvite,
   useCreateHousehold,
@@ -57,9 +43,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { IconButton } from "@/components/ui/IconButton";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
+import { AISettings } from "./household/AISettings";
+import { TagManagement } from "./household/TagManagement";
 
 function MembersList({
   household,
@@ -330,7 +316,7 @@ function CreateHouseholdSection() {
 }
 
 export default function HouseholdPage() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const { user, refreshUser } = useAuth();
   const { confirm, dialogProps } = useConfirm();
   const { data: households, isLoading } = useHouseholds();
@@ -348,26 +334,6 @@ export default function HouseholdPage() {
   const editName = editForm.watch("name");
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteConfirmName, setDeleteConfirmName] = useState("");
-
-  // Tag state
-  const { data: groupedTags } = useTags();
-  const createTag = useCreateTag();
-  const updateTag = useUpdateTag();
-  const deleteTag = useDeleteTag();
-  const resetTags = useResetTags();
-  const [editingTag, setEditingTag] = useState<string | null>(null);
-  const [editNameEn, setEditNameEn] = useState("");
-  const [editNameDe, setEditNameDe] = useState("");
-  const [addingCategory, setAddingCategory] = useState<TagCategory | null>(null);
-  const [newTagEn, setNewTagEn] = useState("");
-  const [newTagDe, setNewTagDe] = useState("");
-
-  // AI state
-  const household = user?.active_household;
-  const [aiEnabled, setAiEnabled] = useState(household?.ai_enabled ?? false);
-  const [geminiKey, setGeminiKey] = useState(household?.gemini_api_key ?? "");
-  const [verifyingKey, setVerifyingKey] = useState(false);
-  const [keyStatus, setKeyStatus] = useState<"idle" | "valid" | "invalid">("idle");
 
   const activeHouseholdId = user?.active_household?.id ?? null;
 
@@ -410,45 +376,6 @@ export default function HouseholdPage() {
       },
       onError: () => toast.error(t("errors.householdLeave")),
     });
-  }
-
-  async function saveHouseholdSettings(patch: Record<string, unknown>) {
-    if (!household) return;
-    try {
-      await api.patch<Household>(
-        `/api/v1/households/${household.id}/settings/`,
-        patch,
-      );
-      await refreshUser();
-    } catch {
-      toast.error(t("errors.settingsSave"));
-    }
-  }
-
-  async function handleAiToggle() {
-    const next = !aiEnabled;
-    setAiEnabled(next);
-    await saveHouseholdSettings({ ai_enabled: next });
-  }
-
-  async function handleGeminiKeyBlur() {
-    if (geminiKey === (household?.gemini_api_key ?? "")) return;
-    setKeyStatus("idle");
-    await saveHouseholdSettings({ gemini_api_key: geminiKey });
-  }
-
-  async function handleVerifyKey() {
-    if (!geminiKey) return;
-    setVerifyingKey(true);
-    setKeyStatus("idle");
-    try {
-      await api.post("/api/v1/users/me/verify-gemini-key/", { api_key: geminiKey });
-      setKeyStatus("valid");
-    } catch {
-      setKeyStatus("invalid");
-    } finally {
-      setVerifyingKey(false);
-    }
   }
 
   return (
@@ -575,310 +502,10 @@ export default function HouseholdPage() {
       </div>
 
       {/* AI Settings */}
-      {activeHousehold && (
-        <div className="mb-4 rounded-lg border border-border bg-card p-4 shadow-sm">
-          <div className="mb-3 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Sparkles size={20} className="text-muted-foreground" />
-              <h2 className="text-lg font-semibold text-foreground">{t("ai.title")}</h2>
-            </div>
-            <button
-              onClick={handleAiToggle}
-              role="switch"
-              aria-checked={aiEnabled}
-              disabled={!isOwner}
-              className={`relative inline-flex h-6 w-11 shrink-0 rounded-full transition-colors ${
-                aiEnabled ? "bg-primary" : "bg-muted"
-              } ${isOwner ? "cursor-pointer" : "cursor-not-allowed opacity-60"}`}
-            >
-              <span
-                className={`inline-block h-5 w-5 translate-y-0.5 rounded-full bg-background shadow transition-transform ${
-                  aiEnabled ? "translate-x-5.5" : "translate-x-0.5"
-                }`}
-              />
-            </button>
-          </div>
-
-          <p className="mb-3 text-sm text-muted-foreground">{t("ai.description")}</p>
-
-          {aiEnabled && (
-            <>
-              <Label>
-                {t("ai.apiKey")}
-              </Label>
-              <div className="flex gap-2">
-                <Input
-                  type="password"
-                  placeholder={t("ai.apiKeyPlaceholder")}
-                  value={geminiKey}
-                  onChange={(e) => {
-                    setGeminiKey(e.target.value);
-                    setKeyStatus("idle");
-                  }}
-                  onBlur={handleGeminiKeyBlur}
-                  disabled={!isOwner}
-                  className={cn("min-w-0 flex-1", !isOwner && "cursor-not-allowed bg-muted opacity-60")}
-                />
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={handleVerifyKey}
-                  disabled={!geminiKey || verifyingKey || !isOwner}
-                  className={cn(
-                    "shrink-0",
-                    keyStatus === "valid"
-                      ? "bg-green-100 text-green-700"
-                      : keyStatus === "invalid"
-                        ? "bg-destructive/10 text-destructive"
-                        : ""
-                  )}
-                >
-                  {verifyingKey ? (
-                    <Spinner />
-                  ) : keyStatus === "valid" ? (
-                    <Check size={16} />
-                  ) : keyStatus === "invalid" ? (
-                    <X size={16} />
-                  ) : null}
-                  {verifyingKey
-                    ? t("common.loading")
-                    : keyStatus === "valid"
-                      ? t("ai.keyValid")
-                      : keyStatus === "invalid"
-                        ? t("ai.keyInvalid")
-                        : t("ai.verify")}
-                </Button>
-              </div>
-            </>
-          )}
-        </div>
-      )}
+      {activeHousehold && <AISettings isOwner={isOwner} />}
 
       {/* Manage Tags */}
-      {activeHousehold && (
-        <div className="mb-4 rounded-lg border border-border bg-card p-4 shadow-sm">
-          <div className="mb-3 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Tags size={20} className="text-muted-foreground" />
-              <h2 className="text-lg font-semibold text-foreground">{t("tags.manageTags")}</h2>
-            </div>
-            {isOwner && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={async () => {
-                  const confirmed = await confirm({
-                    title: t("tags.resetToDefaults"),
-                    message: t("tags.resetConfirm"),
-                    confirmVariant: "danger",
-                    cancelLabel: t("common.cancel"),
-                  });
-                  if (confirmed) {
-                    resetTags.mutate(undefined, {
-                      onSuccess: () => toast.success(t("tags.resetSuccess")),
-                      onError: () => toast.error(t("errors.tagsReset")),
-                    });
-                  }
-                }}
-                disabled={resetTags.isPending}
-              >
-                {resetTags.isPending ? <Spinner /> : <RotateCcw size={14} />}
-                {t("tags.resetToDefaults")}
-              </Button>
-            )}
-          </div>
-          <div className="space-y-3">
-            {groupedTags &&
-              TAG_CATEGORIES.map((category) => {
-                const tags = groupedTags[category] || [];
-                return (
-                  <Collapsible key={category} className="rounded-lg border">
-                    <CollapsibleTrigger className="flex w-full cursor-pointer items-center justify-between rounded-lg bg-muted px-4 py-2 font-medium">
-                      <span>
-                        {t(`tags.${category}`)}
-                        <span className="ml-2 text-sm text-muted-foreground">({tags.length})</span>
-                      </span>
-                      <ChevronDown size={16} className="transition-transform duration-200 [[data-state=open]>&]:rotate-180" />
-                    </CollapsibleTrigger>
-                    <CollapsibleContent className="space-y-1 p-3">
-                      {tags.length === 0 && (
-                        <p className="text-sm text-muted-foreground">{t("tags.noTags")}</p>
-                      )}
-                      {tags.map((tag) => (
-                        <div
-                          key={tag.id}
-                          className="flex items-center justify-between rounded px-2 py-1 hover:bg-muted"
-                        >
-                          {isOwner && editingTag === tag.id ? (
-                            <div className="flex flex-1 items-center justify-between gap-2">
-                              <div className="flex min-w-0 flex-1 items-center gap-2">
-                                <Input
-                                  value={editNameEn}
-                                  onChange={(e) => setEditNameEn(e.target.value)}
-                                  className="h-8 w-28"
-                                  placeholder={t("tags.nameEn")}
-                                />
-                                <Input
-                                  value={editNameDe}
-                                  onChange={(e) => setEditNameDe(e.target.value)}
-                                  className="h-8 w-28"
-                                  placeholder={t("tags.nameDe")}
-                                />
-                              </div>
-                              <div className="flex gap-1">
-                                <IconButton
-                                  variant="ghost"
-                                  type="button"
-                                  onClick={async () => {
-                                    await updateTag.mutateAsync({
-                                      id: tag.id,
-                                      payload: { name_en: editNameEn, name_de: editNameDe },
-                                    });
-                                    setEditingTag(null);
-                                  }}
-                                  className="h-7 w-7 text-green-600 hover:bg-green-50"
-                                  tooltip={t("common.save")}
-                                  aria-label={t("common.save")}
-                                >
-                                  <Check size={14} />
-                                </IconButton>
-                                <IconButton
-                                  variant="ghost"
-                                  type="button"
-                                  onClick={() => setEditingTag(null)}
-                                  className="h-7 w-7 text-muted-foreground hover:bg-muted"
-                                  tooltip={t("common.cancel")}
-                                  aria-label={t("common.cancel")}
-                                >
-                                  <X size={14} />
-                                </IconButton>
-                              </div>
-                            </div>
-                          ) : (
-                            <>
-                              <div className="flex items-center gap-2">
-                                <span className="text-sm">
-                                  {i18n.language === "de" ? tag.name_de : tag.name_en}
-                                </span>
-                                {tag.is_default && (
-                                  <span className="rounded bg-muted px-1.5 py-0.5 text-xs text-muted-foreground">
-                                    default
-                                  </span>
-                                )}
-                              </div>
-                              {isOwner && (
-                                <div className="flex gap-1">
-                                  <IconButton
-                                    variant="ghost"
-                                    type="button"
-                                    onClick={() => {
-                                      setEditingTag(tag.id);
-                                      setEditNameEn(tag.name_en);
-                                      setEditNameDe(tag.name_de);
-                                    }}
-                                    className="h-7 w-7 text-muted-foreground hover:bg-muted hover:text-primary"
-                                    tooltip={t("tags.editTag")}
-                                    aria-label={t("tags.editTag")}
-                                  >
-                                    <Pencil size={14} />
-                                  </IconButton>
-                                  <IconButton
-                                    variant="ghost"
-                                    type="button"
-                                    onClick={async () => {
-                                      const confirmed = await confirm({
-                                        title: t("tags.deleteTag"),
-                                        message: t("tags.deleteConfirm", { count: 0 }),
-                                        confirmVariant: "danger",
-                                        cancelLabel: t("common.cancel"),
-                                      });
-                                      if (confirmed) {
-                                        deleteTag.mutate(tag.id);
-                                      }
-                                    }}
-                                    className="h-7 w-7 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
-                                    tooltip={t("tags.deleteTag")}
-                                    aria-label={t("tags.deleteTag")}
-                                  >
-                                    <Trash2 size={14} />
-                                  </IconButton>
-                                </div>
-                              )}
-                            </>
-                          )}
-                        </div>
-                      ))}
-                      {isOwner && (addingCategory === category ? (
-                        <div className="mt-2 flex items-center justify-between gap-2 border-t pt-2">
-                          <div className="flex min-w-0 flex-1 items-center gap-2">
-                            <Input
-                              value={newTagEn}
-                              onChange={(e) => setNewTagEn(e.target.value)}
-                              className="h-8 w-28"
-                              placeholder={t("tags.nameEn")}
-                            />
-                            <Input
-                              value={newTagDe}
-                              onChange={(e) => setNewTagDe(e.target.value)}
-                              className="h-8 w-28"
-                              placeholder={t("tags.nameDe")}
-                            />
-                          </div>
-                          <div className="flex gap-1">
-                            <IconButton
-                              variant="ghost"
-                              type="button"
-                              onClick={async () => {
-                                if (newTagEn.trim() && newTagDe.trim()) {
-                                  await createTag.mutateAsync({
-                                    category,
-                                    name_en: newTagEn.trim(),
-                                    name_de: newTagDe.trim(),
-                                  });
-                                  setNewTagEn("");
-                                  setNewTagDe("");
-                                  setAddingCategory(null);
-                                }
-                              }}
-                              className="h-7 w-7 text-green-600 hover:bg-green-50"
-                              tooltip={t("common.save")}
-                              aria-label={t("common.save")}
-                            >
-                              <Check size={14} />
-                            </IconButton>
-                            <IconButton
-                              variant="ghost"
-                              type="button"
-                              onClick={() => {
-                                setAddingCategory(null);
-                                setNewTagEn("");
-                                setNewTagDe("");
-                              }}
-                              className="h-7 w-7 text-muted-foreground hover:bg-muted"
-                              tooltip={t("common.cancel")}
-                              aria-label={t("common.cancel")}
-                            >
-                              <X size={14} />
-                            </IconButton>
-                          </div>
-                        </div>
-                      ) : (
-                        <Button
-                          variant="link"
-                          type="button"
-                          onClick={() => setAddingCategory(category)}
-                          className="mt-2 w-full justify-start pt-2 text-sm text-primary hover:text-primary"
-                        >
-                          + {t("tags.addTag")}
-                        </Button>
-                      ))}
-                    </CollapsibleContent>
-                  </Collapsible>
-                );
-              })}
-          </div>
-        </div>
-      )}
+      {activeHousehold && <TagManagement isOwner={isOwner} />}
 
       {/* Leave household (non-owner only) */}
       {activeHousehold && !isOwner && (
