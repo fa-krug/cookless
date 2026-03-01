@@ -270,7 +270,7 @@ Strategy: `injectManifest` (custom SW with Workbox manifest injection).
 ### Modal / Drawer / ResponsiveOverlay
 Built on shadcn/ui primitives (Radix Dialog + vaul Drawer). Focus trapping, escape-to-close, and backdrop handled by Radix.
 - **Modal:** Wraps shadcn Dialog. `size` prop (sm/md/lg). Built-in X close button via DialogContent.
-- **Drawer:** Wraps vaul Drawer. Bottom sheet with drag handle and native swipe-to-close. `maxHeight` prop (default 85vh). Close text button.
+- **Drawer:** Wraps vaul Drawer. Bottom sheet with drag handle and native swipe-to-close. `maxHeight` prop (default 50vh). Close text button.
 - **ResponsiveOverlay:** Renders Modal on desktop (>=640px), Drawer on mobile. Based on `useMediaQuery`.
 ### ConfirmDialog
 Wraps shadcn AlertDialog. Props: `open`, `title`, `message`, `confirmVariant` (danger/primary), `requireTypedConfirmation` (must type exact string), `inputField` (text/password). Used via `useConfirm()` hook which returns `{ confirm(options): Promise<string|boolean>, dialogProps }`.
