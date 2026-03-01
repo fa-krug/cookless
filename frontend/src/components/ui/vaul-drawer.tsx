@@ -8,11 +8,13 @@ import { cn } from "@/lib/utils"
 const Drawer = ({
   shouldScaleBackground = true,
   snapPoints = [0.85, 1],
+  fadeFromIndex = 0,
   ...props
 }: React.ComponentProps<typeof DrawerPrimitive.Root>) => (
   <DrawerPrimitive.Root
     shouldScaleBackground={shouldScaleBackground}
     snapPoints={snapPoints}
+    fadeFromIndex={fadeFromIndex}
     {...props}
   />
 )
