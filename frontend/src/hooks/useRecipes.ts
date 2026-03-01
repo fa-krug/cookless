@@ -5,13 +5,14 @@ import { queryKeys } from "./queryKeys";
 
 const PAGE_SIZE = 20;
 
-export function useRecipes(listType?: ListType, tagIds?: string[]) {
+export function useRecipes(listType?: ListType, tagIds?: string[], search?: string) {
   return useInfiniteQuery<PaginatedResponse<RecipeSummary>>({
-    queryKey: [...queryKeys.recipes, listType, tagIds],
+    queryKey: [...queryKeys.recipes, listType, tagIds, search],
     queryFn: ({ pageParam = 0 }) => {
       const params = new URLSearchParams();
       if (listType) params.set("list_type", listType);
       if (tagIds && tagIds.length > 0) params.set("tags", tagIds.join(","));
+      if (search) params.set("search", search);
       params.set("limit", PAGE_SIZE.toString());
       params.set("offset", String(pageParam));
       return api.get<PaginatedResponse<RecipeSummary>>(`/api/v1/recipes/?${params}`);

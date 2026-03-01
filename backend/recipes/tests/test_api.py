@@ -342,3 +342,49 @@ def test_list_recipes_default_returns_all(auth_client):
     data = response.json()
     assert len(data["items"]) == 5
     assert data["total_count"] == 5
+
+
+@pytest.mark.django_db
+def test_list_recipes_search(auth_client):
+    client, household = auth_client
+    Recipe.objects.create(
+        household=household, title="Pasta Carbonara", list_type="KNOWN", default_servings=2
+    )
+    Recipe.objects.create(
+        household=household, title="Caesar Salad", list_type="KNOWN", default_servings=2
+    )
+    Recipe.objects.create(
+        household=household, title="Chicken Pasta", list_type="TO_TRY", default_servings=2
+    )
+
+    # Search for "pasta" should return 2 recipes
+    response = client.get("/api/v1/recipes/?search=pasta")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["total_count"] == 2
+    assert len(data["items"]) == 2
+    titles = {item["title"] for item in data["items"]}
+    assert titles == {"Pasta Carbonara", "Chicken Pasta"}
+
+    # Search combined with list_type filter
+    response = client.get("/api/v1/recipes/?search=pasta&list_type=KNOWN")
+    data = response.json()
+    assert data["total_count"] == 1
+    assert data["items"][0]["title"] == "Pasta Carbonara"
+
+    # Empty search returns all
+    response = client.get("/api/v1/recipes/?search=")
+    data = response.json()
+    assert data["total_count"] == 3
+
+
+@pytest.mark.django_db
+def test_list_recipes_search_case_insensitive(auth_client):
+    client, household = auth_client
+    Recipe.objects.create(
+        household=household, title="PASTA Carbonara", list_type="KNOWN", default_servings=2
+    )
+
+    response = client.get("/api/v1/recipes/?search=pasta")
+    assert response.status_code == 200
+    assert len(response.json()["items"]) == 1

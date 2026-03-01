@@ -151,8 +151,12 @@ def _select_recipes(
     known_count = round(cooking_sessions * known_ratio)
     try_count = cooking_sessions - known_count
 
-    known_qs = Recipe.objects.filter(household=household, list_type="KNOWN")
-    try_qs = Recipe.objects.filter(household=household, list_type="TO_TRY")
+    known_qs = Recipe.objects.filter(household=household, list_type="KNOWN").prefetch_related(
+        "ingredients"
+    )
+    try_qs = Recipe.objects.filter(household=household, list_type="TO_TRY").prefetch_related(
+        "ingredients"
+    )
 
     if excluded_tags:
         known_qs = known_qs.exclude(tags__in=excluded_tags)
@@ -199,7 +203,7 @@ def _ingredient_overlap_score(recipes: list[Recipe]) -> int:
     """Score recipes by how many ingredients they share."""
     ingredient_counts: Counter[int] = Counter()
     for recipe in recipes:
-        ingredient_ids = set(recipe.ingredients.values_list("ingredient_id", flat=True))
+        ingredient_ids = {ri.ingredient_id for ri in recipe.ingredients.all()}
         for ing_id in ingredient_ids:
             ingredient_counts[ing_id] += 1
     return sum(count for count in ingredient_counts.values() if count > 1)

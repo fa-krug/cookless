@@ -115,8 +115,17 @@ describe("RecipeListPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockGet.mockImplementation((url: string) => {
-      if (url.includes("list_type=KNOWN"))
-        return Promise.resolve({ items: KNOWN_RECIPES, total_count: KNOWN_RECIPES.length });
+      const params = new URLSearchParams(url.split("?")[1] ?? "");
+      const searchParam = params.get("search") ?? "";
+
+      if (url.includes("list_type=KNOWN")) {
+        const filtered = searchParam
+          ? KNOWN_RECIPES.filter((r) =>
+              r.title.toLowerCase().includes(searchParam.toLowerCase()),
+            )
+          : KNOWN_RECIPES;
+        return Promise.resolve({ items: filtered, total_count: filtered.length });
+      }
       if (url.includes("list_type=TO_TRY"))
         return Promise.resolve({ items: TO_TRY_RECIPES, total_count: TO_TRY_RECIPES.length });
       return Promise.resolve({ items: [], total_count: 0 });
@@ -195,8 +204,14 @@ describe("RecipeListPage", () => {
     const searchInput = screen.getByPlaceholderText("common.search");
     await user.type(searchInput, "caesar");
 
-    expect(screen.queryByText("Pasta Carbonara")).not.toBeInTheDocument();
+    // Server-side search: wait for the deferred value to trigger a new API call
+    await waitFor(() => {
+      expect(screen.queryByText("Pasta Carbonara")).not.toBeInTheDocument();
+    });
     expect(screen.getByText("Caesar Salad")).toBeInTheDocument();
+
+    // Verify the API was called with the search parameter
+    expect(mockGet).toHaveBeenCalledWith(expect.stringContaining("search=caesar"));
   });
 
   it("displays prep time and servings on recipe card", async () => {
