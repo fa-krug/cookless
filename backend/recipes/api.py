@@ -156,6 +156,7 @@ def _save_steps(recipe: Recipe, steps_data: list, method: str) -> None:
 def list_recipes(
     request,
     list_type: str | None = None,
+    search: str | None = None,
     limit: int | None = None,
     offset: int = 0,
 ):
@@ -168,6 +169,8 @@ def list_recipes(
     if tags_param:
         tag_ids = [t.strip() for t in tags_param.split(",") if t.strip()]
         qs = qs.filter(tags__id__in=tag_ids).distinct()
+    if search:
+        qs = qs.filter(title__icontains=search)
 
     total_count = qs.count()
 

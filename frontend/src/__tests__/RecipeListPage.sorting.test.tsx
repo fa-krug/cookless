@@ -115,7 +115,14 @@ describe("RecipeListPage sorting", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     storageMap.clear();
-    mockGet.mockResolvedValue({ items: RECIPES, total_count: RECIPES.length });
+    mockGet.mockImplementation((url: string) => {
+      const params = new URLSearchParams(url.split("?")[1] ?? "");
+      const searchParam = params.get("search") ?? "";
+      const filtered = searchParam
+        ? RECIPES.filter((r) => r.title.toLowerCase().includes(searchParam.toLowerCase()))
+        : RECIPES;
+      return Promise.resolve({ items: filtered, total_count: filtered.length });
+    });
   });
 
   it("sorts by name A-Z by default", async () => {
@@ -212,7 +219,9 @@ describe("RecipeListPage sorting", () => {
 
     await user.type(screen.getByPlaceholderText("common.search"), "xyznotfound");
 
-    expect(screen.getByText("recipes.noSearchResults")).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText("recipes.noSearchResults")).toBeInTheDocument();
+    });
     expect(screen.getByText("recipes.noSearchResultsSubtitle")).toBeInTheDocument();
   });
 

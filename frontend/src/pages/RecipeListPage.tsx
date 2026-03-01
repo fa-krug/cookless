@@ -1,6 +1,6 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { BookOpen, Plus, Search, SlidersHorizontal, Sparkles } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router-dom";
 import { type GenerateRecipesPayload, type ListType, type RecipeSummary } from "../api/types";
@@ -62,6 +62,7 @@ export default function RecipeListPage() {
   const newRecipeId = (location.state as { newRecipeId?: string })?.newRecipeId;
   const [activeTab, setActiveTab] = useState<ListType>("KNOWN");
   const [search, setSearch] = useState("");
+  const deferredSearch = useDeferredValue(search);
   const [sort, setSort] = usePersistedState("cookless-recipe-sort", "name-asc" as SortOption, isSortOption);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const { pendingDeletes, softDelete } = useUndoDelete();
@@ -78,11 +79,12 @@ export default function RecipeListPage() {
   const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } = useRecipes(
     activeTab,
     selectedTags.length > 0 ? selectedTags : undefined,
+    deferredSearch || undefined,
   );
   const { data: groupedTags } = useTags();
   const deleteRecipe = useDeleteRecipe();
 
-  const allRecipes = data?.pages.flatMap((page) => page.items) ?? [];
+  const allRecipes = useMemo(() => data?.pages.flatMap((page) => page.items) ?? [], [data]);
 
   useEffect(() => {
     if (!loadMoreRef.current || !hasNextPage) return;
@@ -98,41 +100,46 @@ export default function RecipeListPage() {
     return () => observer.disconnect();
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-  function handleSortChange(value: string) {
+  const handleSortChange = useCallback((value: string) => {
     setSort(value as SortOption);
-  }
+  }, [setSort]);
 
-  function handleTabChange(value: string) {
+  const handleTabChange = useCallback((value: string) => {
     setActiveTab(value as ListType);
-  }
+  }, []);
 
-  const filteredRecipes = sortRecipes(
-    allRecipes.filter(
-      (r) => r.title.toLowerCase().includes(search.toLowerCase()) && !pendingDeletes.has(r.id),
-    ),
-    sort,
-    i18n.language,
+  const filteredRecipes = useMemo(
+    () =>
+      sortRecipes(
+        allRecipes.filter((r) => !pendingDeletes.has(r.id)),
+        sort,
+        i18n.language,
+      ),
+    [allRecipes, pendingDeletes, sort, i18n.language],
   );
 
-  const hasRecipes = allRecipes.filter((r) => !pendingDeletes.has(r.id)).length > 0;
-  const isSearchEmpty = search.length > 0 && filteredRecipes.length === 0 && hasRecipes;
-  const isCollectionEmpty = !hasRecipes && !isLoading;
+  const hasRecipes = filteredRecipes.length > 0;
+  const isSearchEmpty = deferredSearch.length > 0 && filteredRecipes.length === 0 && !isLoading;
+  const isCollectionEmpty = !hasRecipes && !isLoading && deferredSearch.length === 0;
 
-  const sortOptions = [
-    { value: "name-asc", label: t("recipes.sortNameAZ") },
-    { value: "name-desc", label: t("recipes.sortNameZA") },
-    { value: "newest", label: t("recipes.sortNewest") },
-    { value: "updated", label: t("recipes.sortUpdated") },
-  ];
+  const sortOptions = useMemo(
+    () => [
+      { value: "name-asc", label: t("recipes.sortNameAZ") },
+      { value: "name-desc", label: t("recipes.sortNameZA") },
+      { value: "newest", label: t("recipes.sortNewest") },
+      { value: "updated", label: t("recipes.sortUpdated") },
+    ],
+    [t],
+  );
 
-  function handleDelete(id: string) {
+  const handleDelete = useCallback((id: string) => {
     const recipe = allRecipes.find((r) => r.id === id);
     if (!recipe) return;
 
     softDelete(id, {
       toastMessage: t("recipes.deleted", { title: recipe.title }),
       undoLabel: t("common.undo"),
-      onConfirm: (deletedId) => {
+      onConfirm: (deletedId: string) => {
         deleteRecipe.mutate(deletedId, {
           onError: () => {
             queryClient.invalidateQueries({ queryKey: queryKeys.recipes });
@@ -141,7 +148,7 @@ export default function RecipeListPage() {
         });
       },
     });
-  }
+  }, [allRecipes, softDelete, t, deleteRecipe, queryClient]);
 
   function handleGenerate(config: {
     count: number;

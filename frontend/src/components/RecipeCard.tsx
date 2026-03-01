@@ -1,5 +1,5 @@
 import { Trash2, UtensilsCrossed } from "lucide-react";
-import { useEffect, useRef } from "react";
+import { memo, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import type { RecipeSummary, TagCategory } from "../api/types";
@@ -20,7 +20,7 @@ interface RecipeCardProps {
   highlight?: boolean;
 }
 
-export default function RecipeCard({ recipe, onDelete, highlight }: RecipeCardProps) {
+function RecipeCard({ recipe, onDelete, highlight }: RecipeCardProps) {
   const { t, i18n } = useTranslation();
   const ref = useRef<HTMLDivElement>(null);
 
@@ -41,6 +41,7 @@ export default function RecipeCard({ recipe, onDelete, highlight }: RecipeCardPr
             <img
               src={recipe.image}
               alt={recipe.title}
+              loading="lazy"
               className="h-16 w-16 shrink-0 rounded-lg object-cover"
             />
           ) : (
@@ -89,3 +90,5 @@ export default function RecipeCard({ recipe, onDelete, highlight }: RecipeCardPr
     </Card>
   );
 }
+
+export default memo(RecipeCard);
