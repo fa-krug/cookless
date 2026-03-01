@@ -19,6 +19,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { Slider } from "@/components/ui/slider";
 import { cn } from "@/lib/utils";
 
 interface GenerateDrawerProps {
@@ -154,14 +155,12 @@ function DrawerForm({ existingPlan, onClose }: DrawerFormProps) {
         <Label>
           {t("plan.knownRatio")} — {Math.round(knownRatio * 100)}%
         </Label>
-        <input
-          type="range"
+        <Slider
           min={0}
           max={1}
           step={0.1}
-          value={knownRatio}
-          onChange={(e) => form.setValue("knownRatio", Number(e.target.value))}
-          className="w-full accent-primary"
+          value={[knownRatio]}
+          onValueChange={([val]) => form.setValue("knownRatio", val)}
         />
         <div className="mt-1 flex justify-between text-xs text-muted-foreground">
           <span>{t("recipes.toTry")}</span>

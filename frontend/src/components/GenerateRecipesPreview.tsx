@@ -11,6 +11,7 @@ import { streamGenerateRecipes, useBulkCreateRecipes } from "../hooks/useGenerat
 import { toast } from "sonner";
 import { Spinner } from "./ui/Spinner";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { IconButton } from "@/components/ui/IconButton";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
@@ -162,12 +163,11 @@ export function GenerateRecipesPreview({ config, onClose }: GenerateRecipesPrevi
             }`}
           >
             {/* Checkbox */}
-            <input
-              type="checkbox"
+            <Checkbox
               checked={recipe.selected}
-              onChange={() => toggleRecipe(index)}
+              onCheckedChange={() => toggleRecipe(index)}
               onClick={(e) => e.stopPropagation()}
-              className="mt-1 shrink-0 accent-primary"
+              className="mt-1 shrink-0"
             />
 
             {/* Image thumbnail */}

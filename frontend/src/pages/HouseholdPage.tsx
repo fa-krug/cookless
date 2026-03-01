@@ -1,6 +1,7 @@
 import {
   ArrowLeftRight,
   Check,
+  ChevronDown,
   Clipboard,
   Link,
   LogOut,
@@ -57,6 +58,7 @@ import { Button } from "@/components/ui/button";
 import { IconButton } from "@/components/ui/IconButton";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
 
 function MembersList({
@@ -690,12 +692,15 @@ export default function HouseholdPage() {
               TAG_CATEGORIES.map((category) => {
                 const tags = groupedTags[category] || [];
                 return (
-                  <details key={category} className="rounded-lg border">
-                    <summary className="cursor-pointer rounded-lg bg-muted px-4 py-2 font-medium">
-                      {t(`tags.${category}`)}
-                      <span className="ml-2 text-sm text-muted-foreground">({tags.length})</span>
-                    </summary>
-                    <div className="space-y-1 p-3">
+                  <Collapsible key={category} className="rounded-lg border">
+                    <CollapsibleTrigger className="flex w-full cursor-pointer items-center justify-between rounded-lg bg-muted px-4 py-2 font-medium">
+                      <span>
+                        {t(`tags.${category}`)}
+                        <span className="ml-2 text-sm text-muted-foreground">({tags.length})</span>
+                      </span>
+                      <ChevronDown size={16} className="transition-transform duration-200 [[data-state=open]>&]:rotate-180" />
+                    </CollapsibleTrigger>
+                    <CollapsibleContent className="space-y-1 p-3">
                       {tags.length === 0 && (
                         <p className="text-sm text-muted-foreground">{t("tags.noTags")}</p>
                       )}
@@ -867,8 +872,8 @@ export default function HouseholdPage() {
                           + {t("tags.addTag")}
                         </Button>
                       ))}
-                    </div>
-                  </details>
+                    </CollapsibleContent>
+                  </Collapsible>
                 );
               })}
           </div>
