@@ -3,6 +3,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { ArrowLeftRight, ArrowLeft, ChefHat, Save, SlidersHorizontal, Sparkles, Trash2, Upload, UtensilsCrossed } from "lucide-react";
 import { Spinner } from "../components/ui/Spinner";
 import { useRef } from "react";
+import { useUndoDelete } from "../hooks/useUndoDelete";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
 import {
@@ -76,7 +77,7 @@ function RecipeForm({ recipe, recipeId, allIngredients, allUnits }: RecipeFormPr
   const moveRecipe = useMoveRecipe();
   const deleteRecipe = useDeleteRecipe();
   const queryClient = useQueryClient();
-  const pendingDeleteRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const { softDelete } = useUndoDelete();
   const uploadImage = useUploadRecipeImage();
   const generateImage = useGenerateRecipeImage();
   const deleteImage = useDeleteRecipeImage();
@@ -134,38 +135,22 @@ function RecipeForm({ recipe, recipeId, allIngredients, allUnits }: RecipeFormPr
     // Navigate back immediately
     navigate("/recipes");
 
-    let undone = false;
-
-    // Show undo toast on the list page
-    toast.success(t("recipes.deleted", { title: recipe.title }), {
-      duration: 5000,
-      action: {
-        label: t("common.undo"),
-        onClick: () => {
-          undone = true;
-          if (pendingDeleteRef.current) {
-            clearTimeout(pendingDeleteRef.current);
-            pendingDeleteRef.current = null;
-          }
-          // Restore cache and navigate back
-          queryClient.setQueryData<InfiniteRecipes>(listQueryKey, previousRecipes);
-          navigate(`/recipes/${recipeId}`);
-        },
-      },
-    });
-
-    // Schedule actual delete
-    pendingDeleteRef.current = setTimeout(() => {
-      pendingDeleteRef.current = null;
-      if (!undone) {
+    softDelete(recipeId, {
+      toastMessage: t("recipes.deleted", { title: recipe.title }),
+      undoLabel: t("common.undo"),
+      onConfirm: () => {
         deleteRecipe.mutate(recipeId, {
           onError: () => {
             queryClient.setQueryData<InfiniteRecipes>(listQueryKey, previousRecipes);
             toast.error(t("errors.recipeDelete"));
           },
         });
-      }
-    }, 5000);
+      },
+      onUndo: () => {
+        queryClient.setQueryData<InfiniteRecipes>(listQueryKey, previousRecipes);
+        navigate(`/recipes/${recipeId}`);
+      },
+    });
   }
 
   function handleUploadImage(e: React.ChangeEvent<HTMLInputElement>) {

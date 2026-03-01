@@ -24,23 +24,17 @@ import { Spinner } from "../components/ui/Spinner";
 import { useAuth } from "../hooks/useAuth";
 import { queryKeys } from "../hooks/queryKeys";
 import { useDeleteRecipe, useRecipes } from "../hooks/useRecipes";
+import { usePersistedState } from "../hooks/usePersistedState";
 import { useTags } from "../hooks/useTags";
+import { useUndoDelete } from "../hooks/useUndoDelete";
 import { toast } from "sonner";
 
 type SortOption = "name-asc" | "name-desc" | "newest" | "updated";
 
-const SORT_STORAGE_KEY = "cookless-recipe-sort";
+const SORT_OPTIONS: SortOption[] = ["name-asc", "name-desc", "newest", "updated"];
 
-function getSavedSort(): SortOption {
-  try {
-    const saved = localStorage.getItem(SORT_STORAGE_KEY);
-    if (saved === "name-asc" || saved === "name-desc" || saved === "newest" || saved === "updated") {
-      return saved;
-    }
-  } catch {
-    // localStorage unavailable
-  }
-  return "name-asc";
+function isSortOption(v: string | null): v is SortOption {
+  return v !== null && SORT_OPTIONS.includes(v as SortOption);
 }
 
 function sortRecipes(recipes: RecipeSummary[], sort: SortOption, locale: string): RecipeSummary[] {
@@ -68,12 +62,11 @@ export default function RecipeListPage() {
   const newRecipeId = (location.state as { newRecipeId?: string })?.newRecipeId;
   const [activeTab, setActiveTab] = useState<ListType>("KNOWN");
   const [search, setSearch] = useState("");
-  const [sort, setSort] = useState<SortOption>(getSavedSort);
+  const [sort, setSort] = usePersistedState("cookless-recipe-sort", "name-asc" as SortOption, isSortOption);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [pendingDeletes, setPendingDeletes] = useState<Set<string>>(new Set());
+  const { pendingDeletes, softDelete } = useUndoDelete();
   const [showGenerateDrawer, setShowGenerateDrawer] = useState(false);
   const [generateConfig, setGenerateConfig] = useState<GenerateRecipesPayload | null>(null);
-  const timersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
   const loadMoreRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -106,13 +99,7 @@ export default function RecipeListPage() {
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   function handleSortChange(value: string) {
-    const newSort = value as SortOption;
-    setSort(newSort);
-    try {
-      localStorage.setItem(SORT_STORAGE_KEY, newSort);
-    } catch {
-      // localStorage unavailable
-    }
+    setSort(value as SortOption);
   }
 
   function handleTabChange(value: string) {
@@ -142,49 +129,18 @@ export default function RecipeListPage() {
     const recipe = allRecipes.find((r) => r.id === id);
     if (!recipe) return;
 
-    // Track pending delete in state (for filtering) and ref (for timer cleanup)
-    setPendingDeletes((prev) => new Set(prev).add(id));
-
-    let undone = false;
-
-    // Show undo toast
-    toast.success(t("recipes.deleted", { title: recipe.title }), {
-      duration: 5000,
-      action: {
-        label: t("common.undo"),
-        onClick: () => {
-          undone = true;
-          const timer = timersRef.current.get(id);
-          if (timer) clearTimeout(timer);
-          timersRef.current.delete(id);
-          setPendingDeletes((prev) => {
-            const next = new Set(prev);
-            next.delete(id);
-            return next;
-          });
-        },
-      },
-    });
-
-    // Schedule actual delete after 5 seconds
-    const timer = setTimeout(() => {
-      timersRef.current.delete(id);
-      setPendingDeletes((prev) => {
-        const next = new Set(prev);
-        next.delete(id);
-        return next;
-      });
-      if (!undone) {
-        deleteRecipe.mutate(id, {
+    softDelete(id, {
+      toastMessage: t("recipes.deleted", { title: recipe.title }),
+      undoLabel: t("common.undo"),
+      onConfirm: (deletedId) => {
+        deleteRecipe.mutate(deletedId, {
           onError: () => {
             queryClient.invalidateQueries({ queryKey: queryKeys.recipes });
             toast.error(t("errors.recipeDelete"));
           },
         });
-      }
-    }, 5000);
-
-    timersRef.current.set(id, timer);
+      },
+    });
   }
 
   function handleGenerate(config: {
