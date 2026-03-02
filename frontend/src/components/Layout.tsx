@@ -37,7 +37,7 @@ export default function Layout() {
         )}
       >
         <InstallBanner />
-        <main className="mx-auto w-full max-w-3xl flex-1 overflow-y-auto pb-[calc(3.5rem+env(safe-area-inset-bottom))] md:pb-0">
+        <main className="mx-auto w-full max-w-3xl flex-1 overflow-y-auto pb-[calc(3rem+env(safe-area-inset-bottom))] md:pb-0">
           <Outlet />
         </main>
       </div>
