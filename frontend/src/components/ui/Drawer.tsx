@@ -1,4 +1,3 @@
-import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Drawer as ShadDrawer,
   DrawerContent,
@@ -25,7 +24,7 @@ export default function Drawer({
         <DrawerHeader>
           <DrawerTitle>{title}</DrawerTitle>
         </DrawerHeader>
-        <ScrollArea className="min-h-0 flex-1 px-4 pb-6">{children}</ScrollArea>
+        <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-6">{children}</div>
       </DrawerContent>
     </ShadDrawer>
   );
