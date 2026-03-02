@@ -14,9 +14,8 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { Slider } from "@/components/ui/slider";
+import { cn } from "@/lib/utils";
 
 interface GenerateRecipesDrawerProps {
   isOpen: boolean;
@@ -83,59 +82,47 @@ export default function GenerateRecipesDrawer({
 
         {/* Tags */}
         {groupedTags && (
-          <div>
-            <Label>
-              {t("generateRecipes.tags")}
-            </Label>
-            <div className="mt-2 flex flex-wrap gap-2">
-              {TAG_CATEGORIES.map((category) => {
-                const tags = groupedTags[category] || [];
-                const selectedInCategory = tags.filter((tag) =>
-                  selectedTagIds.includes(tag.id),
-                );
-                return (
-                  <Popover key={category}>
-                    <PopoverTrigger asChild>
-                      <button
-                        type="button"
-                        className="flex cursor-pointer select-none items-center gap-1 rounded-lg border border-border bg-card px-3 py-1.5 text-sm"
-                      >
-                        {t(`tags.${category}`)}
-                        {selectedInCategory.length > 0 && (
-                          <span className="ml-1 rounded-full bg-primary px-1.5 text-xs text-primary-foreground">
-                            {selectedInCategory.length}
-                          </span>
-                        )}
-                      </button>
-                    </PopoverTrigger>
-                    <PopoverContent className="min-w-48 p-0" align="start">
-                      <ScrollArea className="max-h-60 p-2">
-                        {tags.map((tag) => (
-                          <label
-                            key={tag.id}
-                            className="flex cursor-pointer items-center gap-2 rounded px-2 py-1 hover:bg-muted"
-                          >
-                            <Checkbox
-                              checked={selectedTagIds.includes(tag.id)}
-                              onCheckedChange={(checked) => {
-                                const prev = form.getValues("selectedTagIds");
-                                const next = checked
-                                  ? [...prev, tag.id]
-                                  : prev.filter((id) => id !== tag.id);
-                                form.setValue("selectedTagIds", next);
-                              }}
-                            />
-                            <span className="text-sm">
-                              {i18n.language === "de" ? tag.name_de : tag.name_en}
-                            </span>
-                          </label>
-                        ))}
-                      </ScrollArea>
-                    </PopoverContent>
-                  </Popover>
-                );
-              })}
-            </div>
+          <div className="space-y-3">
+            <Label>{t("generateRecipes.tags")}</Label>
+            {TAG_CATEGORIES.map((category) => {
+              const tags = groupedTags[category] || [];
+              if (tags.length === 0) return null;
+              return (
+                <div key={category}>
+                  <h4 className="text-xs font-medium text-muted-foreground uppercase mb-1">
+                    {t(`tags.${category}`)}
+                  </h4>
+                  <div className="flex flex-wrap gap-2">
+                    {tags.map((tag) => {
+                      const isSelected = selectedTagIds.includes(tag.id);
+                      return (
+                        <label
+                          key={tag.id}
+                          className={cn(
+                            "flex items-center gap-1.5 text-sm px-2 py-1 rounded-lg border cursor-pointer",
+                            isSelected
+                              ? "border-primary bg-primary/10"
+                              : "border-border bg-card text-muted-foreground",
+                          )}
+                        >
+                          <Checkbox
+                            checked={isSelected}
+                            onCheckedChange={(checked) => {
+                              const prev = form.getValues("selectedTagIds");
+                              const next = checked
+                                ? [...prev, tag.id]
+                                : prev.filter((id) => id !== tag.id);
+                              form.setValue("selectedTagIds", next);
+                            }}
+                          />
+                          {i18n.language === "de" ? tag.name_de : tag.name_en}
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         )}
 
