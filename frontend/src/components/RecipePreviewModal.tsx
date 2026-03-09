@@ -5,6 +5,7 @@ import type { Recipe } from "../api/types";
 import { Button } from "@/components/ui/button";
 import { useIngredients } from "../hooks/useIngredients";
 import { useUnits } from "../hooks/useUnits";
+import { formatQty } from "../lib/exportRecipe";
 import ResponsiveOverlay from "./ui/ResponsiveOverlay";
 
 interface RecipePreviewModalProps {
@@ -60,7 +61,7 @@ export default function RecipePreviewModal({ open, recipe, servings, onClose }: 
               const ing = ingredientMap.get(ri.ingredient);
               const unit = unitMap.get(ri.unit);
               const qty = parseFloat(ri.quantity) * scale;
-              const displayQty = Number.isInteger(qty) ? qty.toString() : qty.toFixed(1);
+              const displayQty = formatQty(qty);
               const ingName = ing ? ing[`name_${lang}`] : "...";
               const unitAbbr = unit?.abbreviation ?? "";
 

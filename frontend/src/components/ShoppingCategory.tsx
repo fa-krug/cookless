@@ -66,9 +66,9 @@ export default function ShoppingCategory({ category, items, onToggleItem }: Shop
                 }`}
               >
                 {item.quantity && item.unit_abbreviation
-                  ? `${item.quantity} ${item.unit_abbreviation} `
+                  ? `${parseFloat(item.quantity)} ${item.unit_abbreviation} `
                   : item.quantity
-                    ? `${item.quantity} `
+                    ? `${parseFloat(item.quantity)} `
                     : ""}
                 {item.ingredient_name}
               </span>
