@@ -19,8 +19,8 @@ function nameKey(lang: string): "name_en" | "name_de" {
   return lang === "de" ? "name_de" : "name_en";
 }
 
-function formatQty(qty: number): string {
-  return Number.isInteger(qty) ? qty.toString() : qty.toFixed(1);
+export function formatQty(qty: number): string {
+  return Number.isInteger(qty) ? qty.toString() : parseFloat(qty.toFixed(2)).toString();
 }
 
 function formatSteps(steps: CookingStep[]): string {
@@ -123,11 +123,13 @@ export async function generatePdf(options: PdfExportOptions): Promise<Blob> {
       const response = await fetch(recipe.image);
       const blob = await response.blob();
       const dataUrl = await blobToDataUrl(blob);
+      const { width: natW, height: natH } = await getImageDimensions(dataUrl);
       const imgWidth = contentWidth;
-      const imgHeight = 60;
-      checkPage(imgHeight + 4);
-      doc.addImage(dataUrl, margin, y, imgWidth, imgHeight);
-      y += imgHeight + 6;
+      const imgHeight = natW > 0 ? (natH / natW) * imgWidth : 60;
+      const cappedHeight = Math.min(imgHeight, 100);
+      checkPage(cappedHeight + 4);
+      doc.addImage(dataUrl, margin, y, imgWidth, cappedHeight);
+      y += cappedHeight + 6;
     } catch {
       // Skip image on failure
     }
@@ -218,6 +220,15 @@ function blobToDataUrl(blob: Blob): Promise<string> {
     reader.onload = () => resolve(reader.result as string);
     reader.onerror = reject;
     reader.readAsDataURL(blob);
+  });
+}
+
+function getImageDimensions(dataUrl: string): Promise<{ width: number; height: number }> {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => resolve({ width: img.naturalWidth, height: img.naturalHeight });
+    img.onerror = () => resolve({ width: 0, height: 0 });
+    img.src = dataUrl;
   });
 }
 

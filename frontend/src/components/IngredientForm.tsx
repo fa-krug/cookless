@@ -93,8 +93,9 @@ export default function IngredientForm({
         {fields.map((row, index) => {
           const unitObj = allUnits.find((u) => u.id === row.unit);
           const unitLabel = unitObj?.abbreviation || unitObj?.[nameKey] || "";
+          const displayQty = row.quantity ? parseFloat(row.quantity) || row.quantity : "";
           const displayText = row.ingredientName
-            ? `${row.quantity ? row.quantity + " " : ""}${unitLabel ? unitLabel + " " : ""}${row.ingredientName}`
+            ? `${displayQty ? displayQty + " " : ""}${unitLabel ? unitLabel + " " : ""}${row.ingredientName}`
             : t("ingredients.search");
           const isEmpty = !row.ingredientName;
 
