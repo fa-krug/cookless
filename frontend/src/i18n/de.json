@@ -479,6 +479,23 @@
     "resetConfirm": "Das löscht alle Tags (auch eigene) und entfernt sie von deinen Rezepten. Mit den Standards neu starten?",
     "resetSuccess": "Tags auf Standard zurückgesetzt!"
   },
+  "export": {
+    "title": "Rezept teilen",
+    "button": "Teilen",
+    "includeSection": "Was soll dabei sein",
+    "includeImage": "Foto",
+    "includeDescription": "Beschreibung",
+    "includeIngredients": "Zutaten",
+    "includeSteps": "Schritte",
+    "portions": "Portionen",
+    "format": "Format",
+    "formatMarkdown": "Text",
+    "formatPdf": "PDF",
+    "share": "Teilen",
+    "shared": "Rezept geteilt!",
+    "downloaded": "Rezept heruntergeladen!",
+    "failed": "Konnte das Rezept nicht teilen. Nochmal versuchen?"
+  },
   "welcome": {
     "title": "Willkommen bei Cookless!",
     "subtitle": "Dein Zuhause ist eingerichtet. Das kannst du jetzt tun:",

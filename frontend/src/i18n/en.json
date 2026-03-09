@@ -479,6 +479,23 @@
     "resetConfirm": "This will delete all tags (including custom ones) and remove them from your recipes. Start fresh with the defaults?",
     "resetSuccess": "Tags reset to defaults!"
   },
+  "export": {
+    "title": "Share Recipe",
+    "button": "Share",
+    "includeSection": "What to include",
+    "includeImage": "Photo",
+    "includeDescription": "Description",
+    "includeIngredients": "Ingredients",
+    "includeSteps": "Steps",
+    "portions": "Portions",
+    "format": "Format",
+    "formatMarkdown": "Text",
+    "formatPdf": "PDF",
+    "share": "Share",
+    "shared": "Recipe shared!",
+    "downloaded": "Recipe downloaded!",
+    "failed": "Couldn't share the recipe. Try again?"
+  },
   "welcome": {
     "title": "Welcome to Cookless!",
     "subtitle": "Your home is all set up. Here's what you can do:",
