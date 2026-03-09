@@ -1,8 +1,8 @@
 import type { InfiniteData } from "@tanstack/react-query";
 import { useQueryClient } from "@tanstack/react-query";
-import { ArrowLeftRight, ArrowLeft, ChefHat, Save, SlidersHorizontal, Sparkles, Trash2, Upload, UtensilsCrossed } from "lucide-react";
+import { ArrowLeftRight, ArrowLeft, ChefHat, Save, Share2, SlidersHorizontal, Sparkles, Trash2, Upload, UtensilsCrossed } from "lucide-react";
 import { Spinner } from "../components/ui/Spinner";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { useUndoDelete } from "../hooks/useUndoDelete";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
@@ -19,6 +19,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import IngredientForm from "../components/IngredientForm";
 import StepEditor from "../components/StepEditor";
+import ExportRecipeOverlay from "../components/ExportRecipeOverlay";
 import TagFilterDrawer from "../components/TagFilterDrawer";
 import { RecipeDetailSkeleton } from "../components/ui/RecipeDetailSkeleton";
 import { useIngredients } from "../hooks/useIngredients";
@@ -86,6 +87,7 @@ function RecipeForm({ recipe, recipeId, allIngredients, allUnits }: RecipeFormPr
   const household = user?.active_household;
   const imageInProgress = uploadImage.isPending || generateImage.isPending;
   const { data: groupedTags } = useTags();
+  const [exportOpen, setExportOpen] = useState(false);
 
   const { form, ingredientFields, manualStepFields, machineStepFields, buildPayload } =
     useRecipeForm({ recipe, allIngredients });
@@ -371,6 +373,17 @@ function RecipeForm({ recipe, recipeId, allIngredients, allUnits }: RecipeFormPr
             {t("cooking.start")}
           </Button>
 
+          {/* Share button */}
+          <Button
+            variant="outline"
+            className="w-full border-primary text-primary hover:bg-primary/10"
+            type="button"
+            onClick={() => setExportOpen(true)}
+          >
+            <Share2 size={16} />
+            {t("export.button")}
+          </Button>
+
           {/* Move button */}
           <Button
             variant="outline"
@@ -408,6 +421,7 @@ function RecipeForm({ recipe, recipeId, allIngredients, allUnits }: RecipeFormPr
         </div>
       </form>
 
+      <ExportRecipeOverlay open={exportOpen} onClose={() => setExportOpen(false)} recipe={recipe} />
     </div>
   );
 }
