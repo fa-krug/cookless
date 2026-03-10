@@ -70,6 +70,15 @@ class PaginatedRecipeListOut(Schema):
     total_count: int
 
 
+class StepIngredientOut(Schema):
+    recipe_ingredient_id: int
+    quantity: Decimal
+
+    @staticmethod
+    def resolve_recipe_ingredient_id(obj):
+        return obj.recipe_ingredient_id
+
+
 class CookingStepOut(Schema):
     id: int
     step_number: int
@@ -81,6 +90,7 @@ class CookingStepOut(Schema):
     turbo: bool = False
     direction: str | None = None
     weight_grams: int | None = None
+    ingredients: list[StepIngredientOut] = []
 
     @staticmethod
     def resolve_program_type(obj):
@@ -89,6 +99,10 @@ class CookingStepOut(Schema):
     @staticmethod
     def resolve_direction(obj):
         return obj.direction or None
+
+    @staticmethod
+    def resolve_ingredients(obj):
+        return obj.step_ingredients.all()
 
 
 class RecipeOut(Schema):
@@ -127,6 +141,11 @@ class RecipeOut(Schema):
         return obj.steps.filter(method="MACHINE")
 
 
+class StepIngredientIn(Schema):
+    recipe_ingredient_order: int
+    quantity: Decimal
+
+
 class CookingStepIn(Schema):
     step_number: int
     instruction: str = ""
@@ -137,6 +156,7 @@ class CookingStepIn(Schema):
     turbo: bool = False
     direction: str | None = None
     weight_grams: int | None = None
+    ingredients: list[StepIngredientIn] = []
 
 
 class RecipeIngredientIn(Schema):

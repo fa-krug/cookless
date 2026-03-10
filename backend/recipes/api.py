@@ -3,6 +3,8 @@ import json as json_lib
 import time
 import urllib.error
 import urllib.request
+from collections import defaultdict
+from decimal import Decimal
 from io import BytesIO
 from pathlib import Path
 from uuid import UUID
@@ -19,7 +21,16 @@ from ninja.errors import HttpError
 from PIL import Image as PILImage
 
 from recipes.generation import build_generation_prompt, call_gemini_text
-from recipes.models import CookingStep, Ingredient, Recipe, RecipeIngredient, Tag, TagCategory, Unit
+from recipes.models import (
+    CookingStep,
+    Ingredient,
+    Recipe,
+    RecipeIngredient,
+    StepIngredient,
+    Tag,
+    TagCategory,
+    Unit,
+)
 from recipes.schemas import (
     BulkCreateRecipesIn,
     BulkCreateRecipesOut,
@@ -58,9 +69,9 @@ on a white or neutral ceramic plate. No text, no watermarks, no people."""
 # ── Helpers ──────────────────────────────────────────────────────────
 
 
-def _save_ingredients(recipe: Recipe, ingredients_data: list) -> None:
+def _save_ingredients(recipe: Recipe, ingredients_data: list) -> list[RecipeIngredient]:
     recipe.ingredients.all().delete()
-    RecipeIngredient.objects.bulk_create(
+    return RecipeIngredient.objects.bulk_create(
         [
             RecipeIngredient(
                 recipe=recipe,
@@ -105,7 +116,40 @@ def _process_and_save_image(recipe: Recipe, uploaded_file: UploadedFile) -> None
     _save_image_as_webp(recipe, img)
 
 
-def _save_steps(recipe: Recipe, steps_data: list, method: str) -> None:
+def _validate_step_ingredient_totals(
+    ingredients_data: list,
+    manual_steps: list,
+    machine_steps: list,
+) -> None:
+    """Validate that step ingredient quantities don't exceed recipe ingredient quantities."""
+
+    ingredient_qty_by_order: dict[int, Decimal] = {
+        item.order: item.quantity for item in ingredients_data
+    }
+
+    step_totals: dict[int, Decimal] = defaultdict(Decimal)
+    for step in [*manual_steps, *machine_steps]:
+        for si in getattr(step, "ingredients", []):
+            step_totals[si.recipe_ingredient_order] += si.quantity
+
+    errors = []
+    for order, total in step_totals.items():
+        recipe_qty = ingredient_qty_by_order.get(order)
+        if recipe_qty is not None and total > recipe_qty:
+            errors.append(
+                f"Ingredient at order {order}: step quantities sum to {total}, "
+                f"but recipe only has {recipe_qty}"
+            )
+    if errors:
+        raise HttpError(422, "; ".join(errors))
+
+
+def _save_steps(
+    recipe: Recipe,
+    steps_data: list,
+    method: str,
+    ingredient_by_order: dict[int, RecipeIngredient] | None = None,
+) -> None:
     from recipes.programs import validate_program_step
 
     recipe.steps.filter(method=method).delete()
@@ -146,7 +190,22 @@ def _save_steps(recipe: Recipe, steps_data: list, method: str) -> None:
                 weight_grams=item.weight_grams,
             )
         )
-    CookingStep.objects.bulk_create(step_objects)
+    created_steps = CookingStep.objects.bulk_create(step_objects)
+
+    if ingredient_by_order:
+        step_ingredient_objects = []
+        for step_obj, step_data in zip(created_steps, steps_data, strict=True):
+            for si in getattr(step_data, "ingredients", []):
+                ri = ingredient_by_order.get(si.recipe_ingredient_order)
+                if ri is None:
+                    raise HttpError(
+                        422, f"Invalid recipe_ingredient_order: {si.recipe_ingredient_order}"
+                    )
+                step_ingredient_objects.append(
+                    StepIngredient(step=step_obj, recipe_ingredient=ri, quantity=si.quantity)
+                )
+        if step_ingredient_objects:
+            StepIngredient.objects.bulk_create(step_ingredient_objects)
 
 
 # ── Recipes ──────────────────────────────────────────────────────────
@@ -186,6 +245,9 @@ def list_recipes(
 def create_recipe(request, payload: RecipeCreateIn):
     require_household_member(request)
     require_scope(request, "recipes:write")
+    _validate_step_ingredient_totals(
+        payload.ingredients, payload.manual_steps, payload.machine_steps
+    )
     with transaction.atomic():
         recipe = Recipe.objects.create(
             household=request.user.active_household,
@@ -197,9 +259,10 @@ def create_recipe(request, payload: RecipeCreateIn):
             cook_time_minutes=payload.cook_time_minutes,
             leftover_days=payload.leftover_days,
         )
-        _save_ingredients(recipe, payload.ingredients)
-        _save_steps(recipe, payload.manual_steps, "MANUAL")
-        _save_steps(recipe, payload.machine_steps, "MACHINE")
+        created_ingredients = _save_ingredients(recipe, payload.ingredients)
+        ingredient_by_order = {ri.order: ri for ri in created_ingredients}
+        _save_steps(recipe, payload.manual_steps, "MANUAL", ingredient_by_order)
+        _save_steps(recipe, payload.machine_steps, "MACHINE", ingredient_by_order)
         if payload.tag_ids:
             recipe.tags.set(
                 Tag.objects.filter(id__in=payload.tag_ids, household=request.user.active_household)
@@ -393,12 +456,16 @@ def get_recipe(request, recipe_id: UUID):
             "tags",
             Prefetch(
                 "steps",
-                queryset=CookingStep.objects.filter(method="MANUAL"),
+                queryset=CookingStep.objects.filter(method="MANUAL").prefetch_related(
+                    "step_ingredients"
+                ),
                 to_attr="manual_steps_list",
             ),
             Prefetch(
                 "steps",
-                queryset=CookingStep.objects.filter(method="MACHINE"),
+                queryset=CookingStep.objects.filter(method="MACHINE").prefetch_related(
+                    "step_ingredients"
+                ),
                 to_attr="machine_steps_list",
             ),
         ),
@@ -412,6 +479,9 @@ def update_recipe_put(request, recipe_id: UUID, payload: RecipeCreateIn):
     require_household_member(request)
     require_scope(request, "recipes:write")
     recipe = get_object_or_404(Recipe, pk=recipe_id, household=request.user.active_household)
+    _validate_step_ingredient_totals(
+        payload.ingredients, payload.manual_steps, payload.machine_steps
+    )
     with transaction.atomic():
         recipe.title = payload.title
         recipe.description = payload.description
@@ -421,9 +491,10 @@ def update_recipe_put(request, recipe_id: UUID, payload: RecipeCreateIn):
         recipe.cook_time_minutes = payload.cook_time_minutes
         recipe.leftover_days = payload.leftover_days
         recipe.save()
-        _save_ingredients(recipe, payload.ingredients)
-        _save_steps(recipe, payload.manual_steps, "MANUAL")
-        _save_steps(recipe, payload.machine_steps, "MACHINE")
+        created_ingredients = _save_ingredients(recipe, payload.ingredients)
+        ingredient_by_order = {ri.order: ri for ri in created_ingredients}
+        _save_steps(recipe, payload.manual_steps, "MANUAL", ingredient_by_order)
+        _save_steps(recipe, payload.machine_steps, "MACHINE", ingredient_by_order)
         recipe.tags.set(
             Tag.objects.filter(id__in=payload.tag_ids, household=request.user.active_household)
         )
@@ -435,6 +506,9 @@ def update_recipe_patch(request, recipe_id: UUID, payload: RecipeCreateIn):
     require_household_member(request)
     require_scope(request, "recipes:write")
     recipe = get_object_or_404(Recipe, pk=recipe_id, household=request.user.active_household)
+    _validate_step_ingredient_totals(
+        payload.ingredients, payload.manual_steps, payload.machine_steps
+    )
     with transaction.atomic():
         recipe.title = payload.title
         recipe.description = payload.description
@@ -444,9 +518,10 @@ def update_recipe_patch(request, recipe_id: UUID, payload: RecipeCreateIn):
         recipe.cook_time_minutes = payload.cook_time_minutes
         recipe.leftover_days = payload.leftover_days
         recipe.save()
-        _save_ingredients(recipe, payload.ingredients)
-        _save_steps(recipe, payload.manual_steps, "MANUAL")
-        _save_steps(recipe, payload.machine_steps, "MACHINE")
+        created_ingredients = _save_ingredients(recipe, payload.ingredients)
+        ingredient_by_order = {ri.order: ri for ri in created_ingredients}
+        _save_steps(recipe, payload.manual_steps, "MANUAL", ingredient_by_order)
+        _save_steps(recipe, payload.machine_steps, "MACHINE", ingredient_by_order)
         recipe.tags.set(
             Tag.objects.filter(id__in=payload.tag_ids, household=request.user.active_household)
         )
@@ -581,7 +656,7 @@ def list_steps(request, recipe_id: UUID, method: str | None = None):
     require_household_member(request)
     require_scope(request, "recipes:read")
     recipe = get_object_or_404(Recipe, pk=recipe_id, household=request.user.active_household)
-    qs = recipe.steps.all()
+    qs = recipe.steps.prefetch_related("step_ingredients").all()
     if method:
         qs = qs.filter(method=method)
     return qs

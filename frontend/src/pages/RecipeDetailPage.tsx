@@ -327,6 +327,10 @@ function RecipeForm({ recipe, recipeId, allIngredients, allUnits }: RecipeFormPr
           update={manualStepFields.update}
           move={manualStepFields.move}
           label={t("steps.manualSteps")}
+          formIngredients={form.watch("ingredients")}
+          allIngredients={allIngredients}
+          allUnits={allUnits}
+          otherSteps={form.watch("machineSteps")}
         />
 
         {/* Machine Steps */}
@@ -338,6 +342,10 @@ function RecipeForm({ recipe, recipeId, allIngredients, allUnits }: RecipeFormPr
           move={machineStepFields.move}
           label={t("steps.machineSteps")}
           isMachine
+          formIngredients={form.watch("ingredients")}
+          allIngredients={allIngredients}
+          allUnits={allUnits}
+          otherSteps={form.watch("manualSteps")}
         />
 
         {/* Tags */}

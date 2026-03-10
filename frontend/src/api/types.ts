@@ -89,6 +89,11 @@ export type ProgramType =
 
 export type Direction = "LEFT" | "RIGHT";
 
+export interface StepIngredient {
+  recipe_ingredient_id: number;
+  quantity: string;
+}
+
 export interface CookingStep {
   id: number;
   step_number: number;
@@ -100,6 +105,7 @@ export interface CookingStep {
   turbo: boolean;
   direction: Direction | null;
   weight_grams: number | null;
+  ingredients: StepIngredient[];
 }
 
 export interface RecipeSummary {
@@ -142,6 +148,11 @@ export interface RecipeIngredientPayload {
   order: number;
 }
 
+export interface StepIngredientPayload {
+  recipe_ingredient_order: number;
+  quantity: string;
+}
+
 export interface CookingStepPayload {
   step_number: number;
   instruction: string;
@@ -152,6 +163,7 @@ export interface CookingStepPayload {
   turbo?: boolean;
   direction?: Direction | null;
   weight_grams?: number | null;
+  ingredients?: StepIngredientPayload[];
 }
 
 export interface RecipeUpdatePayload {

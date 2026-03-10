@@ -1,7 +1,7 @@
 import { Pencil, Play } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import type { Recipe } from "../api/types";
+import type { CookingStep, Recipe } from "../api/types";
 import { Button } from "@/components/ui/button";
 import { useIngredients } from "../hooks/useIngredients";
 import { useUnits } from "../hooks/useUnits";
@@ -22,9 +22,11 @@ export default function RecipePreviewModal({ open, recipe, servings, onClose }: 
   const { data: units } = useUnits();
 
   const lang = i18n.language === "de" ? "de" : "en";
+  const nameKey = `name_${lang}` as "name_en" | "name_de";
 
   const ingredientMap = new Map(ingredients?.map((i) => [i.id, i]));
   const unitMap = new Map(units?.map((u) => [u.id, u]));
+  const riMap = new Map(recipe.ingredients.map((ri) => [ri.id, ri]));
 
   const scale = recipe.default_servings > 0 ? servings / recipe.default_servings : 1;
 
@@ -33,6 +35,46 @@ export default function RecipePreviewModal({ open, recipe, servings, onClose }: 
   const hasManualSteps = recipe.manual_steps.length > 0;
   const hasMachineSteps = recipe.machine_steps.length > 0;
   const hasSteps = hasManualSteps || hasMachineSteps;
+
+  function renderStepIngredients(step: CookingStep) {
+    const stepIngs = step.ingredients ?? [];
+    if (stepIngs.length === 0) return null;
+    return (
+      <ul className="mt-1 space-y-0.5">
+        {stepIngs.map((si) => {
+          const ri = riMap.get(si.recipe_ingredient_id);
+          if (!ri) return null;
+          const ing = ingredientMap.get(ri.ingredient);
+          const unit = unitMap.get(ri.unit);
+          const scaledQty = parseFloat(si.quantity) * scale;
+          return (
+            <li key={si.recipe_ingredient_id} className="text-xs text-muted-foreground">
+              <span className="font-medium">{formatQty(scaledQty)} {unit?.abbreviation ?? ""}</span>{" "}
+              {ing ? ing[nameKey] : "?"}
+            </li>
+          );
+        })}
+      </ul>
+    );
+  }
+
+  function renderSteps(steps: CookingStep[], title: string) {
+    if (steps.length === 0) return null;
+    const sorted = [...steps].sort((a, b) => a.step_number - b.step_number);
+    return (
+      <div className="mt-4">
+        <h3 className="text-sm font-semibold text-foreground">{title}</h3>
+        <ol className="mt-2 space-y-2">
+          {sorted.map((step, i) => (
+            <li key={step.id} className="text-sm text-foreground">
+              <span className="font-medium">{i + 1}.</span> {step.instruction}
+              {renderStepIngredients(step)}
+            </li>
+          ))}
+        </ol>
+      </div>
+    );
+  }
 
   return (
     <ResponsiveOverlay open={open} onClose={onClose} title={recipe.title}>
@@ -62,7 +104,7 @@ export default function RecipePreviewModal({ open, recipe, servings, onClose }: 
               const unit = unitMap.get(ri.unit);
               const qty = parseFloat(ri.quantity) * scale;
               const displayQty = formatQty(qty);
-              const ingName = ing ? ing[`name_${lang}`] : "...";
+              const ingName = ing ? ing[nameKey] : "...";
               const unitAbbr = unit?.abbreviation ?? "";
 
               return (
@@ -77,6 +119,10 @@ export default function RecipePreviewModal({ open, recipe, servings, onClose }: 
           </ul>
         </div>
       )}
+
+      {/* Steps with ingredients */}
+      {renderSteps(recipe.manual_steps, t("steps.manualSteps"))}
+      {renderSteps(recipe.machine_steps, t("steps.machineSteps"))}
 
       {/* Actions */}
       <div className="mt-6 flex gap-3">

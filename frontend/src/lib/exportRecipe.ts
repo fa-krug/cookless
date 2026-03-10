@@ -23,10 +23,36 @@ export function formatQty(qty: number): string {
   return Number.isInteger(qty) ? qty.toString() : parseFloat(qty.toFixed(2)).toString();
 }
 
-function formatSteps(steps: CookingStep[]): string {
+function formatSteps(
+  steps: CookingStep[],
+  ingredientMap?: Map<number, Ingredient>,
+  unitMap?: Map<number, Unit>,
+  riMap?: Map<number, { ingredient: number; unit: number; quantity: string }>,
+  scale?: number,
+  key?: "name_en" | "name_de",
+): string {
   return [...steps]
     .sort((a, b) => a.step_number - b.step_number)
-    .map((s, i) => `${i + 1}. ${s.instruction}`)
+    .map((s, i) => {
+      let line = `${i + 1}. ${s.instruction}`;
+      const stepIngs = s.ingredients ?? [];
+      if (stepIngs.length > 0 && ingredientMap && unitMap && riMap && scale && key) {
+        const ingLines = stepIngs
+          .map((si) => {
+            const ri = riMap.get(si.recipe_ingredient_id);
+            if (!ri) return null;
+            const ing = ingredientMap.get(ri.ingredient);
+            const unit = unitMap.get(ri.unit);
+            const qty = parseFloat(si.quantity) * scale;
+            return `   - ${formatQty(qty)} ${unit?.abbreviation ?? ""} ${ing ? ing[key] : "?"}`.trimEnd();
+          })
+          .filter(Boolean);
+        if (ingLines.length > 0) {
+          line += "\n" + ingLines.join("\n");
+        }
+      }
+      return line;
+    })
     .join("\n");
 }
 
@@ -72,13 +98,14 @@ export function generateMarkdown(options: ExportOptions): string {
   }
 
   if (includeSteps) {
+    const riMap = new Map(recipe.ingredients.map((ri) => [ri.id, ri]));
     if (recipe.manual_steps.length > 0) {
       lines.push(`## ${lang === "de" ? "Zubereitung" : "Steps"}`, "");
-      lines.push(formatSteps(recipe.manual_steps), "");
+      lines.push(formatSteps(recipe.manual_steps, ingredientMap, unitMap, riMap, scale, key), "");
     }
     if (recipe.machine_steps.length > 0) {
       lines.push(`## ${lang === "de" ? "Maschinenschritte" : "Machine Steps"}`, "");
-      lines.push(formatSteps(recipe.machine_steps), "");
+      lines.push(formatSteps(recipe.machine_steps, ingredientMap, unitMap, riMap, scale, key), "");
     }
   }
 
@@ -183,6 +210,7 @@ export async function generatePdf(options: PdfExportOptions): Promise<Blob> {
   }
 
   // Steps helper
+  const riMap = new Map(recipe.ingredients.map((ri) => [ri.id, ri]));
   function addSteps(title: string, steps: CookingStep[]) {
     const sorted = [...steps].sort((a, b) => a.step_number - b.step_number);
     doc.setFontSize(14);
@@ -198,6 +226,26 @@ export async function generatePdf(options: PdfExportOptions): Promise<Blob> {
       checkPage(stepLines.length * 5);
       doc.text(stepLines, margin + 2, y);
       y += stepLines.length * 5 + 2;
+
+      // Step ingredients
+      const stepIngs = step.ingredients ?? [];
+      if (stepIngs.length > 0) {
+        doc.setFontSize(9);
+        doc.setTextColor(100);
+        for (const si of stepIngs) {
+          const ri = riMap.get(si.recipe_ingredient_id);
+          if (!ri) continue;
+          const ing = ingredientMap.get(ri.ingredient);
+          const unit = unitMap.get(ri.unit);
+          const qty = parseFloat(si.quantity) * scale;
+          const line = `  - ${formatQty(qty)} ${unit?.abbreviation ?? ""} ${ing ? ing[key] : "?"}`.trimEnd();
+          checkPage(4);
+          doc.text(line, margin + 6, y);
+          y += 4;
+        }
+        doc.setFontSize(10);
+        doc.setTextColor(0);
+      }
     });
     y += 4;
   }

@@ -150,10 +150,12 @@
     "instruction": "Anleitung",
     "stepNumber": "Schritt {{number}}",
     "description": "Beschreibung",
+    "ingredients": "Zutaten",
     "duration": "Dauer",
     "noSteps": "Noch keine Schritte",
     "reorder": "Schritt neu anordnen",
     "freeText": "Freitext",
+    "overAllocated": "{{amount}} {{unit}} über Gesamtmenge",
     "selectProgram": "Programm wählen",
     "changeProgram": "Ändern",
     "programs": {
@@ -271,6 +273,8 @@
     "machineMethod": "Maschine",
     "wakeLockActive": "Bildschirm bleibt an",
     "wakeLockInactive": "Bildschirm kann ausgehen",
+    "lessServings": "Weniger Portionen",
+    "moreServings": "Mehr Portionen",
     "noSteps": "Keine Schritte für diese Methode"
   },
   "household": {

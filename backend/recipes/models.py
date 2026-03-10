@@ -151,3 +151,17 @@ class CookingStep(models.Model):
 
     def __str__(self) -> str:
         return f"{self.recipe.title} - {self.method} step {self.step_number}"
+
+
+class StepIngredient(models.Model):
+    step = models.ForeignKey(CookingStep, on_delete=models.CASCADE, related_name="step_ingredients")
+    recipe_ingredient = models.ForeignKey(
+        RecipeIngredient, on_delete=models.CASCADE, related_name="step_usages"
+    )
+    quantity = models.DecimalField(max_digits=10, decimal_places=2)
+
+    class Meta:
+        ordering = ["id"]
+
+    def __str__(self) -> str:
+        return f"{self.step} - {self.recipe_ingredient.ingredient}"
