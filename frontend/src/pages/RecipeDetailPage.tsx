@@ -330,6 +330,7 @@ function RecipeForm({ recipe, recipeId, allIngredients, allUnits }: RecipeFormPr
           formIngredients={form.watch("ingredients")}
           allIngredients={allIngredients}
           allUnits={allUnits}
+          otherSteps={form.watch("machineSteps")}
         />
 
         {/* Machine Steps */}
@@ -344,6 +345,7 @@ function RecipeForm({ recipe, recipeId, allIngredients, allUnits }: RecipeFormPr
           formIngredients={form.watch("ingredients")}
           allIngredients={allIngredients}
           allUnits={allUnits}
+          otherSteps={form.watch("manualSteps")}
         />
 
         {/* Tags */}

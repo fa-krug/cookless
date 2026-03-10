@@ -128,6 +128,7 @@ export default function RecipeCreatePage() {
           formIngredients={form.watch("ingredients")}
           allIngredients={allIngredients}
           allUnits={allUnits}
+          otherSteps={form.watch("machineSteps")}
         />
 
         {/* Machine Steps */}
@@ -142,6 +143,7 @@ export default function RecipeCreatePage() {
           formIngredients={form.watch("ingredients")}
           allIngredients={allIngredients}
           allUnits={allUnits}
+          otherSteps={form.watch("manualSteps")}
         />
 
         {/* Tags */}

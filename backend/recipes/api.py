@@ -3,6 +3,8 @@ import json as json_lib
 import time
 import urllib.error
 import urllib.request
+from collections import defaultdict
+from decimal import Decimal
 from io import BytesIO
 from pathlib import Path
 from uuid import UUID
@@ -114,6 +116,34 @@ def _process_and_save_image(recipe: Recipe, uploaded_file: UploadedFile) -> None
     _save_image_as_webp(recipe, img)
 
 
+def _validate_step_ingredient_totals(
+    ingredients_data: list,
+    manual_steps: list,
+    machine_steps: list,
+) -> None:
+    """Validate that step ingredient quantities don't exceed recipe ingredient quantities."""
+
+    ingredient_qty_by_order: dict[int, Decimal] = {
+        item.order: item.quantity for item in ingredients_data
+    }
+
+    step_totals: dict[int, Decimal] = defaultdict(Decimal)
+    for step in [*manual_steps, *machine_steps]:
+        for si in getattr(step, "ingredients", []):
+            step_totals[si.recipe_ingredient_order] += si.quantity
+
+    errors = []
+    for order, total in step_totals.items():
+        recipe_qty = ingredient_qty_by_order.get(order)
+        if recipe_qty is not None and total > recipe_qty:
+            errors.append(
+                f"Ingredient at order {order}: step quantities sum to {total}, "
+                f"but recipe only has {recipe_qty}"
+            )
+    if errors:
+        raise HttpError(422, "; ".join(errors))
+
+
 def _save_steps(
     recipe: Recipe,
     steps_data: list,
@@ -215,6 +245,9 @@ def list_recipes(
 def create_recipe(request, payload: RecipeCreateIn):
     require_household_member(request)
     require_scope(request, "recipes:write")
+    _validate_step_ingredient_totals(
+        payload.ingredients, payload.manual_steps, payload.machine_steps
+    )
     with transaction.atomic():
         recipe = Recipe.objects.create(
             household=request.user.active_household,
@@ -446,6 +479,9 @@ def update_recipe_put(request, recipe_id: UUID, payload: RecipeCreateIn):
     require_household_member(request)
     require_scope(request, "recipes:write")
     recipe = get_object_or_404(Recipe, pk=recipe_id, household=request.user.active_household)
+    _validate_step_ingredient_totals(
+        payload.ingredients, payload.manual_steps, payload.machine_steps
+    )
     with transaction.atomic():
         recipe.title = payload.title
         recipe.description = payload.description
@@ -470,6 +506,9 @@ def update_recipe_patch(request, recipe_id: UUID, payload: RecipeCreateIn):
     require_household_member(request)
     require_scope(request, "recipes:write")
     recipe = get_object_or_404(Recipe, pk=recipe_id, household=request.user.active_household)
+    _validate_step_ingredient_totals(
+        payload.ingredients, payload.manual_steps, payload.machine_steps
+    )
     with transaction.atomic():
         recipe.title = payload.title
         recipe.description = payload.description

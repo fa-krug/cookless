@@ -155,6 +155,7 @@
     "noSteps": "Noch keine Schritte",
     "reorder": "Schritt neu anordnen",
     "freeText": "Freitext",
+    "overAllocated": "{{amount}} {{unit}} über Gesamtmenge",
     "selectProgram": "Programm wählen",
     "changeProgram": "Ändern",
     "programs": {

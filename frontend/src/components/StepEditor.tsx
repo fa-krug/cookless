@@ -11,7 +11,7 @@ import type {
   UseFieldArrayUpdate,
 } from "react-hook-form";
 
-import type { IngredientRowValues, RecipeFormValues, StepRowValues } from "@/lib/schemas/recipe";
+import type { IngredientRowValues, RecipeFormValues, StepIngredientRowValues, StepRowValues } from "@/lib/schemas/recipe";
 import type { CookingStepPayload, Ingredient, Unit } from "../api/types";
 import ProgramStepForm from "./ProgramStepForm";
 import SortableStep from "./SortableStep";
@@ -36,6 +36,7 @@ interface StepEditorProps {
   formIngredients?: IngredientRowValues[];
   allIngredients?: Ingredient[];
   allUnits?: Unit[];
+  otherSteps?: StepRowValues[];
 }
 
 export default function StepEditor({
@@ -49,6 +50,7 @@ export default function StepEditor({
   formIngredients = [],
   allIngredients = [],
   allUnits = [],
+  otherSteps = [],
 }: StepEditorProps) {
   const { t } = useTranslation();
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
@@ -136,6 +138,10 @@ export default function StepEditor({
           formIngredients={formIngredients}
           allIngredients={allIngredients}
           allUnits={allUnits}
+          otherStepIngredients={[
+            ...otherSteps.flatMap((s) => s.ingredients ?? []),
+            ...fields.flatMap((s, i) => (i === editingIndex ? [] : s.ingredients ?? [])),
+          ]}
         />
       )}
     </div>
@@ -150,6 +156,7 @@ interface StepEditDrawerProps {
   formIngredients: IngredientRowValues[];
   allIngredients: Ingredient[];
   allUnits: Unit[];
+  otherStepIngredients: StepIngredientRowValues[];
 }
 
 function StepEditDrawer({
@@ -160,6 +167,7 @@ function StepEditDrawer({
   formIngredients,
   allIngredients,
   allUnits,
+  otherStepIngredients,
 }: StepEditDrawerProps) {
   const { t, i18n } = useTranslation();
   const [freeTextMode, setFreeTextMode] = useState(false);
@@ -174,6 +182,23 @@ function StepEditDrawer({
 
   const stepIngredients = step.ingredients ?? [];
 
+  // Compute how much of each ingredient is allocated in OTHER steps (not this one)
+  const otherAllocations = new Map<number, number>();
+  for (const si of otherStepIngredients) {
+    otherAllocations.set(si.ingredientIndex, (otherAllocations.get(si.ingredientIndex) ?? 0) + parseFloat(si.quantity || "0"));
+  }
+
+  function getRemainingQty(formIndex: number): number {
+    const fi = formIngredients[formIndex];
+    if (!fi) return 0;
+    const total = parseFloat(fi.quantity || "0");
+    const otherUsed = otherAllocations.get(formIndex) ?? 0;
+    const thisUsed = parseFloat(
+      stepIngredients.find((si) => si.ingredientIndex === formIndex)?.quantity || "0",
+    );
+    return total - otherUsed - thisUsed;
+  }
+
   // Ingredients already added to this step (by index)
   const usedIndices = new Set(stepIngredients.map((si) => si.ingredientIndex));
 
@@ -184,9 +209,12 @@ function StepEditDrawer({
 
   function addIngredientToStep(formIndex: number) {
     const fi = formIngredients[formIndex];
+    const totalQty = parseFloat(fi.quantity || "0");
+    const otherUsed = otherAllocations.get(formIndex) ?? 0;
+    const remaining = Math.max(0, totalQty - otherUsed);
     const newIngredients = [
       ...stepIngredients,
-      { ingredientIndex: formIndex, quantity: fi.quantity || "0" },
+      { ingredientIndex: formIndex, quantity: remaining > 0 ? String(remaining) : fi.quantity || "0" },
     ];
     onStepChange({ ...step, ingredients: newIngredients });
   }
@@ -269,34 +297,48 @@ function StepEditDrawer({
 
           {stepIngredients.length > 0 && (
             <div className="mt-2 space-y-2">
-              {stepIngredients.map((si) => (
-                <div key={si.ingredientIndex} className="flex items-center gap-2">
-                  <Input
-                    type="number"
-                    step="any"
-                    min="0"
-                    value={si.quantity}
-                    onChange={(e) => updateIngredientQuantity(si.ingredientIndex, e.target.value)}
-                    className="w-20 shrink-0"
-                  />
-                  <span className="shrink-0 text-sm text-muted-foreground">
-                    {renderUnitAbbr(si.ingredientIndex)}
-                  </span>
-                  <span className="min-w-0 flex-1 truncate text-sm">
-                    {renderIngredientName(si.ingredientIndex)}
-                  </span>
-                  <IconButton
-                    type="button"
-                    variant="ghost"
-                    className="h-7 w-7 shrink-0 text-destructive hover:bg-destructive/10"
-                    onClick={() => removeIngredientFromStep(si.ingredientIndex)}
-                    tooltip={t("common.remove")}
-                    aria-label={t("common.remove")}
-                  >
-                    <X size={14} />
-                  </IconButton>
-                </div>
-              ))}
+              {stepIngredients.map((si) => {
+                const remaining = getRemainingQty(si.ingredientIndex);
+                const isOver = remaining < -0.001;
+                return (
+                  <div key={si.ingredientIndex}>
+                    <div className="flex items-center gap-2">
+                      <Input
+                        type="number"
+                        step="any"
+                        min="0"
+                        value={si.quantity}
+                        onChange={(e) => updateIngredientQuantity(si.ingredientIndex, e.target.value)}
+                        className={`w-20 shrink-0 ${isOver ? "border-destructive text-destructive" : ""}`}
+                      />
+                      <span className="shrink-0 text-sm text-muted-foreground">
+                        {renderUnitAbbr(si.ingredientIndex)}
+                      </span>
+                      <span className="min-w-0 flex-1 truncate text-sm">
+                        {renderIngredientName(si.ingredientIndex)}
+                      </span>
+                      <IconButton
+                        type="button"
+                        variant="ghost"
+                        className="h-7 w-7 shrink-0 text-destructive hover:bg-destructive/10"
+                        onClick={() => removeIngredientFromStep(si.ingredientIndex)}
+                        tooltip={t("common.remove")}
+                        aria-label={t("common.remove")}
+                      >
+                        <X size={14} />
+                      </IconButton>
+                    </div>
+                    {isOver && (
+                      <p className="mt-0.5 text-xs text-destructive">
+                        {t("steps.overAllocated", {
+                          amount: Math.abs(remaining).toFixed(1),
+                          unit: renderUnitAbbr(si.ingredientIndex),
+                        })}
+                      </p>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           )}
 

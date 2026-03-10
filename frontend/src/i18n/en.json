@@ -155,6 +155,7 @@
     "noSteps": "No steps yet",
     "reorder": "Reorder step",
     "freeText": "Free text",
+    "overAllocated": "{{amount}} {{unit}} over total",
     "selectProgram": "Select program",
     "changeProgram": "Change",
     "programs": {
