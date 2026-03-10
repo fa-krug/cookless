@@ -189,7 +189,13 @@ function IngredientEditDrawer({
 
   return (
     <ResponsiveOverlay open={true} onClose={onClose} title={t("ingredients.name")} size="sm">
-      <div className="space-y-4">
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          onClose();
+        }}
+        className="space-y-4"
+      >
         <div className="flex gap-3">
           <div className="flex-1">
             <Label>
@@ -240,6 +246,12 @@ function IngredientEditDrawer({
             onBlur={() => {
               setTimeout(() => setShowDropdown(false), 200);
             }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && showDropdown && filtered.length > 0) {
+                e.preventDefault();
+                selectIngredient(filtered[0]);
+              }
+            }}
             placeholder={t("ingredients.search")}
           />
           {showDropdown && filtered.length > 0 && (
@@ -262,7 +274,11 @@ function IngredientEditDrawer({
             </ul>
           )}
         </div>
-      </div>
+
+        <Button type="submit" className="w-full">
+          {t("common.save")}
+        </Button>
+      </form>
     </ResponsiveOverlay>
   );
 }

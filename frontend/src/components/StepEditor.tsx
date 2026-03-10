@@ -255,112 +255,125 @@ function StepEditDrawer({
       onClose={onClose}
       title={t("steps.stepNumber", { number: step.step_number })}
     >
-      {showProgram ? (
-        <ProgramStepForm
-          step={step as unknown as CookingStepPayload}
-          onChange={(s) => onStepChange({ ...s, ingredients: step.ingredients })}
-        />
-      ) : showProgramSelector ? (
-        <ProgramStepForm
-          step={step as unknown as CookingStepPayload}
-          onChange={(s) => onStepChange({ ...s, ingredients: step.ingredients })}
-          onSelectFreeText={() => setFreeTextMode(true)}
-        />
-      ) : (
-        <div>
-          <Textarea
-            value={step.instruction}
-            onChange={(e) => onStepChange({ ...step, instruction: e.target.value })}
-            placeholder={t("steps.instruction")}
-            rows={6}
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          onClose();
+        }}
+      >
+        {showProgram ? (
+          <ProgramStepForm
+            step={step as unknown as CookingStepPayload}
+            onChange={(s) => onStepChange({ ...s, ingredients: step.ingredients })}
           />
-          {isMachine && (
-            <Button
-              type="button"
-              variant="outline"
-              className="mt-3 w-full border-dashed border-primary text-primary hover:bg-primary/10"
-              onClick={() => {
-                setFreeTextMode(false);
-                onStepChange({ ...step, program_type: null, instruction: "" });
-              }}
-            >
-              {t("steps.selectProgram")}
-            </Button>
-          )}
-        </div>
-      )}
+        ) : showProgramSelector ? (
+          <ProgramStepForm
+            step={step as unknown as CookingStepPayload}
+            onChange={(s) => onStepChange({ ...s, ingredients: step.ingredients })}
+            onSelectFreeText={() => setFreeTextMode(true)}
+          />
+        ) : (
+          <div>
+            <Textarea
+              value={step.instruction}
+              onChange={(e) => onStepChange({ ...step, instruction: e.target.value })}
+              placeholder={t("steps.instruction")}
+              rows={6}
+            />
+            {isMachine && (
+              <Button
+                type="button"
+                variant="outline"
+                className="mt-3 w-full border-dashed border-primary text-primary hover:bg-primary/10"
+                onClick={() => {
+                  setFreeTextMode(false);
+                  onStepChange({ ...step, program_type: null, instruction: "" });
+                }}
+              >
+                {t("steps.selectProgram")}
+              </Button>
+            )}
+          </div>
+        )}
 
-      {/* Step Ingredients */}
-      {formIngredients.length > 0 && (
-        <div className="mt-4">
-          <h4 className="text-sm font-medium">{t("steps.ingredients")}</h4>
+        {/* Step Ingredients */}
+        {formIngredients.length > 0 && (
+          <div className="mt-4">
+            <h4 className="text-sm font-medium">{t("steps.ingredients")}</h4>
 
-          {stepIngredients.length > 0 && (
-            <div className="mt-2 space-y-2">
-              {stepIngredients.map((si) => {
-                const remaining = getRemainingQty(si.ingredientIndex);
-                const isOver = remaining < -0.001;
-                return (
-                  <div key={si.ingredientIndex}>
-                    <div className="flex items-center gap-2">
-                      <Input
-                        type="number"
-                        step="any"
-                        min="0"
-                        value={si.quantity}
-                        onChange={(e) => updateIngredientQuantity(si.ingredientIndex, e.target.value)}
-                        className={`w-20 shrink-0 ${isOver ? "border-destructive text-destructive" : ""}`}
-                      />
-                      <span className="shrink-0 text-sm text-muted-foreground">
-                        {renderUnitAbbr(si.ingredientIndex)}
-                      </span>
-                      <span className="min-w-0 flex-1 truncate text-sm">
-                        {renderIngredientName(si.ingredientIndex)}
-                      </span>
-                      <IconButton
-                        type="button"
-                        variant="ghost"
-                        className="h-7 w-7 shrink-0 text-destructive hover:bg-destructive/10"
-                        onClick={() => removeIngredientFromStep(si.ingredientIndex)}
-                        tooltip={t("common.remove")}
-                        aria-label={t("common.remove")}
-                      >
-                        <X size={14} />
-                      </IconButton>
+            {stepIngredients.length > 0 && (
+              <div className="mt-2 space-y-2">
+                {stepIngredients.map((si) => {
+                  const remaining = getRemainingQty(si.ingredientIndex);
+                  const isOver = remaining < -0.001;
+                  return (
+                    <div key={si.ingredientIndex}>
+                      <div className="flex items-center gap-2">
+                        <Input
+                          type="number"
+                          step="any"
+                          min="0"
+                          value={si.quantity}
+                          onChange={(e) =>
+                            updateIngredientQuantity(si.ingredientIndex, e.target.value)
+                          }
+                          className={`w-20 shrink-0 ${isOver ? "border-destructive text-destructive" : ""}`}
+                        />
+                        <span className="shrink-0 text-sm text-muted-foreground">
+                          {renderUnitAbbr(si.ingredientIndex)}
+                        </span>
+                        <span className="min-w-0 flex-1 truncate text-sm">
+                          {renderIngredientName(si.ingredientIndex)}
+                        </span>
+                        <IconButton
+                          type="button"
+                          variant="ghost"
+                          className="h-7 w-7 shrink-0 text-destructive hover:bg-destructive/10"
+                          onClick={() => removeIngredientFromStep(si.ingredientIndex)}
+                          tooltip={t("common.remove")}
+                          aria-label={t("common.remove")}
+                        >
+                          <X size={14} />
+                        </IconButton>
+                      </div>
+                      {isOver && (
+                        <p className="mt-0.5 text-xs text-destructive">
+                          {t("steps.overAllocated", {
+                            amount: Math.abs(remaining).toFixed(1),
+                            unit: renderUnitAbbr(si.ingredientIndex),
+                          })}
+                        </p>
+                      )}
                     </div>
-                    {isOver && (
-                      <p className="mt-0.5 text-xs text-destructive">
-                        {t("steps.overAllocated", {
-                          amount: Math.abs(remaining).toFixed(1),
-                          unit: renderUnitAbbr(si.ingredientIndex),
-                        })}
-                      </p>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          )}
+                  );
+                })}
+              </div>
+            )}
 
-          {availableIngredients.length > 0 && (
-            <div className="mt-2 flex flex-wrap gap-1.5">
-              {availableIngredients.map((fi) => (
-                <Button
-                  key={fi.formIndex}
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="h-7 text-xs"
-                  onClick={() => addIngredientToStep(fi.formIndex)}
-                >
-                  <Plus size={12} />
-                  {renderIngredientName(fi.formIndex)}
-                </Button>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
+            {availableIngredients.length > 0 && (
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                {availableIngredients.map((fi) => (
+                  <Button
+                    key={fi.formIndex}
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="h-7 text-xs"
+                    onClick={() => addIngredientToStep(fi.formIndex)}
+                  >
+                    <Plus size={12} />
+                    {renderIngredientName(fi.formIndex)}
+                  </Button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        <Button type="submit" className="mt-4 w-full">
+          {t("common.save")}
+        </Button>
+      </form>
     </ResponsiveOverlay>
   );
 }
