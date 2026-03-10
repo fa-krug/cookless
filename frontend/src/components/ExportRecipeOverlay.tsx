@@ -63,7 +63,13 @@ export default function ExportRecipeOverlay({ open, onClose, recipe }: ExportRec
 
   return (
     <ResponsiveOverlay open={open} onClose={onClose} title={t("export.title")}>
-      <div className="space-y-5">
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          handleExport();
+        }}
+        className="space-y-5"
+      >
         {/* What to include */}
         <div>
           <h4 className="mb-2 text-xs font-medium uppercase text-muted-foreground">
@@ -126,11 +132,11 @@ export default function ExportRecipeOverlay({ open, onClose, recipe }: ExportRec
         </div>
 
         {/* Export button */}
-        <Button className="w-full" type="button" onClick={handleExport} disabled={exporting}>
+        <Button className="w-full" type="submit" disabled={exporting}>
           {exporting ? <Spinner /> : <Share2 size={16} />}
           {t("export.share")}
         </Button>
-      </div>
+      </form>
     </ResponsiveOverlay>
   );
 }
