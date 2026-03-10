@@ -275,7 +275,10 @@
     "wakeLockInactive": "Bildschirm kann ausgehen",
     "lessServings": "Weniger Portionen",
     "moreServings": "Mehr Portionen",
-    "noSteps": "Keine Schritte für diese Methode"
+    "noSteps": "Keine Schritte für diese Methode",
+    "howManyServings": "Wie viele Portionen?",
+    "howToCook": "Wie möchtest du kochen?",
+    "swipeHint": "Wische nach links oder rechts zum Blättern"
   },
   "household": {
     "title": "Haushalt",

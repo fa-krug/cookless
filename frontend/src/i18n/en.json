@@ -275,7 +275,10 @@
     "wakeLockInactive": "Screen may turn off",
     "lessServings": "Fewer servings",
     "moreServings": "More servings",
-    "noSteps": "No steps for this method"
+    "noSteps": "No steps for this method",
+    "howManyServings": "How many servings?",
+    "howToCook": "How do you wanna cook?",
+    "swipeHint": "Swipe left or right to switch steps"
   },
   "household": {
     "title": "Household",
