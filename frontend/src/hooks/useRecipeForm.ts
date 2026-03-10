@@ -5,8 +5,10 @@ import {
   type RecipeFormValues,
   type IngredientRowValues,
   type StepRowValues,
+  type StepIngredientRowValues,
 } from "@/lib/schemas/recipe";
 import type {
+  CookingStep,
   Direction,
   Ingredient,
   ListType,
@@ -40,17 +42,38 @@ function buildIngredientRows(
   });
 }
 
-function buildStepRows(steps: Recipe["manual_steps"]): StepRowValues[] {
+function mapStepIngredients(
+  step: CookingStep,
+  riIdToIndex: Map<number, number>,
+): StepIngredientRowValues[] {
+  return (step.ingredients ?? [])
+    .map((si) => {
+      const idx = riIdToIndex.get(si.recipe_ingredient_id);
+      if (idx === undefined) return null;
+      return { ingredientIndex: idx, quantity: si.quantity };
+    })
+    .filter((x): x is StepIngredientRowValues => x !== null);
+}
+
+function buildStepRows(
+  steps: Recipe["manual_steps"],
+  riIdToIndex: Map<number, number>,
+): StepRowValues[] {
   return steps.map((s) => ({
     step_number: s.step_number,
     instruction: s.instruction,
+    ingredients: mapStepIngredients(s, riIdToIndex),
   }));
 }
 
-function buildMachineStepRows(steps: Recipe["machine_steps"]): StepRowValues[] {
+function buildMachineStepRows(
+  steps: Recipe["machine_steps"],
+  riIdToIndex: Map<number, number>,
+): StepRowValues[] {
   return steps.map((s) => ({
     step_number: s.step_number,
     instruction: s.instruction,
+    ingredients: mapStepIngredients(s, riIdToIndex),
     ...(s.program_type && {
       program_type: s.program_type,
       temperature: s.temperature,
@@ -76,6 +99,27 @@ export async function buildRecipePayload(
     }),
   );
 
+  const filteredIngredients = resolvedIngredients.filter((row) => row.ingredient > 0);
+  const ingredientOrders = filteredIngredients.map((_, i) => i);
+
+  // Build a mapping from original form index to filtered index
+  const originalToFiltered = new Map<number, number>();
+  let filteredIdx = 0;
+  for (let i = 0; i < resolvedIngredients.length; i++) {
+    if (resolvedIngredients[i].ingredient > 0) {
+      originalToFiltered.set(i, filteredIdx++);
+    }
+  }
+
+  function remapStepIngredients(step: StepRowValues) {
+    return (step.ingredients ?? [])
+      .filter((si) => originalToFiltered.has(si.ingredientIndex))
+      .map((si) => ({
+        recipe_ingredient_order: ingredientOrders[originalToFiltered.get(si.ingredientIndex)!],
+        quantity: si.quantity || "0",
+      }));
+  }
+
   return {
     title: values.title,
     list_type: recipe?.list_type ?? listType,
@@ -83,22 +127,25 @@ export async function buildRecipePayload(
     prep_time_minutes: values.prepTime ? Number(values.prepTime) : null,
     cook_time_minutes: values.cookTime ? Number(values.cookTime) : null,
     leftover_days: recipe?.leftover_days ?? null,
-    ingredients: resolvedIngredients
-      .filter((row) => row.ingredient > 0)
-      .map((row, i) => ({
-        ingredient: row.ingredient,
-        quantity: row.quantity || "0",
-        unit: row.unit,
-        order: i,
-      })),
+    ingredients: filteredIngredients.map((row, i) => ({
+      ingredient: row.ingredient,
+      quantity: row.quantity || "0",
+      unit: row.unit,
+      order: i,
+    })),
     manual_steps: values.manualSteps
       .filter((s) => s.instruction.trim())
-      .map((s, i) => ({ step_number: i + 1, instruction: s.instruction })),
+      .map((s, i) => ({
+        step_number: i + 1,
+        instruction: s.instruction,
+        ingredients: remapStepIngredients(s),
+      })),
     machine_steps: values.machineSteps
       .filter((s) => s.instruction.trim() || s.program_type)
       .map((s, i) => ({
         step_number: i + 1,
         instruction: s.instruction || "",
+        ingredients: remapStepIngredients(s),
         ...(s.program_type && {
           program_type: s.program_type as ProgramType,
           temperature: s.temperature ?? null,
@@ -122,6 +169,14 @@ export function useRecipeForm({
   const lang = i18n.language === "de" ? "de" : "en";
   const nameKey = lang === "de" ? "name_de" : "name_en";
 
+  // Map recipe_ingredient.id → index in the ingredients array for step ingredient hydration
+  const riIdToIndex = new Map<number, number>();
+  if (recipe) {
+    recipe.ingredients.forEach((ri, idx) => {
+      riIdToIndex.set(ri.id, idx);
+    });
+  }
+
   const form = useForm<RecipeFormValues>({
     resolver: zodResolver(recipeFormSchema),
     defaultValues: {
@@ -130,8 +185,8 @@ export function useRecipeForm({
       prepTime: recipe?.prep_time_minutes?.toString() ?? "",
       cookTime: recipe?.cook_time_minutes?.toString() ?? "",
       ingredients: recipe ? buildIngredientRows(recipe, allIngredients, nameKey) : [],
-      manualSteps: recipe ? buildStepRows(recipe.manual_steps) : [],
-      machineSteps: recipe ? buildMachineStepRows(recipe.machine_steps) : [],
+      manualSteps: recipe ? buildStepRows(recipe.manual_steps, riIdToIndex) : [],
+      machineSteps: recipe ? buildMachineStepRows(recipe.machine_steps, riIdToIndex) : [],
       tagIds: recipe?.tags.map((tag) => tag.id) ?? [],
     },
   });

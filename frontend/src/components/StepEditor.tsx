@@ -1,6 +1,6 @@
 import { DndContext, closestCenter, type DragEndEvent } from "@dnd-kit/core";
 import { SortableContext, arrayMove, verticalListSortingStrategy } from "@dnd-kit/sortable";
-import { Plus } from "lucide-react";
+import { Plus, X } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import type {
@@ -11,13 +11,14 @@ import type {
   UseFieldArrayUpdate,
 } from "react-hook-form";
 
-import type { RecipeFormValues, StepRowValues } from "@/lib/schemas/recipe";
-import type { CookingStepPayload } from "../api/types";
+import type { IngredientRowValues, RecipeFormValues, StepRowValues } from "@/lib/schemas/recipe";
+import type { CookingStepPayload, Ingredient, Unit } from "../api/types";
 import ProgramStepForm from "./ProgramStepForm";
 import SortableStep from "./SortableStep";
 import ResponsiveOverlay from "./ui/ResponsiveOverlay";
 import { Button } from "@/components/ui/button";
 import { IconButton } from "@/components/ui/IconButton";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
 export type StepRow = StepRowValues;
@@ -32,6 +33,9 @@ interface StepEditorProps {
   move: UseFieldArrayMove;
   label: string;
   isMachine?: boolean;
+  formIngredients?: IngredientRowValues[];
+  allIngredients?: Ingredient[];
+  allUnits?: Unit[];
 }
 
 export default function StepEditor({
@@ -42,6 +46,9 @@ export default function StepEditor({
   move,
   label,
   isMachine,
+  formIngredients = [],
+  allIngredients = [],
+  allUnits = [],
 }: StepEditorProps) {
   const { t } = useTranslation();
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
@@ -50,7 +57,7 @@ export default function StepEditor({
 
   function addStep() {
     const newIndex = fields.length;
-    append({ step_number: newIndex + 1, instruction: "" });
+    append({ step_number: newIndex + 1, instruction: "", ingredients: [] });
     setEditingIndex(newIndex);
   }
 
@@ -126,6 +133,9 @@ export default function StepEditor({
           isMachine={isMachine}
           onStepChange={(updated) => updateStep(editingIndex, updated)}
           onClose={() => setEditingIndex(null)}
+          formIngredients={formIngredients}
+          allIngredients={allIngredients}
+          allUnits={allUnits}
         />
       )}
     </div>
@@ -137,14 +147,79 @@ interface StepEditDrawerProps {
   isMachine?: boolean;
   onStepChange: (step: StepRow) => void;
   onClose: () => void;
+  formIngredients: IngredientRowValues[];
+  allIngredients: Ingredient[];
+  allUnits: Unit[];
 }
 
-function StepEditDrawer({ step, isMachine, onStepChange, onClose }: StepEditDrawerProps) {
-  const { t } = useTranslation();
+function StepEditDrawer({
+  step,
+  isMachine,
+  onStepChange,
+  onClose,
+  formIngredients,
+  allIngredients,
+  allUnits,
+}: StepEditDrawerProps) {
+  const { t, i18n } = useTranslation();
   const [freeTextMode, setFreeTextMode] = useState(false);
+
+  const lang = i18n.language === "de" ? "de" : "en";
+  const nameKey = lang === "de" ? "name_de" : "name_en";
+  const ingredientMap = new Map(allIngredients.map((i) => [i.id, i]));
+  const unitMap = new Map(allUnits.map((u) => [u.id, u]));
 
   const showProgram = isMachine && step.program_type;
   const showProgramSelector = isMachine && !step.program_type && !step.instruction && !freeTextMode;
+
+  const stepIngredients = step.ingredients ?? [];
+
+  // Ingredients already added to this step (by index)
+  const usedIndices = new Set(stepIngredients.map((si) => si.ingredientIndex));
+
+  // Available ingredients that haven't been added to this step yet
+  const availableIngredients = formIngredients
+    .map((fi, idx) => ({ ...fi, formIndex: idx }))
+    .filter((fi) => !usedIndices.has(fi.formIndex) && fi.ingredient > 0);
+
+  function addIngredientToStep(formIndex: number) {
+    const fi = formIngredients[formIndex];
+    const newIngredients = [
+      ...stepIngredients,
+      { ingredientIndex: formIndex, quantity: fi.quantity || "0" },
+    ];
+    onStepChange({ ...step, ingredients: newIngredients });
+  }
+
+  function removeIngredientFromStep(ingredientIndex: number) {
+    onStepChange({
+      ...step,
+      ingredients: stepIngredients.filter((si) => si.ingredientIndex !== ingredientIndex),
+    });
+  }
+
+  function updateIngredientQuantity(ingredientIndex: number, quantity: string) {
+    onStepChange({
+      ...step,
+      ingredients: stepIngredients.map((si) =>
+        si.ingredientIndex === ingredientIndex ? { ...si, quantity } : si,
+      ),
+    });
+  }
+
+  function renderIngredientName(formIndex: number): string {
+    const fi = formIngredients[formIndex];
+    if (!fi) return "?";
+    const ing = ingredientMap.get(fi.ingredient);
+    return ing ? ing[nameKey] : fi.ingredientName;
+  }
+
+  function renderUnitAbbr(formIndex: number): string {
+    const fi = formIngredients[formIndex];
+    if (!fi) return "";
+    const unit = unitMap.get(fi.unit);
+    return unit?.abbreviation ?? "";
+  }
 
   return (
     <ResponsiveOverlay
@@ -153,11 +228,14 @@ function StepEditDrawer({ step, isMachine, onStepChange, onClose }: StepEditDraw
       title={t("steps.stepNumber", { number: step.step_number })}
     >
       {showProgram ? (
-        <ProgramStepForm step={step as CookingStepPayload} onChange={onStepChange} />
+        <ProgramStepForm
+          step={step as unknown as CookingStepPayload}
+          onChange={(s) => onStepChange({ ...s, ingredients: step.ingredients })}
+        />
       ) : showProgramSelector ? (
         <ProgramStepForm
-          step={step as CookingStepPayload}
-          onChange={onStepChange}
+          step={step as unknown as CookingStepPayload}
+          onChange={(s) => onStepChange({ ...s, ingredients: step.ingredients })}
           onSelectFreeText={() => setFreeTextMode(true)}
         />
       ) : (
@@ -180,6 +258,64 @@ function StepEditDrawer({ step, isMachine, onStepChange, onClose }: StepEditDraw
             >
               {t("steps.selectProgram")}
             </Button>
+          )}
+        </div>
+      )}
+
+      {/* Step Ingredients */}
+      {formIngredients.length > 0 && (
+        <div className="mt-4">
+          <h4 className="text-sm font-medium">{t("steps.ingredients")}</h4>
+
+          {stepIngredients.length > 0 && (
+            <div className="mt-2 space-y-2">
+              {stepIngredients.map((si) => (
+                <div key={si.ingredientIndex} className="flex items-center gap-2">
+                  <Input
+                    type="number"
+                    step="any"
+                    min="0"
+                    value={si.quantity}
+                    onChange={(e) => updateIngredientQuantity(si.ingredientIndex, e.target.value)}
+                    className="w-20 shrink-0"
+                  />
+                  <span className="shrink-0 text-sm text-muted-foreground">
+                    {renderUnitAbbr(si.ingredientIndex)}
+                  </span>
+                  <span className="min-w-0 flex-1 truncate text-sm">
+                    {renderIngredientName(si.ingredientIndex)}
+                  </span>
+                  <IconButton
+                    type="button"
+                    variant="ghost"
+                    className="h-7 w-7 shrink-0 text-destructive hover:bg-destructive/10"
+                    onClick={() => removeIngredientFromStep(si.ingredientIndex)}
+                    tooltip={t("common.remove")}
+                    aria-label={t("common.remove")}
+                  >
+                    <X size={14} />
+                  </IconButton>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {availableIngredients.length > 0 && (
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              {availableIngredients.map((fi) => (
+                <Button
+                  key={fi.formIndex}
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="h-7 text-xs"
+                  onClick={() => addIngredientToStep(fi.formIndex)}
+                >
+                  <Plus size={12} />
+                  {renderIngredientName(fi.formIndex)}
+                </Button>
+              ))}
+            </div>
           )}
         </div>
       )}

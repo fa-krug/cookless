@@ -125,6 +125,9 @@ export default function RecipeCreatePage() {
           update={manualStepFields.update}
           move={manualStepFields.move}
           label={t("steps.manualSteps")}
+          formIngredients={form.watch("ingredients")}
+          allIngredients={allIngredients}
+          allUnits={allUnits}
         />
 
         {/* Machine Steps */}
@@ -136,6 +139,9 @@ export default function RecipeCreatePage() {
           move={machineStepFields.move}
           label={t("steps.machineSteps")}
           isMachine
+          formIngredients={form.watch("ingredients")}
+          allIngredients={allIngredients}
+          allUnits={allUnits}
         />
 
         {/* Tags */}

@@ -150,6 +150,7 @@
     "instruction": "Instruction",
     "stepNumber": "Step {{number}}",
     "description": "Description",
+    "ingredients": "Ingredients",
     "duration": "Duration",
     "noSteps": "No steps yet",
     "reorder": "Reorder step",
@@ -271,6 +272,8 @@
     "machineMethod": "Machine",
     "wakeLockActive": "Screen stays on",
     "wakeLockInactive": "Screen may turn off",
+    "lessServings": "Fewer servings",
+    "moreServings": "More servings",
     "noSteps": "No steps for this method"
   },
   "household": {

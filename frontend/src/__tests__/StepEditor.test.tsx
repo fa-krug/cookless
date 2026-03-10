@@ -62,7 +62,7 @@ describe("StepEditor", () => {
 
     await userEvent.click(screen.getByRole("button", { name: "steps.add" }));
 
-    expect(append).toHaveBeenCalledWith({ step_number: 4, instruction: "" });
+    expect(append).toHaveBeenCalledWith({ step_number: 4, instruction: "", ingredients: [] });
   });
 
   it("removes a step", async () => {

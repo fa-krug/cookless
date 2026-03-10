@@ -1,4 +1,4 @@
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Minus, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { IconButton } from "@/components/ui/IconButton";
 import { cn } from "@/lib/utils";
@@ -7,18 +7,41 @@ import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
 import ProgramStepDisplay from "../components/ProgramStepDisplay";
 import { useCookingProgress } from "../hooks/useCookingProgress";
+import { useIngredients } from "../hooks/useIngredients";
 import { useRecipe } from "../hooks/useRecipes";
+import { useUnits } from "../hooks/useUnits";
 import { useWakeLock } from "../hooks/useWakeLock";
+import { formatQty } from "../lib/exportRecipe";
 
 type Method = "MANUAL" | "MACHINE";
 
 export default function CookingViewPage() {
   const { id } = useParams<{ id: string }>();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const { data: recipe, isLoading } = useRecipe(id ?? "");
+  const { data: ingredients } = useIngredients();
+  const { data: units } = useUnits();
   const { isActive: wakeLockActive } = useWakeLock();
   const [method, setMethod] = useState<Method>("MANUAL");
+  const [servings, setServings] = useState<number | null>(null);
+
+  const lang = i18n.language === "de" ? "de" : "en";
+  const nameKey = lang === "de" ? "name_de" : "name_en";
+
+  const ingredientMap = useMemo(
+    () => new Map(ingredients?.map((i) => [i.id, i])),
+    [ingredients],
+  );
+  const unitMap = useMemo(
+    () => new Map(units?.map((u) => [u.id, u])),
+    [units],
+  );
+
+  const currentServings = servings ?? recipe?.default_servings ?? 1;
+  const scale = recipe && recipe.default_servings > 0
+    ? currentServings / recipe.default_servings
+    : 1;
 
   const sortedSteps = useMemo(() => {
     if (!recipe) return [];
@@ -48,6 +71,9 @@ export default function CookingViewPage() {
     );
   }
 
+  // Build a map from recipe_ingredient_id to RecipeIngredient for step ingredient display
+  const riMap = new Map(recipe.ingredients.map((ri) => [ri.id, ri]));
+
   function handleMethodChange(newMethod: Method) {
     setMethod(newMethod);
   }
@@ -68,12 +94,39 @@ export default function CookingViewPage() {
         </IconButton>
       </div>
 
-      {/* Wake lock indicator */}
-      <div className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground">
-        <span
-          className={`inline-block h-2 w-2 rounded-full ${wakeLockActive ? "bg-green-500" : "bg-border"}`}
-        />
-        {wakeLockActive ? t("cooking.wakeLockActive") : t("cooking.wakeLockInactive")}
+      {/* Servings + Wake lock */}
+      <div className="mt-2 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <IconButton
+            type="button"
+            variant="outline"
+            className="h-7 w-7"
+            onClick={() => setServings(Math.max(1, currentServings - 1))}
+            tooltip={t("cooking.lessServings")}
+            aria-label={t("cooking.lessServings")}
+          >
+            <Minus size={14} />
+          </IconButton>
+          <span className="text-sm font-medium">
+            {currentServings} {t("recipes.servings")}
+          </span>
+          <IconButton
+            type="button"
+            variant="outline"
+            className="h-7 w-7"
+            onClick={() => setServings(currentServings + 1)}
+            tooltip={t("cooking.moreServings")}
+            aria-label={t("cooking.moreServings")}
+          >
+            <Plus size={14} />
+          </IconButton>
+        </div>
+        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <span
+            className={`inline-block h-2 w-2 rounded-full ${wakeLockActive ? "bg-green-500" : "bg-border"}`}
+          />
+          {wakeLockActive ? t("cooking.wakeLockActive") : t("cooking.wakeLockInactive")}
+        </div>
       </div>
 
       {/* Method tabs */}
@@ -132,6 +185,7 @@ export default function CookingViewPage() {
         <div className="mt-4 space-y-3">
           {sortedSteps.map((step, index) => {
             const isCurrent = index === currentStep;
+            const stepIngredients = step.ingredients ?? [];
             return (
               <button
                 key={step.id}
@@ -165,6 +219,30 @@ export default function CookingViewPage() {
                       {step.instruction}
                     </span>
                   </>
+                )}
+
+                {/* Step ingredients */}
+                {stepIngredients.length > 0 && (
+                  <ul className={`mt-2 space-y-0.5 ${isCurrent ? "" : "opacity-70"}`}>
+                    {stepIngredients.map((si) => {
+                      const ri = riMap.get(si.recipe_ingredient_id);
+                      if (!ri) return null;
+                      const ing = ingredientMap.get(ri.ingredient);
+                      const unit = unitMap.get(ri.unit);
+                      const scaledQty = parseFloat(si.quantity) * scale;
+                      return (
+                        <li
+                          key={si.recipe_ingredient_id}
+                          className="text-sm text-muted-foreground"
+                        >
+                          <span className="font-medium">
+                            {formatQty(scaledQty)} {unit?.abbreviation ?? ""}
+                          </span>{" "}
+                          {ing ? ing[nameKey] : "?"}
+                        </li>
+                      );
+                    })}
+                  </ul>
                 )}
               </button>
             );

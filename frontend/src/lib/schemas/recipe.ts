@@ -8,6 +8,13 @@ export const ingredientRowSchema = z.object({
   order: z.number(),
 });
 
+export const stepIngredientRowSchema = z.object({
+  ingredientIndex: z.number(),
+  quantity: z.string(),
+});
+
+export type StepIngredientRowValues = z.infer<typeof stepIngredientRowSchema>;
+
 export const stepRowSchema = z.object({
   step_number: z.number(),
   instruction: z.string(),
@@ -18,6 +25,7 @@ export const stepRowSchema = z.object({
   turbo: z.boolean().optional(),
   direction: z.string().nullish(),
   weight_grams: z.number().nullish(),
+  ingredients: z.array(stepIngredientRowSchema),
 });
 
 export const recipeFormSchema = z.object({
