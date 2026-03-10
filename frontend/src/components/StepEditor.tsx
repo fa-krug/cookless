@@ -258,6 +258,7 @@ function StepEditDrawer({
       <form
         onSubmit={(e) => {
           e.preventDefault();
+          e.stopPropagation();
           onClose();
         }}
       >
