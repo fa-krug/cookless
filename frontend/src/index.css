@@ -145,6 +145,13 @@ html.dark {
     -webkit-user-select: text;
     user-select: text;
   }
+  /* Ensure form containers inside portals (drawers/modals) allow proper
+     cursor placement on mobile WebKit despite body { user-select: none } */
+  form,
+  [role="dialog"] {
+    -webkit-user-select: text;
+    user-select: text;
+  }
   html {
     -webkit-text-size-adjust: 100%;
     -webkit-touch-callout: none;
