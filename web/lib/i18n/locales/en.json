@@ -16,7 +16,8 @@
     "noResults": "Nothing found",
     "search": "Search",
     "remove": "Remove",
-    "undo": "Undo"
+    "undo": "Undo",
+    "saving": "Saving…"
   },
   "nav": {
     "recipes": "Recipes",
@@ -132,7 +133,11 @@
     "newRecipe": "New Recipe",
     "titlePlaceholder": "What's it called?",
     "moveToKnown": "Move to Favourites",
-    "moveToTry": "Move to Want to try"
+    "moveToTry": "Move to Want to try",
+    "description": "Description",
+    "titleRequired": "Title is required",
+    "created": "Recipe created",
+    "saved": "Recipe saved"
   },
   "ingredients": {
     "title": "Ingredients",

@@ -16,7 +16,8 @@
     "noResults": "Nichts gefunden",
     "search": "Suchen",
     "remove": "Entfernen",
-    "undo": "Rückgängig"
+    "undo": "Rückgängig",
+    "saving": "Speichern…"
   },
   "nav": {
     "recipes": "Rezepte",
@@ -132,7 +133,11 @@
     "newRecipe": "Neues Rezept",
     "titlePlaceholder": "Wie heißt das Rezept?",
     "moveToKnown": "Zu Favoriten verschieben",
-    "moveToTry": "Zu Ausprobieren verschieben"
+    "moveToTry": "Zu Ausprobieren verschieben",
+    "description": "Beschreibung",
+    "titleRequired": "Titel ist erforderlich",
+    "created": "Rezept erstellt",
+    "saved": "Rezept gespeichert"
   },
   "ingredients": {
     "title": "Zutaten",
