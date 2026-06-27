@@ -74,11 +74,9 @@ export const TABLE_MAP: ReadonlyArray<TableMapEntry> = [
   {
     source: "recipes_recipe",
     dest: "recipes",
-    // Note: source DB has no "description" column (it was added later in Django);
-    // the dest schema has description with a default of "" so we omit it here.
     columns: {
       id: "id", household_id: "household_id", title: "title",
-      list_type: "list_type",
+      description: "description", list_type: "list_type",
       default_servings: "default_servings", prep_time_minutes: "prep_time_minutes",
       cook_time_minutes: "cook_time_minutes", leftover_days: "leftover_days",
       image: "image", created_at: "created_at", updated_at: "updated_at",

@@ -22,15 +22,22 @@ for (const entry of TABLE_MAP) {
   // If the source table doesn't exist, verify dest has 0 rows and skip import
   if (!sourceTableExists(src, entry.source)) {
     const got = (dest.prepare(`SELECT count(*) AS n FROM ${entry.dest}`).get() as { n: number }).n;
-    const status = got === 0 ? "OK " : "BAD";
+    const status = got === 0 ? "WARN" : "BAD ";
     if (got !== 0) ok = false;
     console.log(`${status} ${entry.dest.padEnd(24)} ${got}/0 (source table absent)`);
     continue;
   }
 
-  const destCols = Object.keys(entry.columns);
-  const srcCols = Object.values(entry.columns);
-  // Quote source column names to handle SQLite reserved words (e.g. "order")
+  // Intersect the canonical column map with what actually exists in the source table.
+  // This ensures columns present in prod (e.g. description) are copied when available,
+  // and silently skipped when the source DB is stale/older.
+  const sourceColSet = new Set(
+    (src.prepare(`PRAGMA table_info("${entry.source}")`).all() as { name: string }[]).map((r) => r.name),
+  );
+  const presentColumns = Object.entries(entry.columns).filter(([, srcCol]) => sourceColSet.has(srcCol));
+  const destCols = presentColumns.map(([d]) => d);
+  const srcCols = presentColumns.map(([, s]) => s);
+  // Quote column names to handle SQLite reserved words (e.g. "order")
   const rows = src.prepare(`SELECT ${srcCols.map((c) => `"${c}"`).join(", ")} FROM ${entry.source}`).all();
   const placeholders = destCols.map(() => "?").join(", ");
   const insert = dest.prepare(
