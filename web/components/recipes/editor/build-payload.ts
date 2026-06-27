@@ -19,7 +19,7 @@ function toStep(s: FormStepValues, method: "MANUAL" | "MACHINE", stepNumber: num
     weightGrams: s.weightGrams,
     ingredients: s.ingredients.map((si) => ({
       recipeIngredientOrder: si.recipeIngredientIndex,
-      quantity: si.quantity,
+      quantity: si.quantity || "0",
     })),
   };
 }
@@ -46,7 +46,7 @@ export function buildPayload(values: RecipeFormValues, listType: "KNOWN" | "TO_T
       ingredientId: ing.ingredientId,
       nameEn: ing.nameEn,
       nameDe: ing.nameDe || ing.nameEn,
-      quantity: ing.quantity,
+      quantity: ing.quantity || "0",
       unitId: ing.unitId,
       order,
     })),

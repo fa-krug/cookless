@@ -52,6 +52,15 @@ function validate(input: UpsertRecipeInput): void {
   if (!input.title.trim()) throw new AuthError(422, "Title is required");
   if (input.defaultServings < 1) throw new AuthError(422, "Servings must be at least 1");
 
+  // Reject blank quantities before any Decimal parsing.
+  for (const ing of input.ingredients) {
+    if (ing.quantity.trim() === "") throw new AuthError(422, "Quantity is required");
+  }
+  const allStepIngredientsEarly = input.steps.flatMap((s) => s.ingredients);
+  for (const si of allStepIngredientsEarly) {
+    if (si.quantity.trim() === "") throw new AuthError(422, "Quantity is required");
+  }
+
   // Step-ingredient over-allocation (across all steps).
   const allStepIngredients = input.steps.flatMap((s) => s.ingredients);
   const totalErrors = validateStepIngredientTotals(

@@ -84,6 +84,39 @@ describe("upsertRecipe — create", () => {
     });
     expect(() => upsertRecipe(db, "h1", null, input, now)).toThrow(AuthError); // STEAMING requires temperature + duration
   });
+
+  it("rejects a recipe ingredient with empty quantity with AuthError 422", () => {
+    const db = seed();
+    const input = baseInput({
+      ingredients: [{ ingredientId: 1, nameEn: "Flour", nameDe: "Mehl", quantity: "", unitId: 1, order: 0 }],
+      steps: [{ method: "MANUAL", stepNumber: 1, instruction: "Mix", programType: "", temperature: null, durationSeconds: null, speed: null, turbo: false, direction: "", weightGrams: null, ingredients: [] }],
+    });
+    expect(() => upsertRecipe(db, "h1", null, input, now)).toThrow(AuthError);
+  });
+
+  it("rejects a step-ingredient with empty quantity with AuthError 422", () => {
+    const db = seed();
+    const input = baseInput({
+      steps: [{ method: "MANUAL", stepNumber: 1, instruction: "Mix", programType: "", temperature: null, durationSeconds: null, speed: null, turbo: false, direction: "", weightGrams: null, ingredients: [{ recipeIngredientOrder: 0, quantity: "" }] }],
+    });
+    expect(() => upsertRecipe(db, "h1", null, input, now)).toThrow(AuthError);
+  });
+
+  it("rejects a step-ingredient referencing an unknown ingredient order with AuthError 422", () => {
+    const db = seed();
+    const input = baseInput({
+      steps: [{ method: "MANUAL", stepNumber: 1, instruction: "Mix", programType: "", temperature: null, durationSeconds: null, speed: null, turbo: false, direction: "", weightGrams: null, ingredients: [{ recipeIngredientOrder: 99, quantity: "100" }] }],
+    });
+    expect(() => upsertRecipe(db, "h1", null, input, now)).toThrow(AuthError);
+  });
+
+  it("rejects a MANUAL step with a non-empty programType with AuthError 422", () => {
+    const db = seed();
+    const input = baseInput({
+      steps: [{ method: "MANUAL", stepNumber: 1, instruction: "Mix", programType: "STEAMING", temperature: null, durationSeconds: null, speed: null, turbo: false, direction: "", weightGrams: null, ingredients: [] }],
+    });
+    expect(() => upsertRecipe(db, "h1", null, input, now)).toThrow(AuthError);
+  });
 });
 
 describe("upsertRecipe — edit", () => {

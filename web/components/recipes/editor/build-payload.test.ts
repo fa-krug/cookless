@@ -32,6 +32,17 @@ describe("buildPayload", () => {
     expect(out.steps[0].ingredients[0].recipeIngredientOrder).toBe(0);
   });
 
+  it("coerces empty ingredient quantity and step-ingredient quantity to '0'", () => {
+    const out = buildPayload(values({
+      ingredients: [{ ingredientId: 1, nameEn: "Flour", nameDe: "Mehl", quantity: "", unitId: 1 }],
+      manualSteps: [
+        { instruction: "Mix", programType: "", temperature: null, durationSeconds: null, speed: null, turbo: false, direction: "", weightGrams: null, ingredients: [{ recipeIngredientIndex: 0, quantity: "" }] },
+      ],
+    }), "TO_TRY");
+    expect(out.ingredients[0].quantity).toBe("0");
+    expect(out.steps[0].ingredients[0].quantity).toBe("0");
+  });
+
   it("keeps machine steps with a program even when instruction is empty, renumbers per method", () => {
     const out = buildPayload(values({
       manualSteps: [],
