@@ -1,13 +1,6 @@
 import Database from "better-sqlite3";
+import { UNUSABLE_PASSWORD } from "../lib/auth/password";
 import { TABLE_MAP } from "./lib/table-map";
-
-const SOURCE = process.env.SOURCE_DB;
-if (!SOURCE) throw new Error("set SOURCE_DB to the old Django db.sqlite3 path");
-const DEST = process.env.DATABASE_FILE ?? "./data/cookless.db";
-
-const src = new Database(SOURCE, { readonly: true });
-const dest = new Database(DEST);
-dest.pragma("foreign_keys = OFF"); // we control insertion order
 
 // Destination column names that hold datetimes (Drizzle mode:"timestamp" → epoch seconds integer).
 // DateField columns (start_date, end_date, date, shopping_date) are TEXT YYYY-MM-DD — do NOT convert.
@@ -16,8 +9,9 @@ const TIMESTAMP_DEST_COLS = new Set(["created_at", "updated_at", "joined_at", "e
 // Destination column names that hold decimals — store as canonical text strings.
 const DECIMAL_DEST_COLS = new Set(["quantity", "conversion_factor", "known_ratio"]);
 
-function transformValue(destCol: string, value: unknown): unknown {
+export function transformValue(destCol: string, value: unknown): unknown {
   if (value === null || value === undefined) return value;
+  if (destCol === "password") return UNUSABLE_PASSWORD; // forced reset: all hashes invalidated
   if (TIMESTAMP_DEST_COLS.has(destCol)) {
     const raw = String(value);
     // Django ISO format: "2026-02-24 21:57:39.919109" — replace space with T and append Z
@@ -37,6 +31,15 @@ function sourceTableExists(db: ReturnType<typeof Database>, table: string): bool
     .get(table) as { name: string } | undefined;
   return row !== undefined;
 }
+
+if (process.env.VITEST !== "true") {
+const SOURCE = process.env.SOURCE_DB;
+if (!SOURCE) throw new Error("set SOURCE_DB to the old Django db.sqlite3 path");
+const DEST = process.env.DATABASE_FILE ?? "./data/cookless.db";
+
+const src = new Database(SOURCE, { readonly: true });
+const dest = new Database(DEST);
+dest.pragma("foreign_keys = OFF"); // we control insertion order
 
 let ok = true;
 for (const entry of TABLE_MAP) {
@@ -123,3 +126,4 @@ void assertTimestampRoundTrip().then((roundTripOk) => {
   console.log(ok ? "\nALL ROW COUNTS MATCH" : "\nROW COUNT MISMATCH — investigate");
   process.exit(ok ? 0 : 1);
 });
+} // end if (process.env.VITEST !== "true")
