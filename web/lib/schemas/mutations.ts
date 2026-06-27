@@ -1,11 +1,5 @@
 import { z } from "zod";
 
-export const bulkToggleSchema = z.object({
-  itemIds: z.array(z.string().uuid()),
-  isChecked: z.boolean(),
-});
-export type BulkToggleInput = z.infer<typeof bulkToggleSchema>;
-
 export const setupPlanSchema = z.object({
   iterationWeeks: z.number().int().min(1).max(3),
   shoppingDays: z.array(z.number().int().min(0).max(6)).min(1).max(2),

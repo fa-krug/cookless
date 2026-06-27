@@ -37,7 +37,6 @@ export function generateShoppingListsForIteration(db: Db, opts: GenerateOpts): v
     const entries = db
       .select({
         recipeId: mealPlanEntries.recipeId,
-        servings: mealPlanEntries.servings,
         defaultServings: recipes.defaultServings,
       })
       .from(mealPlanEntries)

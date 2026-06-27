@@ -1,7 +1,6 @@
 import { AuthError } from "@/lib/auth/errors";
 import { requireHousehold } from "@/lib/auth/session";
-import { db } from "@/lib/db";
-import type { Db } from "@/lib/db";
+import { db, type Db } from "@/lib/db";
 import type { User } from "@/lib/auth/session-store";
 
 export type Result<T = undefined> =
