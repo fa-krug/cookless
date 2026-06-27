@@ -72,6 +72,15 @@ export const passkeyCredentials = sqliteTable("passkey_credentials", {
   createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
 });
 
+export const sessions = sqliteTable("sessions", {
+  id: text("id").primaryKey(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  expiresAt: integer("expires_at", { mode: "timestamp" }).notNull(),
+  createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
+});
+
 // ---- recipes app ----
 
 export const ingredients = sqliteTable("ingredients", {
