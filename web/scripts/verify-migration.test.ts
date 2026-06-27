@@ -253,6 +253,23 @@ describe("verifyMigration — check 4a: recipe_ingredients.quantity", () => {
     expect(ok).toBe(false);
     expect(check.detail).toMatch(/1 non-numeric/);
   });
+
+  it("FAIL with blank-string quantity", () => {
+    seedRecipeIngredient(db, "r1", "");
+    const { checks, ok } = verifyMigration(db);
+    const check = getCheck(checks, "recipe_ingredients.quantity all numeric");
+    expect(check.ok).toBe(false);
+    expect(ok).toBe(false);
+    expect(check.detail).toMatch(/1 non-numeric/);
+  });
+
+  it("FAIL with whitespace-only quantity", () => {
+    seedRecipeIngredient(db, "r1", "   ");
+    const { checks, ok } = verifyMigration(db);
+    const check = getCheck(checks, "recipe_ingredients.quantity all numeric");
+    expect(check.ok).toBe(false);
+    expect(ok).toBe(false);
+  });
 });
 
 describe("verifyMigration — check 4b: shopping_list_items.quantity", () => {
@@ -272,6 +289,14 @@ describe("verifyMigration — check 4b: shopping_list_items.quantity", () => {
 
   it("FAIL with non-numeric quantity", () => {
     seedShoppingListItem(db, "sli1", "sl1", "not-a-number");
+    const { checks, ok } = verifyMigration(db);
+    const check = getCheck(checks, "shopping_list_items.quantity all numeric");
+    expect(check.ok).toBe(false);
+    expect(ok).toBe(false);
+  });
+
+  it("FAIL with blank-string quantity", () => {
+    seedShoppingListItem(db, "sli1", "sl1", "");
     const { checks, ok } = verifyMigration(db);
     const check = getCheck(checks, "shopping_list_items.quantity all numeric");
     expect(check.ok).toBe(false);

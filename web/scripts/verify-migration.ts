@@ -52,7 +52,9 @@ export function verifyMigration(db: Db): VerifyResult {
   const riRows = db.all<{ id: number; quantity: string }>(
     sql`SELECT id, quantity FROM recipe_ingredients`,
   );
-  const badRiQuantities = riRows.filter((r) => !Number.isFinite(Number(r.quantity)));
+  const badRiQuantities = riRows.filter(
+    (r) => String(r.quantity).trim() === "" || !Number.isFinite(Number(r.quantity)),
+  );
   checks.push({
     name: "recipe_ingredients.quantity all numeric",
     ok: badRiQuantities.length === 0,
@@ -66,7 +68,9 @@ export function verifyMigration(db: Db): VerifyResult {
   const sliRows = db.all<{ id: string; quantity: string }>(
     sql`SELECT id, quantity FROM shopping_list_items`,
   );
-  const badSliQuantities = sliRows.filter((r) => !Number.isFinite(Number(r.quantity)));
+  const badSliQuantities = sliRows.filter(
+    (r) => String(r.quantity).trim() === "" || !Number.isFinite(Number(r.quantity)),
+  );
   checks.push({
     name: "shopping_list_items.quantity all numeric",
     ok: badSliQuantities.length === 0,
@@ -80,7 +84,9 @@ export function verifyMigration(db: Db): VerifyResult {
   const mpRows = db.all<{ id: string; known_ratio: string | null }>(
     sql`SELECT id, known_ratio FROM meal_plans WHERE known_ratio IS NOT NULL`,
   );
-  const badKnownRatio = mpRows.filter((r) => !Number.isFinite(Number(r.known_ratio)));
+  const badKnownRatio = mpRows.filter(
+    (r) => String(r.known_ratio).trim() === "" || !Number.isFinite(Number(r.known_ratio)),
+  );
   checks.push({
     name: "meal_plans.known_ratio all numeric (non-null)",
     ok: badKnownRatio.length === 0,
