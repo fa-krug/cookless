@@ -525,6 +525,8 @@
     "formatMarkdown": "Text",
     "formatPdf": "PDF",
     "share": "Teilen",
+    "copy": "Kopieren",
+    "copied": "In Zwischenablage kopiert.",
     "shared": "Rezept geteilt!",
     "downloaded": "Rezept heruntergeladen!",
     "failed": "Konnte das Rezept nicht teilen. Nochmal versuchen?"

@@ -3,20 +3,21 @@
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Edit, UtensilsCrossed, Share2, ArrowRightLeft, Trash2 } from "lucide-react";
+import { Edit, UtensilsCrossed, ArrowRightLeft, Trash2 } from "lucide-react";
 import { useT } from "@/lib/i18n/provider";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/sonner";
 import { moveRecipeAction, deleteRecipeAction } from "@/app/(app)/actions";
+import { ExportRecipeDialog } from "./export-recipe-dialog";
 
 interface Props {
   recipeId: string;
   listType: string;
-  /** Replaced with a real handler in Task 11; until then Share is hidden. */
-  onShare?: () => void;
+  exportText: string;
+  exportTitle: string;
 }
 
-export function RecipeDetailActions({ recipeId, listType, onShare }: Props) {
+export function RecipeDetailActions({ recipeId, listType, exportText, exportTitle }: Props) {
   const { t } = useT();
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -56,12 +57,7 @@ export function RecipeDetailActions({ recipeId, listType, onShare }: Props) {
           {t("cooking.start")}
         </Link>
       </Button>
-      {onShare && (
-        <Button variant="outline" onClick={onShare}>
-          <Share2 size={16} />
-          {t("export.share")}
-        </Button>
-      )}
+      <ExportRecipeDialog title={exportTitle} text={exportText} />
       <Button variant="outline" disabled={pending} onClick={onMove}>
         <ArrowRightLeft size={16} />
         {listType === "KNOWN" ? t("recipes.moveToTry") : t("recipes.moveToKnown")}

@@ -215,7 +215,28 @@ export function RecipeDetail({
         </div>
       )}
 
-      <RecipeDetailActions recipeId={recipe.id} listType={recipe.listType} />
+      <RecipeDetailActions
+        recipeId={recipe.id}
+        listType={recipe.listType}
+        exportTitle={recipe.title}
+        exportText={[
+          recipe.title,
+          "",
+          ...recipe.ingredients
+            .map((ri) => {
+              const ing = ingredientsById.get(ri.ingredientId);
+              const unit = unitsById.get(ri.unitId);
+              if (!ing) return null;
+              return `- ${formatQuantity(ri.quantity)}${unit ? " " + unit.abbreviation : ""} ${pickName(locale, ing)}`;
+            })
+            .filter((line): line is string => line !== null),
+          "",
+          ...recipe.manualSteps
+            .slice()
+            .sort((a, b) => a.stepNumber - b.stepNumber)
+            .map((s) => `${s.stepNumber}. ${s.instruction}`),
+        ].join("\n")}
+      />
     </div>
   );
 }

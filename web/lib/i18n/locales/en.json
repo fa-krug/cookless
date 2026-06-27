@@ -525,6 +525,8 @@
     "formatMarkdown": "Text",
     "formatPdf": "PDF",
     "share": "Share",
+    "copy": "Copy",
+    "copied": "Copied to clipboard.",
     "shared": "Recipe shared!",
     "downloaded": "Recipe downloaded!",
     "failed": "Couldn't share the recipe. Try again?"
