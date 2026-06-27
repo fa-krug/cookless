@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight, Minus, Plus } from "lucide-react";
 import { useT } from "@/lib/i18n/provider";
@@ -9,6 +9,7 @@ import { formatQuantity, pickName } from "@/lib/display/format";
 import { Button } from "@/components/ui/button";
 import { StepParams } from "@/components/recipes/step-params";
 import { useWakeLock } from "@/lib/hooks/use-wake-lock";
+import { resolveSwipe } from "@/lib/cooking/swipe";
 import type { RecipeDetail, IngredientLite, UnitLite, CookingStepDto } from "@/lib/queries/recipes";
 
 interface Props {
@@ -33,6 +34,22 @@ export function CookingView({ recipe, ingredients, units, locale }: Props) {
   const [stepIdx, setStepIdx] = useState(0);
 
   const { active: wakeLockActive } = useWakeLock(started);
+
+  const touchStartX = useRef(0);
+  const touchStartY = useRef(0);
+
+  function handleTouchStart(e: React.TouchEvent) {
+    touchStartX.current = e.changedTouches[0].clientX;
+    touchStartY.current = e.changedTouches[0].clientY;
+  }
+
+  function handleTouchEnd(e: React.TouchEvent) {
+    const dx = e.changedTouches[0].clientX - touchStartX.current;
+    const dy = e.changedTouches[0].clientY - touchStartY.current;
+    const action = resolveSwipe(dx, dy);
+    if (action === "next") setStepIdx((i) => Math.min(steps.length - 1, i + 1));
+    else if (action === "prev") setStepIdx((i) => Math.max(0, i - 1));
+  }
 
   const steps: CookingStepDto[] = useMemo(() => {
     const list = method === "MACHINE" ? recipe.machineSteps : recipe.manualSteps;
@@ -130,7 +147,31 @@ export function CookingView({ recipe, ingredients, units, locale }: Props) {
         </div>
       </div>
 
-      <div className="rounded-xl border bg-card p-6">
+      <div className="space-y-1.5">
+        <p className="text-center text-sm text-muted-foreground">
+          {t("cooking.stepOf", { current: stepIdx + 1, total: steps.length })}
+        </p>
+        <div className="flex gap-1">
+          {steps.map((s, index) => (
+            <button
+              key={s.id}
+              type="button"
+              aria-label={t("cooking.stepOf", { current: index + 1, total: steps.length })}
+              onClick={() => setStepIdx(index)}
+              className={`h-1.5 flex-1 rounded-full transition-colors ${
+                index <= stepIdx ? "bg-primary" : "bg-muted"
+              }`}
+            />
+          ))}
+        </div>
+        <p className="text-center text-xs text-muted-foreground sm:hidden">{t("cooking.swipeHint")}</p>
+      </div>
+
+      <div
+        className="rounded-xl border bg-card p-6"
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+      >
         {step?.programType && (
           <p className="mb-2 text-sm font-medium text-primary">{t(`steps.programs.${step.programType}`)}</p>
         )}
