@@ -3,6 +3,7 @@ import type { Db } from "@/lib/db";
 import { passkeyCredentials, users } from "@/lib/db/schema";
 import { AuthError } from "./errors";
 import { hashPassword, hasUsablePassword, validatePassword, verifyPassword } from "./password";
+import { deleteUserSessions } from "./session-store";
 
 function requireUser(db: Db, userId: string) {
   const user = db.select().from(users).where(eq(users.id, userId)).get();
@@ -29,6 +30,7 @@ export async function setPassword(
     .set({ password: await hashPassword(args.newPassword), onboardingStep })
     .where(eq(users.id, userId))
     .run();
+  deleteUserSessions(db, userId);
 }
 
 export async function removePassword(
@@ -52,6 +54,7 @@ export async function removePassword(
     throw new AuthError(400, "Cannot remove your password without a passkey set.");
   }
   db.update(users).set({ password: "" }).where(eq(users.id, userId)).run();
+  deleteUserSessions(db, userId);
 }
 
 export function skipPasskey(db: Db, userId: string): void {

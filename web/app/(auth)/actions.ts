@@ -52,6 +52,8 @@ export async function setPasswordAction(input: unknown): Promise<Result> {
   try {
     const user = await requireUser();
     await setPassword(db, user.id, setPasswordSchema.parse(input));
+    // Re-issue a fresh session for the acting user (all sessions were deleted by setPassword)
+    await setSessionCookie(user.id);
     return { ok: true };
   } catch (e) {
     return fail(e);
@@ -62,6 +64,8 @@ export async function removePasswordAction(input: unknown): Promise<Result> {
   try {
     const user = await requireUser();
     await removePassword(db, user.id, removePasswordSchema.parse(input));
+    // Re-issue a fresh session for the acting user (all sessions were deleted by removePassword)
+    await setSessionCookie(user.id);
     return { ok: true };
   } catch (e) {
     return fail(e);

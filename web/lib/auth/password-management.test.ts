@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { eq } from "drizzle-orm";
 import { createTestDb } from "@/lib/test/db";
-import { passkeyCredentials, users } from "@/lib/db/schema";
+import { passkeyCredentials, sessions, users } from "@/lib/db/schema";
 import { hashPassword, hasUsablePassword } from "./password";
 import { removePassword, setPassword, skipPasskey } from "./password-management";
 
@@ -55,6 +55,29 @@ describe("removePassword", () => {
     db.insert(users).values({ id: "u1", email: "a@x.test", password: await hashPassword("OldP4ss!word"), createdAt: now }).run();
     db.insert(passkeyCredentials).values({ id: "p1", userId: "u1", credentialId: Buffer.from([1]), publicKey: Buffer.from([2]), signCount: 0, deviceName: "", createdAt: now }).run();
     await expect(removePassword(db, "u1", { currentPassword: "nope" })).rejects.toMatchObject({ status: 400 });
+  });
+});
+
+describe("session invalidation", () => {
+  it("deletes all sessions when a password is set", async () => {
+    const db = createTestDb();
+    const expiresAt = new Date(now.getTime() + 1000 * 60 * 60);
+    db.insert(users).values({ id: "u1", email: "a@x.test", password: await hashPassword("OldP4ss!word"), onboardingStep: "COMPLETED", createdAt: now }).run();
+    db.insert(sessions).values({ id: "s1", userId: "u1", expiresAt, createdAt: now }).run();
+    await setPassword(db, "u1", { currentPassword: "OldP4ss!word", newPassword: "Newp4ss!word2" });
+    const remaining = db.select().from(sessions).where(eq(sessions.userId, "u1")).all();
+    expect(remaining.length).toBe(0);
+  });
+
+  it("deletes all sessions when a password is removed", async () => {
+    const db = createTestDb();
+    const expiresAt = new Date(now.getTime() + 1000 * 60 * 60);
+    db.insert(users).values({ id: "u1", email: "a@x.test", password: await hashPassword("OldP4ss!word"), onboardingStep: "COMPLETED", createdAt: now }).run();
+    db.insert(passkeyCredentials).values({ id: "p1", userId: "u1", credentialId: Buffer.from([1]), publicKey: Buffer.from([2]), signCount: 0, deviceName: "", createdAt: now }).run();
+    db.insert(sessions).values({ id: "s1", userId: "u1", expiresAt, createdAt: now }).run();
+    await removePassword(db, "u1", { currentPassword: "OldP4ss!word" });
+    const remaining = db.select().from(sessions).where(eq(sessions.userId, "u1")).all();
+    expect(remaining.length).toBe(0);
   });
 });
 
