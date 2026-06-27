@@ -7,6 +7,8 @@ import { useT } from "@/lib/i18n/provider";
 import { scaleQuantity } from "@/lib/domain/recipes/scaling";
 import { formatQuantity, pickName } from "@/lib/display/format";
 import { Button } from "@/components/ui/button";
+import { StepParams } from "@/components/recipes/step-params";
+import { useWakeLock } from "@/lib/hooks/use-wake-lock";
 import type { RecipeDetail, IngredientLite, UnitLite, CookingStepDto } from "@/lib/queries/recipes";
 
 interface Props {
@@ -29,6 +31,8 @@ export function CookingView({ recipe, ingredients, units, locale }: Props) {
   const [servings, setServings] = useState(recipe.defaultServings);
   const [started, setStarted] = useState(false);
   const [stepIdx, setStepIdx] = useState(0);
+
+  const { active: wakeLockActive } = useWakeLock(started);
 
   const steps: CookingStepDto[] = useMemo(() => {
     const list = method === "MACHINE" ? recipe.machineSteps : recipe.manualSteps;
@@ -105,13 +109,25 @@ export function CookingView({ recipe, ingredients, units, locale }: Props) {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-3">
         <button type="button" className="text-sm text-muted-foreground" onClick={() => setStarted(false)}>
           <ChevronLeft size={16} className="inline" /> {recipe.title}
         </button>
-        <span className="text-sm text-muted-foreground">
-          {t("cooking.stepOf", { current: stepIdx + 1, total: steps.length })}
-        </span>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="icon" onClick={() => setServings((s) => Math.max(1, s - 1))}>
+              <Minus size={16} />
+            </Button>
+            <span className="w-6 text-center text-sm font-semibold">{servings}</span>
+            <Button variant="outline" size="icon" onClick={() => setServings((s) => Math.min(12, s + 1))}>
+              <Plus size={16} />
+            </Button>
+          </div>
+          <span
+            className={`inline-block h-2 w-2 rounded-full ${wakeLockActive ? "bg-green-500" : "bg-border"}`}
+            aria-hidden="true"
+          />
+        </div>
       </div>
 
       <div className="rounded-xl border bg-card p-6">
@@ -119,6 +135,7 @@ export function CookingView({ recipe, ingredients, units, locale }: Props) {
           <p className="mb-2 text-sm font-medium text-primary">{t(`steps.programs.${step.programType}`)}</p>
         )}
         <p className="text-lg leading-relaxed">{step?.instruction}</p>
+        {step && <StepParams step={step} />}
         {step && step.ingredients.length > 0 && (
           <ul className="mt-4 space-y-1 border-t pt-3 text-sm text-muted-foreground">
             {step.ingredients.map((si) => {
