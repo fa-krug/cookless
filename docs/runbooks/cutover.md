@@ -149,15 +149,9 @@ Run each check manually after the stack is up. All must pass before the cutover 
 
 The migration sets **all** user passwords to an unusable hash (Django convention for passkey-only accounts). Passkey users log in normally. Users who relied on a password and have no registered passkey have no usable credential after cutover.
 
-**Identify password-only users** (run against the migrated DB):
+**Identify password-only users** — query the migrated DB directly (these are users with no registered passkey):
 
 ```bash
-docker run --rm \
-  -v app-data:/app/data \
-  -e DATABASE_FILE=/app/data/cookless.db \
-  cookless-web:build \
-  npx tsx scripts/verify-migration.ts
-# Or query directly with sqlite3:
 sqlite3 /path/to/cookless.db \
   "SELECT email FROM users u WHERE NOT EXISTS (SELECT 1 FROM passkey_credentials p WHERE p.user_id = u.id);"
 ```
