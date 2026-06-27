@@ -1,8 +1,6 @@
-import { sql } from "drizzle-orm";
 import {
   blob,
   integer,
-  primaryKey,
   sqliteTable,
   text,
   uniqueIndex,
@@ -195,7 +193,7 @@ export const mealPlans = sqliteTable("meal_plans", {
   shoppingDay1: integer("shopping_day_1").notNull().default(5),
   shoppingDay2: integer("shopping_day_2"),
   servings: integer("servings").notNull().default(2),
-  knownRatio: text("known_ratio").notNull().default("0.7"),
+  knownRatio: text("known_ratio").notNull().default("0.7"), // Django FloatField; stored as text per the decimals-as-text constraint
   defaultLeftoverDays: integer("default_leftover_days").notNull().default(1),
   createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
 });
