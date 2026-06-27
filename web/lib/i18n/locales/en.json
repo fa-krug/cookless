@@ -559,6 +559,17 @@
     "downloaded": "Recipe downloaded!",
     "failed": "Couldn't share the recipe. Try again?"
   },
+  "aiSettings": {
+    "title": "AI Features",
+    "subtitle": "Generate recipes and photos with Google Gemini.",
+    "enable": "Enable AI features",
+    "apiKey": "Gemini API key",
+    "apiKeyPlaceholder": "Paste your Gemini API key",
+    "apiKeySet": "A key is saved. Enter a new one to replace it.",
+    "save": "Save",
+    "saved": "AI settings saved",
+    "link": "Manage AI settings"
+  },
   "welcome": {
     "title": "Welcome to Cookless!",
     "subtitle": "Your home is all set up. Here's what you can do:",

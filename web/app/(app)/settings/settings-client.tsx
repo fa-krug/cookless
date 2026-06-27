@@ -66,6 +66,11 @@ export function SettingsClient({ currentLanguage }: { currentLanguage: Locale })
         <h2 className="text-sm font-medium">{t("tags.manageTags")}</h2>
         <Button asChild variant="outline"><Link href="/settings/tags">{t("tags.manageLink")}</Link></Button>
       </section>
+
+      <section className="space-y-2">
+        <h2 className="text-sm font-medium">{t("aiSettings.title")}</h2>
+        <Button asChild variant="outline"><Link href="/settings/ai">{t("aiSettings.link")}</Link></Button>
+      </section>
     </div>
   );
 }

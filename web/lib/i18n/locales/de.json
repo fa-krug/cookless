@@ -559,6 +559,17 @@
     "downloaded": "Rezept heruntergeladen!",
     "failed": "Konnte das Rezept nicht teilen. Nochmal versuchen?"
   },
+  "aiSettings": {
+    "title": "KI-Funktionen",
+    "subtitle": "Rezepte und Fotos mit Google Gemini erstellen.",
+    "enable": "KI-Funktionen aktivieren",
+    "apiKey": "Gemini API-Schlüssel",
+    "apiKeyPlaceholder": "Gemini API-Schlüssel einfügen",
+    "apiKeySet": "Ein Schlüssel ist gespeichert. Gib einen neuen ein, um ihn zu ersetzen.",
+    "save": "Speichern",
+    "saved": "KI-Einstellungen gespeichert",
+    "link": "KI-Einstellungen verwalten"
+  },
   "welcome": {
     "title": "Willkommen bei Cookless!",
     "subtitle": "Dein Zuhause ist eingerichtet. Das kannst du jetzt tun:",
