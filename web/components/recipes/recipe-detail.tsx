@@ -1,14 +1,6 @@
 import type { JSX } from "react";
 import Link from "next/link";
-import {
-  BookOpen,
-  ChevronLeft,
-  Edit,
-  UtensilsCrossed,
-  Share2,
-  ArrowRightLeft,
-  Trash2,
-} from "lucide-react";
+import { BookOpen, ChevronLeft } from "lucide-react";
 import type {
   RecipeDetail as RecipeDetailDto,
   IngredientLite,
@@ -16,8 +8,8 @@ import type {
 } from "@/lib/queries/recipes";
 import { pickName, formatQuantity, recipeImageUrl } from "@/lib/display/format";
 import { Badge, type BadgeProps } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { RecipeDetailActions } from "./recipe-detail-actions";
 
 const TAG_VARIANT: Record<string, BadgeProps["variant"]> = {
   DIETARY: "dietary",
@@ -223,36 +215,7 @@ export function RecipeDetail({
         </div>
       )}
 
-      {/* Action buttons — disabled placeholders, wired up in Plan 6 */}
-      <div className="flex flex-wrap gap-2 border-t pt-4">
-        {/* TODO(plan-6): wire Edit */}
-        <Button variant="default" disabled>
-          <Edit size={16} />
-          {t("common.edit")}
-        </Button>
-        {/* TODO(plan-6): wire Cook */}
-        <Button variant="outline" disabled>
-          <UtensilsCrossed size={16} />
-          {t("cooking.start")}
-        </Button>
-        {/* TODO(plan-6): wire Share */}
-        <Button variant="outline" disabled>
-          <Share2 size={16} />
-          {t("export.share")}
-        </Button>
-        {/* TODO(plan-6): wire Move */}
-        <Button variant="outline" disabled>
-          <ArrowRightLeft size={16} />
-          {recipe.listType === "KNOWN"
-            ? t("recipes.moveToTry")
-            : t("recipes.moveToKnown")}
-        </Button>
-        {/* TODO(plan-6): wire Delete */}
-        <Button variant="outline" disabled className="text-destructive">
-          <Trash2 size={16} />
-          {t("common.delete")}
-        </Button>
-      </div>
+      <RecipeDetailActions recipeId={recipe.id} listType={recipe.listType} />
     </div>
   );
 }

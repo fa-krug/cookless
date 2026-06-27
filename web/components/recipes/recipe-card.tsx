@@ -1,11 +1,11 @@
 import type { JSX } from "react";
 import Link from "next/link";
-import { BookOpen, Trash2 } from "lucide-react";
+import { BookOpen } from "lucide-react";
 import type { RecipeSummary } from "@/lib/queries/recipes";
 import { pickName, recipeImageUrl } from "@/lib/display/format";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { RecipeCardDelete } from "./recipe-card-delete";
 
 const TAG_VARIANT: Record<string, "dietary" | "protein" | "cuisine" | "meal_type"> = {
   DIETARY: "dietary",
@@ -70,16 +70,7 @@ export function RecipeCard({ recipe, locale, t }: RecipeCardProps): JSX.Element 
             )}
           </div>
         </Link>
-        {/* TODO(plan-6): wire delete */}
-        <Button
-          variant="ghost"
-          size="icon"
-          disabled
-          className="ml-3 shrink-0 text-red-600 hover:bg-red-50"
-          aria-label={`${t("common.delete")} ${recipe.title}`}
-        >
-          <Trash2 size={18} />
-        </Button>
+        <RecipeCardDelete recipeId={recipe.id} title={recipe.title} />
       </CardContent>
     </Card>
   );
