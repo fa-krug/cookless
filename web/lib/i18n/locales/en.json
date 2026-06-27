@@ -289,6 +289,8 @@
     "nextStep": "Next",
     "prevStep": "Back",
     "stepOf": "Step {{current}} of {{total}}",
+    "prev": "Back",
+    "next": "Next",
     "done": "All done!",
     "manualStep": "By Hand",
     "machineStep": "Machine",
