@@ -1,6 +1,7 @@
 // web/lib/shopping/items.test.ts
 import { describe, expect, it } from "vitest";
 import { createTestDb } from "@/lib/test/db";
+import { eq } from "drizzle-orm";
 import {
   households, mealPlans, planIterations, shoppingLists, shoppingListItems, ingredients, units,
 } from "@/lib/db/schema";
@@ -52,9 +53,11 @@ describe("toggleShoppingItem", () => {
 describe("setShoppingItemsChecked", () => {
   it("bulk-unchecks only owned items and ignores foreign ids", () => {
     const db = seed();
+    db.update(shoppingListItems).set({ isChecked: true }).where(eq(shoppingListItems.id, "i1")).run();
     const n = setShoppingItemsChecked(db, "h1", ["i1", "i2", "iX"], false);
     expect(n).toBe(2);
     const rows = db.select().from(shoppingListItems).all();
+    expect(rows.find((r) => r.id === "i1")!.isChecked).toBe(false);
     expect(rows.find((r) => r.id === "i2")!.isChecked).toBe(false);
     expect(rows.find((r) => r.id === "iX")!.isChecked).toBe(false); // untouched (was already false)
   });

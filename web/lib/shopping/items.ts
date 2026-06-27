@@ -27,7 +27,10 @@ export function toggleShoppingItem(db: Db, householdId: string, itemId: string):
     .from(shoppingListItems)
     .where(eq(shoppingListItems.id, itemId))
     .get();
-  const next = !current!.isChecked;
+  if (current === undefined) {
+    throw new AuthError(404, "Item not found");
+  }
+  const next = !current.isChecked;
   db.update(shoppingListItems).set({ isChecked: next }).where(eq(shoppingListItems.id, itemId)).run();
   return next;
 }
