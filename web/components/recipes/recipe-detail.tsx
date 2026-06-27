@@ -10,6 +10,7 @@ import { pickName, formatQuantity, recipeImageUrl } from "@/lib/display/format";
 import { Badge, type BadgeProps } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { RecipeDetailActions } from "./recipe-detail-actions";
+import { RecipeImageActions } from "./recipe-image-actions";
 
 const TAG_VARIANT: Record<string, BadgeProps["variant"]> = {
   DIETARY: "dietary",
@@ -31,6 +32,7 @@ interface RecipeDetailProps {
   unitsById: Map<number, UnitLite>;
   locale: string;
   t: (key: string, vars?: Record<string, string | number>) => string;
+  aiEnabled: boolean;
 }
 
 export function RecipeDetail({
@@ -39,6 +41,7 @@ export function RecipeDetail({
   unitsById,
   locale,
   t,
+  aiEnabled,
 }: RecipeDetailProps): JSX.Element {
   const imageUrl = recipeImageUrl(recipe.image);
 
@@ -65,6 +68,9 @@ export function RecipeDetail({
           <BookOpen size={48} className="text-muted-foreground" />
         </div>
       )}
+
+      {/* Image actions */}
+      <RecipeImageActions recipeId={recipe.id} hasImage={imageUrl !== null} aiEnabled={aiEnabled} />
 
       {/* Title */}
       <h1 className="text-3xl font-bold">{recipe.title}</h1>

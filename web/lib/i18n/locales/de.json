@@ -399,7 +399,8 @@
     "generating": "Wird erstellt...",
     "uploadFailed": "Foto konnte nicht hochgeladen werden.",
     "generateFailed": "Foto konnte nicht erstellt werden.",
-    "noImage": "Noch kein Foto"
+    "noImage": "Noch kein Foto",
+    "removed": "Foto entfernt"
   },
   "password": {
     "title": "Passwort",
