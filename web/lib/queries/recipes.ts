@@ -1,6 +1,15 @@
-import { and, eq, inArray, like, sql } from "drizzle-orm";
+import { and, asc, eq, inArray, like, sql } from "drizzle-orm";
 import type { Db } from "@/lib/db";
-import { recipeTags, recipes, tags } from "@/lib/db/schema";
+import {
+  recipeTags,
+  recipes,
+  tags,
+  recipeIngredients,
+  cookingSteps,
+  stepIngredients,
+  ingredients,
+  units,
+} from "@/lib/db/schema";
 
 export interface RecipeTagDto {
   id: string;
@@ -116,4 +125,194 @@ export function listRecipes(
   }));
 
   return { items, totalCount };
+}
+
+// --- detail + global lists ---
+
+export interface IngredientLite {
+  id: number;
+  nameEn: string;
+  nameDe: string;
+  category: string;
+}
+
+export interface UnitLite {
+  id: number;
+  nameEn: string;
+  nameDe: string;
+  abbreviation: string;
+}
+
+export interface RecipeIngredientDto {
+  id: number;
+  ingredientId: number;
+  quantity: string;
+  unitId: number;
+  order: number;
+}
+
+export interface StepIngredientDto {
+  recipeIngredientId: number;
+  quantity: string;
+}
+
+export interface CookingStepDto {
+  id: number;
+  method: string;
+  stepNumber: number;
+  instruction: string;
+  programType: string;
+  temperature: number | null;
+  durationSeconds: number | null;
+  speed: number | null;
+  turbo: boolean;
+  direction: string;
+  weightGrams: number | null;
+  ingredients: StepIngredientDto[];
+}
+
+export interface RecipeDetail extends RecipeSummary {
+  ingredients: RecipeIngredientDto[];
+  manualSteps: CookingStepDto[];
+  machineSteps: CookingStepDto[];
+}
+
+export function getRecipe(
+  db: Db,
+  householdId: string,
+  id: string,
+): RecipeDetail | null {
+  const r = db
+    .select()
+    .from(recipes)
+    .where(and(eq(recipes.id, id), eq(recipes.householdId, householdId)))
+    .get();
+  if (!r) return null;
+
+  const ri = db
+    .select()
+    .from(recipeIngredients)
+    .where(eq(recipeIngredients.recipeId, id))
+    .orderBy(asc(recipeIngredients.order))
+    .all();
+
+  const steps = db
+    .select()
+    .from(cookingSteps)
+    .where(eq(cookingSteps.recipeId, id))
+    .orderBy(asc(cookingSteps.stepNumber))
+    .all();
+
+  const stepIds = steps.map((s) => s.id);
+  const si =
+    stepIds.length
+      ? db
+          .select()
+          .from(stepIngredients)
+          .where(inArray(stepIngredients.stepId, stepIds))
+          .all()
+      : [];
+
+  const siByStep = new Map<number, StepIngredientDto[]>();
+  for (const row of si) {
+    const list = siByStep.get(row.stepId) ?? [];
+    list.push({
+      recipeIngredientId: row.recipeIngredientId,
+      quantity: row.quantity,
+    });
+    siByStep.set(row.stepId, list);
+  }
+
+  const toDto = (
+    s: (typeof steps)[number],
+  ): CookingStepDto => ({
+    id: s.id,
+    method: s.method,
+    stepNumber: s.stepNumber,
+    instruction: s.instruction,
+    programType: s.programType,
+    temperature: s.temperature,
+    durationSeconds: s.durationSeconds,
+    speed: s.speed,
+    turbo: s.turbo,
+    direction: s.direction,
+    weightGrams: s.weightGrams,
+    ingredients: siByStep.get(s.id) ?? [],
+  });
+
+  const tagRows = db
+    .select({
+      id: tags.id,
+      category: tags.category,
+      nameEn: tags.nameEn,
+      nameDe: tags.nameDe,
+    })
+    .from(recipeTags)
+    .innerJoin(tags, eq(tags.id, recipeTags.tagId))
+    .where(eq(recipeTags.recipeId, id))
+    .all();
+
+  return {
+    id: r.id,
+    title: r.title,
+    description: r.description,
+    listType: r.listType,
+    defaultServings: r.defaultServings,
+    prepTimeMinutes: r.prepTimeMinutes,
+    cookTimeMinutes: r.cookTimeMinutes,
+    leftoverDays: r.leftoverDays,
+    image: r.image,
+    createdAt: r.createdAt,
+    updatedAt: r.updatedAt,
+    tags: tagRows,
+    ingredients: ri.map((x) => ({
+      id: x.id,
+      ingredientId: x.ingredientId,
+      quantity: x.quantity,
+      unitId: x.unitId,
+      order: x.order,
+    })),
+    manualSteps: steps.filter((s) => s.method === "MANUAL").map(toDto),
+    machineSteps: steps.filter((s) => s.method === "MACHINE").map(toDto),
+  };
+}
+
+export function listTags(db: Db, householdId: string): RecipeTagDto[] {
+  return db
+    .select({
+      id: tags.id,
+      category: tags.category,
+      nameEn: tags.nameEn,
+      nameDe: tags.nameDe,
+    })
+    .from(tags)
+    .where(eq(tags.householdId, householdId))
+    .orderBy(asc(tags.category), asc(tags.nameEn))
+    .all();
+}
+
+export function listIngredients(db: Db): IngredientLite[] {
+  return db
+    .select({
+      id: ingredients.id,
+      nameEn: ingredients.nameEn,
+      nameDe: ingredients.nameDe,
+      category: ingredients.category,
+    })
+    .from(ingredients)
+    .orderBy(asc(ingredients.id))
+    .all();
+}
+
+export function listUnits(db: Db): UnitLite[] {
+  return db
+    .select({
+      id: units.id,
+      nameEn: units.nameEn,
+      nameDe: units.nameDe,
+      abbreviation: units.abbreviation,
+    })
+    .from(units)
+    .orderBy(asc(units.id))
+    .all();
 }
