@@ -5,9 +5,9 @@ import { join } from "node:path";
 import { eq } from "drizzle-orm";
 import sharp from "sharp";
 import { createTestDb } from "@/lib/test/db";
-import { households, recipes } from "@/lib/db/schema";
+import { households, recipes, ingredients, recipeIngredients, units } from "@/lib/db/schema";
 import { resolveMediaPath } from "@/lib/images/storage";
-import { setRecipeImage, removeRecipeImage } from "./images";
+import { setRecipeImage, removeRecipeImage, generateRecipeImageFromAI } from "./images";
 import { AuthError } from "@/lib/auth/errors";
 
 const now = new Date("2026-06-27T12:00:00Z");
@@ -55,6 +55,39 @@ describe("setRecipeImage", () => {
   it("rejects a recipe from another household with 404", async () => {
     const db = seed();
     await expect(setRecipeImage(db, "h2", "r1", await png(), now)).rejects.toMatchObject({ status: 404 });
+  });
+});
+
+describe("generateRecipeImageFromAI", () => {
+  function seedAi(opts: { aiEnabled: boolean; key: string }) {
+    const db = createTestDb();
+    db.insert(households).values({ id: "h1", name: "Home", aiEnabled: opts.aiEnabled, geminiApiKey: opts.key, createdAt: now }).run();
+    db.insert(recipes).values({ id: "r1", householdId: "h1", title: "Soup", listType: "KNOWN", createdAt: now, updatedAt: now }).run();
+    db.insert(ingredients).values({ id: 1, nameEn: "Tomato", nameDe: "Tomate", category: "PRODUCE" }).run();
+    db.insert(units).values({ id: 1, nameEn: "gram", nameDe: "Gramm", abbreviation: "g" }).run();
+    db.insert(recipeIngredients).values({ recipeId: "r1", ingredientId: 1, quantity: "100", unitId: 1, order: 0 }).run();
+    return db;
+  }
+  const fakeGen = async () =>
+    (await import("sharp")).default({ create: { width: 80, height: 80, channels: 3, background: "red" } }).png().toBuffer();
+
+  it("generates, processes, and stores an image", async () => {
+    const db = seedAi({ aiEnabled: true, key: "k" });
+    await generateRecipeImageFromAI(db, "h1", "r1", now, fakeGen);
+    const row = db.select().from(recipes).where(eq(recipes.id, "r1")).get();
+    expect(row?.image).toMatch(/^recipes\/r1_\d+\.webp$/);
+  });
+  it("rejects when AI disabled (403)", async () => {
+    const db = seedAi({ aiEnabled: false, key: "k" });
+    await expect(generateRecipeImageFromAI(db, "h1", "r1", now, fakeGen)).rejects.toMatchObject({ status: 403 });
+  });
+  it("rejects when no key (400)", async () => {
+    const db = seedAi({ aiEnabled: true, key: "" });
+    await expect(generateRecipeImageFromAI(db, "h1", "r1", now, fakeGen)).rejects.toMatchObject({ status: 400 });
+  });
+  it("rejects cross-household (404)", async () => {
+    const db = seedAi({ aiEnabled: true, key: "k" });
+    await expect(generateRecipeImageFromAI(db, "hX", "r1", now, fakeGen)).rejects.toMatchObject({ status: 404 });
   });
 });
 
