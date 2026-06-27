@@ -146,7 +146,7 @@ export function CookingView({ recipe, ingredients, units, locale }: Props) {
           disabled={stepIdx === 0}
           onClick={() => setStepIdx((i) => Math.max(0, i - 1))}
         >
-          <ChevronLeft size={16} /> {t("cooking.prev")}
+          <ChevronLeft size={16} /> {t("cooking.prevStep")}
         </Button>
         {isLast ? (
           <Button asChild onClick={() => localStorage.removeItem(progressKey)}>
@@ -154,7 +154,7 @@ export function CookingView({ recipe, ingredients, units, locale }: Props) {
           </Button>
         ) : (
           <Button onClick={() => setStepIdx((i) => Math.min(steps.length - 1, i + 1))}>
-            {t("cooking.next")} <ChevronRight size={16} />
+            {t("cooking.nextStep")} <ChevronRight size={16} />
           </Button>
         )}
       </div>

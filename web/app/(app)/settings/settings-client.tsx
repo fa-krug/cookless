@@ -63,7 +63,7 @@ export function SettingsClient({ currentLanguage }: { currentLanguage: Locale })
       </section>
 
       <section className="space-y-2">
-        <h2 className="text-sm font-medium">{t("tags.manageTitle")}</h2>
+        <h2 className="text-sm font-medium">{t("tags.manageTags")}</h2>
         <Button asChild variant="outline"><Link href="/settings/tags">{t("tags.manageLink")}</Link></Button>
       </section>
     </div>

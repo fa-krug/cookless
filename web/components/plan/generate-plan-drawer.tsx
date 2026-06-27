@@ -49,6 +49,7 @@ export function GeneratePlanDrawer({ triggerLabel, triggerClassName, tags, defau
   const { locale, t } = useT();
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [shoppingDaysInvalid, setShoppingDaysInvalid] = useState(false);
   const { register, handleSubmit, control, formState } = useForm<FormValues>({
     defaultValues: {
       iterationWeeks: defaults?.iterationWeeks ?? 1,
@@ -62,9 +63,11 @@ export function GeneratePlanDrawer({ triggerLabel, triggerClassName, tags, defau
 
   async function onSubmit(values: FormValues) {
     if (values.shoppingDays.length < 1 || values.shoppingDays.length > 2) {
+      setShoppingDaysInvalid(true);
       toast.error(t("plan.generate.shoppingDaysError"));
       return;
     }
+    setShoppingDaysInvalid(false);
     const res = await setupPlanAction({
       iterationWeeks: Number(values.iterationWeeks),
       servings: Number(values.servings),
@@ -132,7 +135,7 @@ export function GeneratePlanDrawer({ triggerLabel, triggerClassName, tags, defau
             />
           </label>
 
-          <fieldset>
+          <fieldset aria-invalid={shoppingDaysInvalid}>
             <legend className="text-sm font-medium">{t("plan.generate.shoppingDays")}</legend>
             <Controller
               control={control}

@@ -31,7 +31,7 @@ export function TagManagementClient({ tags, locale }: { tags: RecipeTagDto[]; lo
 
   return (
     <div className="space-y-6">
-      <h1 className="text-xl font-semibold">{t("tags.manageTitle")}</h1>
+      <h1 className="text-xl font-semibold">{t("tags.manageTags")}</h1>
 
       {CATEGORIES.map((cat) => {
         const inCat = tags.filter((tg) => tg.category === cat);
