@@ -6,7 +6,7 @@ import type {
   IngredientLite,
   UnitLite,
 } from "@/lib/queries/recipes";
-import { pickName, formatQuantity, recipeImageUrl } from "@/lib/display/format";
+import { formatDuration, pickName, formatQuantity, recipeImageUrl } from "@/lib/display/format";
 import { Badge, type BadgeProps } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { RecipeDetailActions } from "./recipe-detail-actions";
@@ -18,13 +18,6 @@ const TAG_VARIANT: Record<string, BadgeProps["variant"]> = {
   CUISINE: "cuisine",
   MEAL_TYPE: "meal_type",
 };
-
-function formatDuration(seconds: number): string {
-  if (seconds < 60) return `${seconds}s`;
-  const m = Math.floor(seconds / 60);
-  const s = seconds % 60;
-  return s > 0 ? `${m}m ${s}s` : `${m}m`;
-}
 
 interface RecipeDetailProps {
   recipe: RecipeDetailDto;
