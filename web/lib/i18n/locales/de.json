@@ -226,7 +226,14 @@
     "noActiveTitle": "Kein aktiver Plan",
     "noActiveSubtitle": "Zeit für die nächste Runde!",
     "pastIterations": "Frühere Pläne",
-    "renew": "Auffrischen"
+    "renew": "Auffrischen",
+    "preview": {
+      "loadError": "Rezept konnte nicht geladen werden. Nochmal versuchen?",
+      "servings": "{{count}} Portionen",
+      "ingredients": "Zutaten",
+      "manualSteps": "Von Hand",
+      "machineSteps": "Maschine"
+    }
   },
   "shopping": {
     "title": "Einkaufsliste",

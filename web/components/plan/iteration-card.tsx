@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useT } from "@/lib/i18n/provider";
 import { addDays, weekday } from "@/lib/domain/dates";
 import type { PlanIterationDto, PlanShoppingListDto } from "@/lib/queries/meal-plan";
+import { RecipePreviewModal } from "./recipe-preview-modal";
 
 interface IterationCardProps {
   iteration: PlanIterationDto;
@@ -40,6 +41,7 @@ export function IterationCard({
 }: IterationCardProps) {
   const { locale, t } = useT();
   const [collapsed, setCollapsed] = useState(isArchived);
+  const [preview, setPreview] = useState<{ recipeId: string; servings: number } | null>(null);
 
   const dates = buildDates(iteration.startDate, iteration.endDate);
 
@@ -93,6 +95,16 @@ export function IterationCard({
           </button>
         )}
       </div>
+
+      {/* Recipe preview modal */}
+      {preview && (
+        <RecipePreviewModal
+          recipeId={preview.recipeId}
+          servings={preview.servings}
+          open={!!preview}
+          onOpenChange={(open) => { if (!open) setPreview(null); }}
+        />
+      )}
 
       {/* Day rows */}
       {!collapsed && (
@@ -154,9 +166,17 @@ export function IterationCard({
                   )}
 
                   {/* Lunch entry */}
-                  <div
-                    className="flex items-center gap-2 px-4 py-3"
-                    // TODO(plan-10): open preview modal on click
+                  <button
+                    type="button"
+                    className={`flex w-full items-center gap-2 px-4 py-3 text-left ${
+                      entry ? "cursor-pointer hover:bg-accent/50" : "cursor-default"
+                    }`}
+                    onClick={
+                      entry
+                        ? () => setPreview({ recipeId: entry.recipeId, servings: entry.servings })
+                        : undefined
+                    }
+                    disabled={!entry}
                   >
                     <span className="w-14 shrink-0 text-xs font-medium uppercase text-muted-foreground">
                       {t("plan.lunch")}
@@ -179,7 +199,7 @@ export function IterationCard({
                     ) : (
                       <span className="text-sm text-muted-foreground">—</span>
                     )}
-                  </div>
+                  </button>
 
                   {/* Static dinner row */}
                   <div className="flex items-center gap-2 px-4 py-3">

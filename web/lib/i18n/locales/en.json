@@ -226,7 +226,14 @@
     "noActiveTitle": "No active plan",
     "noActiveSubtitle": "Time to plan your next round!",
     "pastIterations": "Previous plans",
-    "renew": "Refresh"
+    "renew": "Refresh",
+    "preview": {
+      "loadError": "Couldn't load the recipe. Try again?",
+      "servings": "{{count}} servings",
+      "ingredients": "Ingredients",
+      "manualSteps": "By Hand",
+      "machineSteps": "Machine"
+    }
   },
   "shopping": {
     "title": "Shopping List",
