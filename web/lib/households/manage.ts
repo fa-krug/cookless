@@ -4,13 +4,8 @@ import type { Db } from "@/lib/db";
 import { households, householdMembers, users } from "@/lib/db/schema";
 import { AuthError } from "@/lib/auth/errors";
 import { isHouseholdMember } from "@/lib/auth/scoping";
+import { seedDefaultTags } from "@/lib/recipes/tags";
 import { type HouseholdDto, serializeHousehold } from "./serialize";
-
-// Optional: seed default tags for a new household. Plan 2's domain layer does not own this;
-// if a seeder exists at @/lib/domain or @/lib/households, call it here. Until then this is a no-op.
-function seedDefaultTags(_db: Db, _householdId: string): void {
-  // Intentionally empty — default-tag seeding is wired in a later plan (recipe tagging).
-}
 
 export function createHousehold(
   db: Db,
