@@ -153,6 +153,9 @@
   "steps": {
     "title": "Steps",
     "add": "Add step",
+    "manualTitle": "Manual steps",
+    "machineTitle": "Machine steps",
+    "instructionPlaceholder": "What to do in this step…",
     "manual": "By hand",
     "machine": "Machine",
     "manualSteps": "By Hand",

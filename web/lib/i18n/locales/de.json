@@ -153,6 +153,9 @@
   "steps": {
     "title": "Schritte",
     "add": "Schritt hinzufügen",
+    "manualTitle": "Manuelle Schritte",
+    "machineTitle": "Maschinen-Schritte",
+    "instructionPlaceholder": "Was in diesem Schritt zu tun ist…",
     "manual": "Von Hand",
     "machine": "Maschine",
     "manualSteps": "Von Hand",
