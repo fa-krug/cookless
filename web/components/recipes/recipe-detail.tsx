@@ -11,6 +11,7 @@ import { Badge, type BadgeProps } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { RecipeDetailActions } from "./recipe-detail-actions";
 import { RecipeImageActions } from "./recipe-image-actions";
+import { StepParams } from "./step-params";
 
 const TAG_VARIANT: Record<string, BadgeProps["variant"]> = {
   DIETARY: "dietary",
@@ -172,43 +173,7 @@ export function RecipeDetail({
                     </p>
                   )}
                   <p className="text-sm leading-relaxed">{step.instruction}</p>
-                  {/* Step params */}
-                  <div className="flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-muted-foreground">
-                    {step.temperature != null && (
-                      <span>
-                        {t("steps.params.temperature")}: {step.temperature}
-                        {t("steps.units.celsius")}
-                      </span>
-                    )}
-                    {step.durationSeconds != null && (
-                      <span>
-                        {t("steps.params.duration")}:{" "}
-                        {formatDuration(step.durationSeconds)}
-                      </span>
-                    )}
-                    {step.speed != null && (
-                      <span>
-                        {t("steps.params.speed")}: {step.speed}
-                      </span>
-                    )}
-                    {step.direction && (
-                      <span>
-                        {t("steps.params.direction")}:{" "}
-                        {t(`steps.directions.${step.direction}`)}
-                      </span>
-                    )}
-                    {step.weightGrams != null && (
-                      <span>
-                        {t("steps.params.weight")}: {step.weightGrams}
-                        {t("steps.units.grams")}
-                      </span>
-                    )}
-                    {step.turbo && (
-                      <span className="font-medium">
-                        {t("steps.params.turbo")}
-                      </span>
-                    )}
-                  </div>
+                  <StepParams step={step} />
                 </div>
               </li>
             ))}
