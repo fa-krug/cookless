@@ -68,6 +68,19 @@ export function IterationCard({
       <div
         className={`flex items-center justify-between px-4 py-3 ${isArchived ? "cursor-pointer select-none" : ""}`}
         onClick={isArchived ? () => setCollapsed((c) => !c) : undefined}
+        {...(isArchived
+          ? {
+              role: "button",
+              tabIndex: 0,
+              "aria-expanded": !collapsed,
+              onKeyDown: (e: React.KeyboardEvent) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  setCollapsed((c) => !c);
+                }
+              },
+            }
+          : {})}
       >
         <h3
           className={`flex items-center gap-1 text-sm font-semibold ${
@@ -113,9 +126,8 @@ export function IterationCard({
             const entry = entryByDate.get(date);
             const isToday = date === todayIso;
             const isShoppingDay = shoppingDays.includes(weekday(date));
-            // Match shopping list by exact date, then fall back to first list of the iteration
-            const shoppingList =
-              shoppingListByDate.get(date) ?? iteration.shoppingLists[0];
+            // Show shopping list preview only when a list's date matches this day
+            const shoppingList = shoppingListByDate.get(date);
 
             return (
               <div

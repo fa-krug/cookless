@@ -29,7 +29,6 @@ interface RecipePreviewData {
 interface RecipePreviewModalProps {
   recipeId: string;
   servings: number;
-  defaultServingsFallback?: number;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
@@ -72,7 +71,6 @@ export function RecipePreviewModal({
   const defaultServings = recipe?.defaultServings ?? servings;
 
   function scaledLine(
-    riId: number,
     quantity: string,
     unitId: number,
     ingredientId: number,
@@ -177,7 +175,7 @@ export function RecipePreviewModal({
                 <ul className="mt-2 space-y-1">
                   {recipe.ingredients.map((ri) => (
                     <li key={ri.id} className="text-sm text-foreground">
-                      {scaledLine(ri.id, ri.quantity, ri.unitId, ri.ingredientId)}
+                      {scaledLine(ri.quantity, ri.unitId, ri.ingredientId)}
                     </li>
                   ))}
                 </ul>

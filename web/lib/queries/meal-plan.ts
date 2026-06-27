@@ -91,9 +91,10 @@ export function getMealPlanView(db: Db, householdId: string): MealPlanView | nul
       createdAt: i.createdAt,
     }))
     .sort((a, b) => {
-      // ACTIVE first, then startDate descending
+      // ACTIVE first, then startDate descending, then createdAt descending (tiebreak)
       if (a.status !== b.status) return a.status === "ACTIVE" ? -1 : 1;
-      return a.startDate < b.startDate ? 1 : a.startDate > b.startDate ? -1 : 0;
+      if (a.startDate !== b.startDate) return a.startDate < b.startDate ? 1 : -1;
+      return +b.createdAt - +a.createdAt;
     });
 
   const shoppingDays = [plan.shoppingDay1, plan.shoppingDay2].filter(
