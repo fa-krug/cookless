@@ -1,32 +1,21 @@
+# docker-compose.production.yml
 services:
   web:
-    build: .
-    ports:
-      - "8000:8000"
-    volumes:
-      - app-data:/data
-    environment:
-      - DATA_DIR=/data
-      - DEBUG=False
-      - SECRET_KEY=${SECRET_KEY}
-      - ALLOWED_HOSTS=${ALLOWED_HOSTS}
-      - DATABASE_URL=${DATABASE_URL:-}
-      - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS}
-      - WEBAUTHN_RP_ID=${WEBAUTHN_RP_ID}
-      - WEBAUTHN_RP_NAME=${WEBAUTHN_RP_NAME:-Cook Less}
-      - WEBAUTHN_ORIGIN=${WEBAUTHN_ORIGIN}
-      - EMAIL_HOST=${EMAIL_HOST:-}
-      - EMAIL_PORT=${EMAIL_PORT:-587}
-      - EMAIL_USE_TLS=${EMAIL_USE_TLS:-True}
-      - EMAIL_USE_SSL=${EMAIL_USE_SSL:-False}
-      - EMAIL_HOST_USER=${EMAIL_HOST_USER:-}
-      - EMAIL_HOST_PASSWORD=${EMAIL_HOST_PASSWORD:-}
-      - DEFAULT_FROM_EMAIL=${DEFAULT_FROM_EMAIL:-noreply@localhost}
-      - SERVER_EMAIL=${SERVER_EMAIL:-server@localhost}
-      - ADMIN_EMAIL=${ADMIN_EMAIL:-}
-      - SUPERUSER_EMAIL=${SUPERUSER_EMAIL:-}
-      - SUPERUSER_PASSWORD=${SUPERUSER_PASSWORD:-}
+    build:
+      context: ./web
+      dockerfile: Dockerfile
     restart: unless-stopped
-
+    ports:
+      - "3000:3000"
+    environment:
+      AUTH_SECRET: ${AUTH_SECRET:?set AUTH_SECRET}
+      DATABASE_FILE: /app/data/cookless.db
+      MEDIA_ROOT: /app/data/media
+      WEBAUTHN_RP_ID: ${WEBAUTHN_RP_ID}
+      WEBAUTHN_RP_NAME: ${WEBAUTHN_RP_NAME}
+      WEBAUTHN_ORIGIN: ${WEBAUTHN_ORIGIN}
+      NODE_ENV: production
+    volumes:
+      - app-data:/app/data
 volumes:
   app-data:
