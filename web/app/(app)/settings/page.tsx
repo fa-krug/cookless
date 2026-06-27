@@ -1,0 +1,18 @@
+import { requireUser } from "@/lib/auth/session";
+import { getI18n } from "@/lib/i18n/server";
+import { isLocale, type Locale } from "@/lib/i18n/config";
+import { SettingsClient } from "./settings-client";
+
+export default async function SettingsPage() {
+  const user = await requireUser();
+  const { t } = await getI18n();
+  const current: Locale = isLocale(user.preferredLanguage)
+    ? user.preferredLanguage
+    : "en";
+  return (
+    <div className="space-y-8">
+      <h1 className="text-2xl font-bold">{t("settings.title")}</h1>
+      <SettingsClient currentLanguage={current} />
+    </div>
+  );
+}
