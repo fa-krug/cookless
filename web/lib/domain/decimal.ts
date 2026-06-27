@@ -1,7 +1,7 @@
 import Decimal from "decimal.js";
 
-// Match Python's Decimal.quantize default (ROUND_HALF_EVEN / banker's rounding).
-Decimal.set({ rounding: Decimal.ROUND_HALF_EVEN });
+// Match Python's Decimal context: 28 significant digits (precision) and ROUND_HALF_EVEN (banker's rounding).
+Decimal.set({ precision: 28, rounding: Decimal.ROUND_HALF_EVEN });
 
 export { Decimal };
 
