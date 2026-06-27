@@ -12,6 +12,7 @@ import { recipeFormSchema, type RecipeFormValues } from "@/lib/schemas/recipe";
 import { buildPayload } from "./editor/build-payload";
 import { IngredientRows } from "./editor/ingredient-rows";
 import { StepEditor } from "./editor/step-editor";
+import { TagSelector } from "./editor/tag-selector";
 import { saveRecipeAction } from "@/app/(app)/actions";
 import type { IngredientLite, UnitLite, RecipeTagDto } from "@/lib/queries/recipes";
 import type { Locale } from "@/lib/i18n/config";
@@ -96,7 +97,7 @@ export function RecipeEditor(props: {
         <StepEditor method="manual" ingredients={props.ingredients} units={props.units} locale={props.locale} />
         <StepEditor method="machine" ingredients={props.ingredients} units={props.units} locale={props.locale} />
 
-        {/* <TagSelector tags={props.tags} locale={props.locale} /> (Task 11) */}
+        <TagSelector tags={props.tags} locale={props.locale} />
 
         <div className="flex gap-2">
           <Button type="submit" disabled={saving}>

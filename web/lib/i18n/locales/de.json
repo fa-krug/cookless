@@ -512,6 +512,14 @@
     "PROTEIN": "Protein",
     "CUISINE": "Küche",
     "MEAL_TYPE": "Mahlzeittyp",
+    "categories": {
+      "DIETARY": "Ernährung",
+      "PROTEIN": "Protein",
+      "CUISINE": "Küche",
+      "MEAL_TYPE": "Mahlzeittyp"
+    },
+    "create": "Hinzufügen",
+    "duplicate": "Ein Tag mit diesem Namen existiert bereits in dieser Kategorie.",
     "filter": "Filter",
     "clearFilters": "Filter zurücksetzen",
     "addTag": "Tag hinzufügen",

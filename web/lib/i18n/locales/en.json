@@ -512,6 +512,14 @@
     "PROTEIN": "Protein",
     "CUISINE": "Cuisine",
     "MEAL_TYPE": "Meal Type",
+    "categories": {
+      "DIETARY": "Dietary",
+      "PROTEIN": "Protein",
+      "CUISINE": "Cuisine",
+      "MEAL_TYPE": "Meal Type"
+    },
+    "create": "Add",
+    "duplicate": "A tag with that name already exists in this category.",
     "filter": "Filter",
     "clearFilters": "Clear filters",
     "addTag": "Add Tag",
