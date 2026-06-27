@@ -100,7 +100,7 @@ export default async function RecipesPage({
                 }).toString()}`}
                 className="text-sm text-primary underline-offset-4 hover:underline"
               >
-                Load more ({totalCount - offset - items.length} remaining)
+                {t("recipes.loadMore", { count: totalCount - offset - items.length })}
               </a>
             </div>
           )}
