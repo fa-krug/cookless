@@ -229,6 +229,19 @@
     "noActiveSubtitle": "Zeit für die nächste Runde!",
     "pastIterations": "Frühere Pläne",
     "renew": "Auffrischen",
+    "nextIteration": "Nächste Iteration starten",
+    "generate": {
+      "title": "Speiseplan generieren",
+      "iterationWeeks": "Wochen pro Iteration",
+      "servings": "Portionen",
+      "knownRatio": "Anteil bekannter Rezepte",
+      "leftoverDays": "Resteverwertung (Tage)",
+      "shoppingDays": "Einkaufstage",
+      "excludeTags": "Tags ausschließen",
+      "submit": "Generieren",
+      "success": "Speiseplan erstellt.",
+      "shoppingDaysError": "1–2 Einkaufstage mit mind. 3 Tagen Abstand wählen."
+    },
     "preview": {
       "loadError": "Rezept konnte nicht geladen werden. Nochmal versuchen?",
       "servings": "{{count}} Portionen",

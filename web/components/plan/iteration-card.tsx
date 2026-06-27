@@ -7,6 +7,7 @@ import { useT } from "@/lib/i18n/provider";
 import { addDays, weekday } from "@/lib/domain/dates";
 import type { PlanIterationDto, PlanShoppingListDto } from "@/lib/queries/meal-plan";
 import { RecipePreviewModal } from "./recipe-preview-modal";
+import { RenewButton } from "./iteration-actions";
 
 interface IterationCardProps {
   iteration: PlanIterationDto;
@@ -96,17 +97,7 @@ export function IterationCard({
           )}
         </h3>
 
-        {/* Refresh button — disabled placeholder until plan-6 */}
-        {!isArchived && (
-          <button
-            type="button"
-            disabled
-            className="rounded border border-primary/50 px-3 py-1 text-xs text-primary opacity-50 cursor-not-allowed"
-            // TODO(plan-6): generate new iteration
-          >
-            {t("plan.renew")}
-          </button>
-        )}
+        {!isArchived && <RenewButton iterationId={iteration.id} />}
       </div>
 
       {/* Recipe preview modal */}

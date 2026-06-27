@@ -229,6 +229,19 @@
     "noActiveSubtitle": "Time to plan your next round!",
     "pastIterations": "Previous plans",
     "renew": "Refresh",
+    "nextIteration": "Start next iteration",
+    "generate": {
+      "title": "Generate meal plan",
+      "iterationWeeks": "Weeks per iteration",
+      "servings": "Servings",
+      "knownRatio": "Known-recipe ratio",
+      "leftoverDays": "Leftover days",
+      "shoppingDays": "Shopping days",
+      "excludeTags": "Exclude tags",
+      "submit": "Generate",
+      "success": "Meal plan generated.",
+      "shoppingDaysError": "Pick 1–2 shopping days, at least 3 days apart."
+    },
     "preview": {
       "loadError": "Couldn't load the recipe. Try again?",
       "servings": "{{count}} servings",
