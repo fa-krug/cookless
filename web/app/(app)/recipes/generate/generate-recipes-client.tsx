@@ -23,6 +23,7 @@ function toBulkInput(r: PreviewRecipe): BulkRecipeInput {
   const d = r.data;
   return {
     title: d.title,
+    description: d.description ?? "",
     defaultServings: d.default_servings ?? 2,
     prepTimeMinutes: d.prep_time_minutes ?? null,
     cookTimeMinutes: d.cook_time_minutes ?? null,

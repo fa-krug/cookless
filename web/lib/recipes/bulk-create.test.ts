@@ -85,6 +85,29 @@ describe("bulkCreateRecipes", () => {
     expect(db.select().from(recipeTags).where(eq(recipeTags.recipeId, res.createdIds[0])).all()).toHaveLength(0);
   });
 
+  it("skips invalid steps (empty manual, out-of-range machine program param) but keeps valid steps", async () => {
+    const db = seed();
+    const res = await bulkCreateRecipes(db, "h1", {
+      recipes: [{
+        title: "StepTest", defaultServings: 2, prepTimeMinutes: null, cookTimeMinutes: null, leftoverDays: null,
+        ingredients: [],
+        manualSteps: [
+          { stepNumber: 1, instruction: "Valid manual step" },   // valid: kept
+          { stepNumber: 2, instruction: "   " },                 // invalid: empty instruction → skipped
+        ],
+        machineSteps: [
+          // invalid: temperature 999 is out-of-range [37, 130] for MANUAL_COOKING → skipped
+          { stepNumber: 3, instruction: "", programType: "MANUAL_COOKING", temperature: 999, durationSeconds: 300, speed: 5, direction: "LEFT" },
+        ],
+        tagIds: [],
+      }],
+    }, now);
+    const id = res.createdIds[0];
+    const steps = db.select().from(cookingSteps).where(eq(cookingSteps.recipeId, id)).all();
+    expect(steps).toHaveLength(1);
+    expect(steps[0].method).toBe("MANUAL");
+  });
+
   it("decodes and stores image_base64, skipping invalid images", async () => {
     const db = seed();
     const png = await sharp({ create: { width: 60, height: 60, channels: 3, background: "red" } }).png().toBuffer();

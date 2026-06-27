@@ -33,6 +33,7 @@ interface RecipeDetailProps {
   locale: string;
   t: (key: string, vars?: Record<string, string | number>) => string;
   aiEnabled: boolean;
+  hasKey: boolean;
 }
 
 export function RecipeDetail({
@@ -42,6 +43,7 @@ export function RecipeDetail({
   locale,
   t,
   aiEnabled,
+  hasKey,
 }: RecipeDetailProps): JSX.Element {
   const imageUrl = recipeImageUrl(recipe.image);
 
@@ -70,7 +72,7 @@ export function RecipeDetail({
       )}
 
       {/* Image actions */}
-      <RecipeImageActions recipeId={recipe.id} hasImage={imageUrl !== null} aiEnabled={aiEnabled} />
+      <RecipeImageActions recipeId={recipe.id} hasImage={imageUrl !== null} aiEnabled={aiEnabled} hasKey={hasKey} />
 
       {/* Title */}
       <h1 className="text-3xl font-bold">{recipe.title}</h1>

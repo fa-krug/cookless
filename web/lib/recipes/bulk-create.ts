@@ -5,6 +5,7 @@ import {
   recipes, recipeIngredients, cookingSteps, recipeTags, ingredients, units, tags,
 } from "@/lib/db/schema";
 import { processToWebp, writeRecipeImage } from "@/lib/images/storage";
+import { validateProgramStep } from "@/lib/domain/recipes/program-validation";
 
 export interface BulkIngredientInput {
   nameEn: string;
@@ -94,6 +95,26 @@ export async function bulkCreateRecipes(
 
       const insertSteps = (steps: BulkStepInput[], method: "MANUAL" | "MACHINE") => {
         for (const s of steps) {
+          // Skip invalid steps (lenient bulk path: drop the bad step, keep the recipe).
+          if (method === "MANUAL") {
+            if (s.instruction.trim() === "") continue;
+          } else {
+            // MACHINE with a programType: validate params
+            if (s.programType) {
+              const errs = validateProgramStep(s.programType, {
+                temperature: s.temperature ?? null,
+                durationSeconds: s.durationSeconds ?? null,
+                speed: s.speed ?? null,
+                direction: s.direction || null,
+                turbo: s.turbo ?? false,
+                weightGrams: s.weightGrams ?? null,
+              });
+              if (errs.length > 0) continue;
+            } else {
+              // MACHINE free-text: skip if empty instruction
+              if (s.instruction.trim() === "") continue;
+            }
+          }
           tx.insert(cookingSteps).values({
             recipeId: id, method, stepNumber: s.stepNumber, instruction: s.instruction,
             programType: s.programType ?? "", temperature: s.temperature ?? null,

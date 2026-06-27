@@ -18,7 +18,7 @@ export default async function RecipeDetailPage({
   const recipe = getRecipe(db, householdId, id);
   if (!recipe) notFound();
 
-  const { aiEnabled } = getHouseholdAiSettings(db, householdId);
+  const { aiEnabled, hasKey } = getHouseholdAiSettings(db, householdId);
   const ingredientsById = new Map(listIngredients(db).map((i) => [i.id, i]));
   const unitsById = new Map(listUnits(db).map((u) => [u.id, u]));
 
@@ -30,6 +30,7 @@ export default async function RecipeDetailPage({
       locale={locale}
       t={t}
       aiEnabled={aiEnabled}
+      hasKey={hasKey}
     />
   );
 }

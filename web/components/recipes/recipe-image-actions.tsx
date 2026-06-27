@@ -16,9 +16,10 @@ interface Props {
   recipeId: string;
   hasImage: boolean;
   aiEnabled: boolean;
+  hasKey: boolean;
 }
 
-export function RecipeImageActions({ recipeId, hasImage, aiEnabled }: Props) {
+export function RecipeImageActions({ recipeId, hasImage, aiEnabled, hasKey }: Props) {
   const { t } = useT();
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -64,7 +65,7 @@ export function RecipeImageActions({ recipeId, hasImage, aiEnabled }: Props) {
         <ImagePlus size={16} />
         {t("recipeImage.upload")}
       </Button>
-      {aiEnabled && (
+      {aiEnabled && hasKey && (
         <Button variant="outline" size="sm" disabled={pending} onClick={onGenerate}>
           <Sparkles size={16} />
           {pending ? t("recipeImage.generating") : t("recipeImage.generate")}

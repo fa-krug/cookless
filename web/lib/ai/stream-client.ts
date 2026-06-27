@@ -22,6 +22,7 @@ export interface GeneratedStep {
 }
 export interface GeneratedRecipeData {
   title: string;
+  description?: string;
   default_servings?: number;
   prep_time_minutes?: number | null;
   cook_time_minutes?: number | null;
