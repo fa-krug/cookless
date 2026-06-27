@@ -17,7 +17,7 @@ const TAG_VARIANT: Record<string, "dietary" | "protein" | "cuisine" | "meal_type
 interface RecipeCardProps {
   recipe: RecipeSummary;
   locale: string;
-  t: (k: string, v?: Record<string, unknown>) => string;
+  t: (k: string, v?: Record<string, string | number>) => string;
 }
 
 export function RecipeCard({ recipe, locale, t }: RecipeCardProps): JSX.Element {
