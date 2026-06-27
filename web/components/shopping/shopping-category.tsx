@@ -1,9 +1,11 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useTransition } from "react";
 import { ChevronDown } from "lucide-react";
 import { useT } from "@/lib/i18n/provider";
 import { formatQuantity } from "@/lib/display/format";
+import { toast } from "@/components/ui/sonner";
+import { toggleShoppingItemAction } from "@/app/(app)/actions";
 import type { ShoppingItemDto } from "@/lib/queries/shopping";
 
 interface ShoppingCategoryProps {
@@ -14,15 +16,34 @@ interface ShoppingCategoryProps {
 export function ShoppingCategory({ category, items }: ShoppingCategoryProps) {
   const { t } = useT();
   const [isOpen, setIsOpen] = useState(true);
+  const [, startTransition] = useTransition();
+  // Optimistic overrides keyed by item id.
+  const [optimistic, setOptimistic] = useState<Record<string, boolean>>({});
+
+  const checkedOf = (item: ShoppingItemDto) => optimistic[item.id] ?? item.isChecked;
 
   const sortedItems = useMemo(() => {
     return [...items].sort((a, b) => {
-      if (a.isChecked === b.isChecked) return 0;
-      return a.isChecked ? 1 : -1;
+      const ac = optimistic[a.id] ?? a.isChecked;
+      const bc = optimistic[b.id] ?? b.isChecked;
+      if (ac === bc) return 0;
+      return ac ? 1 : -1;
     });
-  }, [items]);
+  }, [items, optimistic]);
 
-  const checkedCount = items.filter((item) => item.isChecked).length;
+  const checkedCount = items.filter((item) => checkedOf(item)).length;
+
+  function onToggle(item: ShoppingItemDto) {
+    const next = !checkedOf(item);
+    setOptimistic((o) => ({ ...o, [item.id]: next }));
+    startTransition(async () => {
+      const res = await toggleShoppingItemAction(item.id);
+      if (!res.ok) {
+        setOptimistic((o) => ({ ...o, [item.id]: !next })); // revert
+        toast.error(t("common.errorRetry"));
+      }
+    });
+  }
 
   return (
     <div className="rounded-lg border border-border bg-card shadow-sm">
@@ -34,9 +55,7 @@ export function ShoppingCategory({ category, items }: ShoppingCategoryProps) {
       >
         <div className="flex items-center gap-2">
           <ChevronDown
-            className={`h-4 w-4 text-muted-foreground transition-transform ${
-              isOpen ? "" : "-rotate-90"
-            }`}
+            className={`h-4 w-4 text-muted-foreground transition-transform ${isOpen ? "" : "-rotate-90"}`}
           />
           <h3 className="text-sm font-semibold text-foreground">
             {t(`shopping.categories.${category}`)}
@@ -49,29 +68,25 @@ export function ShoppingCategory({ category, items }: ShoppingCategoryProps) {
 
       {isOpen && (
         <div className="divide-y divide-border border-t border-border">
-          {sortedItems.map((item) => (
-            <div key={item.id} className="flex items-center gap-3 px-4 py-2.5">
-              {/* Read-only checkbox — TODO(plan-6): toggle */}
-              <input
-                type="checkbox"
-                checked={item.isChecked}
-                disabled
-                readOnly
-                className="h-4 w-4 cursor-not-allowed rounded"
-                aria-label={item.ingredientName}
-              />
-              <span
-                className={`flex-1 text-sm ${
-                  item.isChecked
-                    ? "text-muted-foreground line-through"
-                    : "text-foreground"
-                }`}
-              >
-                {formatQuantity(item.quantity)} {item.unitAbbreviation}{" "}
-                {item.ingredientName}
-              </span>
-            </div>
-          ))}
+          {sortedItems.map((item) => {
+            const checked = checkedOf(item);
+            return (
+              <label key={item.id} className="flex cursor-pointer items-center gap-3 px-4 py-2.5">
+                <input
+                  type="checkbox"
+                  checked={checked}
+                  onChange={() => onToggle(item)}
+                  className="h-4 w-4 rounded"
+                  aria-label={item.ingredientName}
+                />
+                <span
+                  className={`flex-1 text-sm ${checked ? "text-muted-foreground line-through" : "text-foreground"}`}
+                >
+                  {formatQuantity(item.quantity)} {item.unitAbbreviation} {item.ingredientName}
+                </span>
+              </label>
+            );
+          })}
         </div>
       )}
     </div>

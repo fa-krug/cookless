@@ -6,6 +6,7 @@ import { db } from "@/lib/db";
 import { getLatestShoppingList, type ShoppingItemDto } from "@/lib/queries/shopping";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ShoppingCategory } from "@/components/shopping/shopping-category";
+import { UncheckAllButton } from "@/components/shopping/shopping-actions";
 import { CATEGORY_ORDER } from "@/lib/display/format";
 
 export default async function ShoppingPage() {
@@ -65,14 +66,8 @@ export default async function ShoppingPage() {
       <h1 className="text-2xl font-bold">{t("shopping.title")}</h1>
       <div className="flex items-center justify-between">
         <p className="text-sm text-muted-foreground">{t("shopping.linkedToPlan")}</p>
-        {/* TODO(plan-6): reset — disabled placeholder */}
-        <button
-          type="button"
-          disabled
-          className="cursor-not-allowed text-sm font-medium text-muted-foreground"
-        >
-          {t("shopping.uncheckAll")}
-        </button>
+        {/* replaces the TODO(plan-6) disabled button */}
+        <UncheckAllButton itemIds={list.items.filter((i) => i.isChecked).map((i) => i.id)} />
       </div>
       <div className="space-y-3">
         {CATEGORY_ORDER.filter((c) => byCategory.has(c)).map((c) => (

@@ -12,6 +12,7 @@
     "loading": "Einen Moment...",
     "error": "Hoppla, da ist was schiefgelaufen",
     "retry": "Nochmal versuchen",
+    "errorRetry": "Etwas ist schiefgelaufen. Bitte erneut versuchen.",
     "noResults": "Nichts gefunden",
     "search": "Suchen",
     "remove": "Entfernen",

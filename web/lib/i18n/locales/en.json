@@ -12,6 +12,7 @@
     "loading": "One moment...",
     "error": "Oops, something went wrong",
     "retry": "Try again",
+    "errorRetry": "Something went wrong. Please try again.",
     "noResults": "Nothing found",
     "search": "Search",
     "remove": "Remove",
