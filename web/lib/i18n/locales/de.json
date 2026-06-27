@@ -147,6 +147,7 @@
     "amount": "Menge",
     "unit": "Einheit",
     "search": "Zutaten suchen...",
+    "searchPlaceholder": "Zutat suchen…",
     "noIngredients": "Noch keine Zutaten"
   },
   "steps": {

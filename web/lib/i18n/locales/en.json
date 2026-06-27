@@ -143,10 +143,11 @@
     "title": "Ingredients",
     "add": "Add ingredient",
     "name": "Ingredient",
-    "quantity": "Quantity",
+    "quantity": "Qty",
     "amount": "Amount",
     "unit": "Unit",
     "search": "Search ingredients...",
+    "searchPlaceholder": "Search ingredient…",
     "noIngredients": "No ingredients yet"
   },
   "steps": {
