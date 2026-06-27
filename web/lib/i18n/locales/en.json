@@ -39,7 +39,8 @@
     "password": "Password",
     "passwordPlaceholder": "Enter password",
     "passwordLoginFailed": "That email or password doesn't look right.",
-    "orDivider": "or"
+    "orDivider": "or",
+    "register": "Register"
   },
   "invite": {
     "invalid": "This invite link is no longer valid.",

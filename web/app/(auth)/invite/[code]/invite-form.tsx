@@ -137,7 +137,7 @@ export function InviteForm({ code }: { code: string }) {
         )}
 
         <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
-          {showPassword ? t("auth.login") : t("auth.signInWithPasskey")}
+          {showPassword ? t("auth.register") : t("auth.signInWithPasskey")}
         </Button>
 
         <div className="my-2 flex items-center gap-3">

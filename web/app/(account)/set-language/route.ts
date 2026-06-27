@@ -13,6 +13,8 @@ export async function POST(req: Request) {
     path: "/",
     maxAge: 60 * 60 * 24 * 365,
     sameSite: "lax",
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
   });
   return NextResponse.json({ ok: true });
 }
