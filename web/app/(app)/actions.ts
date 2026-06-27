@@ -10,6 +10,13 @@ import { setupPlanSchema } from "@/lib/schemas/mutations";
 import { upsertRecipe, type UpsertRecipeInput } from "@/lib/recipes/upsert";
 import { createIngredient } from "@/lib/recipes/ingredients";
 import { createTag, updateTag, deleteTag, resetTags } from "@/lib/recipes/tags";
+import { AuthError } from "@/lib/auth/errors";
+import { setRecipeImage, removeRecipeImage, generateRecipeImageFromAI } from "@/lib/recipes/images";
+import { generateGeminiImage } from "@/lib/ai/gemini";
+import { bulkCreateRecipes } from "@/lib/recipes/bulk-create";
+import { bulkCreateSchema, aiSettingsSchema } from "@/lib/schemas/generate";
+import { updateHouseholdSettings } from "@/lib/households/manage";
+import { ALLOWED_UPLOAD_TYPES, MAX_UPLOAD_BYTES } from "@/lib/images/config";
 
 export async function toggleShoppingItemAction(itemId: string): Promise<Result<boolean>> {
   const res = await withHousehold(({ db, householdId }) =>
@@ -149,5 +156,75 @@ export async function resetTagsAction(): Promise<Result<undefined>> {
     revalidatePath("/settings/tags");
     revalidatePath("/recipes");
   }
+  return res;
+}
+
+export async function uploadRecipeImageAction(
+  recipeId: string,
+  formData: FormData,
+): Promise<Result<undefined>> {
+  const res = await withHousehold(async ({ db, householdId, now }) => {
+    const file = formData.get("image");
+    if (!(file instanceof File)) throw new AuthError(400, "No file provided");
+    if (!ALLOWED_UPLOAD_TYPES.has(file.type)) throw new AuthError(400, "Invalid file type");
+    if (file.size > MAX_UPLOAD_BYTES) throw new AuthError(400, "File too large (max 5MB)");
+    const bytes = Buffer.from(await file.arrayBuffer());
+    try {
+      await setRecipeImage(db, householdId, recipeId, bytes, now);
+    } catch (e) {
+      if (e instanceof AuthError) throw e;
+      throw new AuthError(400, "Invalid image file");
+    }
+    return undefined;
+  });
+  if (res.ok) {
+    revalidatePath("/recipes");
+    revalidatePath(`/recipes/${recipeId}`);
+  }
+  return res;
+}
+
+export async function generateRecipeImageAction(recipeId: string): Promise<Result<undefined>> {
+  const res = await withHousehold(async ({ db, householdId, now }) => {
+    await generateRecipeImageFromAI(db, householdId, recipeId, now, generateGeminiImage);
+    return undefined;
+  });
+  if (res.ok) {
+    revalidatePath("/recipes");
+    revalidatePath(`/recipes/${recipeId}`);
+  }
+  return res;
+}
+
+export async function removeRecipeImageAction(recipeId: string): Promise<Result<undefined>> {
+  const res = await withHousehold(({ db, householdId }) => {
+    removeRecipeImage(db, householdId, recipeId);
+    return undefined;
+  });
+  if (res.ok) {
+    revalidatePath("/recipes");
+    revalidatePath(`/recipes/${recipeId}`);
+  }
+  return res;
+}
+
+export async function bulkCreateRecipesAction(
+  input: unknown,
+): Promise<Result<{ createdIds: string[] }>> {
+  const parsed = bulkCreateSchema.parse(input);
+  const res = await withHousehold(({ db, householdId, now }) =>
+    bulkCreateRecipes(db, householdId, parsed, now),
+  );
+  if (res.ok) revalidatePath("/recipes");
+  return res;
+}
+
+export async function updateAiSettingsAction(input: unknown): Promise<Result<undefined>> {
+  const parsed = aiSettingsSchema.parse(input);
+  const res = await withHousehold(({ db, householdId, user }) => {
+    updateHouseholdSettings(db, user.id, householdId, parsed);
+    return undefined;
+  });
+  if (res.ok) revalidatePath("/settings/ai");
   return res;
 }
