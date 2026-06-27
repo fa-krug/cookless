@@ -5,9 +5,11 @@ import { beginPasskeyLogin } from "@/lib/auth/passkey-auth";
 import { setCeremonyCookie } from "@/lib/auth/ceremony-cookie";
 import { currentRpId } from "@/lib/auth/session";
 import { passkeyBeginSchema } from "@/lib/schemas/auth";
+import { assertSameOrigin } from "@/lib/auth/origin";
 
 export async function POST(req: Request) {
   try {
+    assertSameOrigin(req);
     const { email } = passkeyBeginSchema.parse(await req.json());
     const rpId = await currentRpId();
     const { options, ceremony } = await beginPasskeyLogin(db, { email }, rpId);

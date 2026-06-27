@@ -5,9 +5,11 @@ import { beginPasskeyRegistration } from "@/lib/auth/passkey-auth";
 import { setCeremonyCookie } from "@/lib/auth/ceremony-cookie";
 import { currentRpId } from "@/lib/auth/session";
 import { passkeyBeginSchema } from "@/lib/schemas/auth";
+import { assertSameOrigin } from "@/lib/auth/origin";
 
 export async function POST(req: Request) {
   try {
+    assertSameOrigin(req);
     const { email, inviteCode } = passkeyBeginSchema.parse(await req.json());
     if (!inviteCode) throw new AuthError(400, "Invite code is required.");
     const rpId = await currentRpId();
