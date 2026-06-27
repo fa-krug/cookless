@@ -537,7 +537,11 @@
     "excludeFromPlan": "Tags abwählen, um sie vom Plan auszuschließen",
     "resetToDefaults": "Auf Standard zurücksetzen",
     "resetConfirm": "Das löscht alle Tags (auch eigene) und entfernt sie von deinen Rezepten. Mit den Standards neu starten?",
-    "resetSuccess": "Tags auf Standard zurückgesetzt!"
+    "resetSuccess": "Tags auf Standard zurückgesetzt!",
+    "manageTitle": "Tags verwalten",
+    "manageLink": "Tag-Einstellungen öffnen",
+    "reset": "Auf Standard zurücksetzen",
+    "deleteConfirmPlain": "Diesen Tag löschen?"
   },
   "export": {
     "title": "Rezept teilen",

@@ -1,10 +1,12 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useT } from "@/lib/i18n/provider";
 import { useTheme, type Theme } from "@/components/theme/use-theme";
 import { updateProfileAction } from "@/app/(account)/actions";
 import { toast } from "@/components/ui/sonner";
+import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import type { Locale } from "@/lib/i18n/config";
 
@@ -58,6 +60,11 @@ export function SettingsClient({ currentLanguage }: { currentLanguage: Locale })
             </ToggleGroupItem>
           ))}
         </ToggleGroup>
+      </section>
+
+      <section className="space-y-2">
+        <h2 className="text-sm font-medium">{t("tags.manageTitle")}</h2>
+        <Button asChild variant="outline"><Link href="/settings/tags">{t("tags.manageLink")}</Link></Button>
       </section>
     </div>
   );

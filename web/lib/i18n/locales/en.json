@@ -537,7 +537,11 @@
     "excludeFromPlan": "Uncheck tags to exclude them from this plan",
     "resetToDefaults": "Reset to Defaults",
     "resetConfirm": "This will delete all tags (including custom ones) and remove them from your recipes. Start fresh with the defaults?",
-    "resetSuccess": "Tags reset to defaults!"
+    "resetSuccess": "Tags reset to defaults!",
+    "manageTitle": "Manage Tags",
+    "manageLink": "Open tag settings",
+    "reset": "Reset to Defaults",
+    "deleteConfirmPlain": "Delete this tag?"
   },
   "export": {
     "title": "Share Recipe",
