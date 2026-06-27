@@ -7,10 +7,10 @@ import { requireUser, currentRpId } from "@/lib/auth/session";
 import { passkeyCompleteSchema } from "@/lib/schemas/auth";
 
 export async function POST(req: Request) {
+  const ceremony = await readCeremonyCookie();
   try {
     const user = await requireUser();
     const { credential, deviceName } = passkeyCompleteSchema.parse(await req.json());
-    const ceremony = await readCeremonyCookie();
     if (!ceremony) throw new AuthError(400, "No pending passkey addition.");
     const rpId = await currentRpId();
     const dto = await completeAddPasskey(
@@ -20,10 +20,11 @@ export async function POST(req: Request) {
       rpId,
       new Date(),
     );
-    await clearCeremonyCookie();
     return NextResponse.json(dto);
   } catch (e) {
     if (e instanceof AuthError) return NextResponse.json({ message: e.message }, { status: e.status });
     throw e;
+  } finally {
+    await clearCeremonyCookie();
   }
 }

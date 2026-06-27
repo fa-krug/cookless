@@ -8,17 +8,18 @@ import { currentRpId, setSessionCookie } from "@/lib/auth/session";
 import { passkeyCompleteSchema } from "@/lib/schemas/auth";
 
 export async function POST(req: Request) {
+  const ceremony = await readCeremonyCookie();
   try {
     const { credential } = passkeyCompleteSchema.parse(await req.json());
-    const ceremony = await readCeremonyCookie();
     if (!ceremony) throw new AuthError(400, "No login in progress.");
     const rpId = await currentRpId();
     const user = await completePasskeyLogin(db, { responseJson: credential }, ceremony, rpId);
-    await clearCeremonyCookie();
     await setSessionCookie(user.id);
     return NextResponse.json(serializeUser(db, user));
   } catch (e) {
     if (e instanceof AuthError) return NextResponse.json({ message: e.message }, { status: e.status });
     throw e;
+  } finally {
+    await clearCeremonyCookie();
   }
 }

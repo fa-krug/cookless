@@ -16,6 +16,13 @@ const getUser = (db: ReturnType<typeof createTestDb>, id: string) =>
   db.select().from(users).where(eq(users.id, id)).get()!;
 
 describe("createHousehold", () => {
+  it("throws AuthError(400) on empty name", () => {
+    const db = createTestDb();
+    db.insert(users).values({ id: "u1", email: "a@x.test", onboardingStep: "CREATE_HOUSEHOLD", createdAt: now }).run();
+    expect(() => createHousehold(db, "u1", { name: "" }, now)).toThrow(expect.objectContaining({ status: 400 }));
+    expect(() => createHousehold(db, "u1", { name: "   " }, now)).toThrow(expect.objectContaining({ status: 400 }));
+  });
+
   it("creates a household, makes creator OWNER, activates it, completes onboarding", () => {
     const db = createTestDb();
     db.insert(users).values({ id: "u1", email: "a@x.test", onboardingStep: "CREATE_HOUSEHOLD", createdAt: now }).run();
@@ -49,6 +56,13 @@ describe("ownership + updates", () => {
     expect(() => requireOwner(db, "u1", hid)).not.toThrow();
     db.insert(users).values({ id: "u2", email: "b@x.test", createdAt: now }).run();
     expect(() => requireOwner(db, "u2", hid)).toThrow(/owner/i);
+  });
+
+  it("throws AuthError(400) on empty name for updateHousehold", () => {
+    const db = createTestDb();
+    const hid = ownerWithHousehold(db);
+    expect(() => updateHousehold(db, "u1", hid, { name: "" })).toThrow(expect.objectContaining({ status: 400 }));
+    expect(() => updateHousehold(db, "u1", hid, { name: "  " })).toThrow(expect.objectContaining({ status: 400 }));
   });
 
   it("updates name and settings as owner", () => {
