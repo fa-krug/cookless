@@ -128,7 +128,8 @@ export function joinHousehold(
       .run();
     consumeInvite(db, invite.id, userId);
     const u = db.select().from(users).where(eq(users.id, userId)).get();
-    if (u && !u.activeHouseholdId) {
+    if (!u) throw new AuthError(404, "User not found.");
+    if (!u.activeHouseholdId) {
       db.update(users).set({ activeHouseholdId: invite.householdId }).where(eq(users.id, userId)).run();
     }
   });
