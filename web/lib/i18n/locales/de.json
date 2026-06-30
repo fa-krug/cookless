@@ -50,6 +50,7 @@
     "joinPrompt": "Du wurdest eingeladen, {{household}} beizutreten!",
     "join": "Beitreten",
     "decline": "Ablehnen",
+    "joinAs": "Angemeldet als {{email}}",
     "joinFailed": "Beitritt hat nicht geklappt. Nochmal versuchen?",
     "registerTitle": "Willkommen!",
     "registerPrompt": "Erstelle ein Konto, um {{household}} beizutreten.",

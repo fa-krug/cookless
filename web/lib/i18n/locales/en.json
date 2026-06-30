@@ -50,6 +50,7 @@
     "joinPrompt": "You've been invited to join {{household}}!",
     "join": "Join",
     "decline": "Decline",
+    "joinAs": "Signed in as {{email}}",
     "joinFailed": "Couldn't join the household. Try again?",
     "registerTitle": "Welcome!",
     "registerPrompt": "Create an account to join {{household}}.",
