@@ -570,7 +570,11 @@
     "apiKeySet": "Ein Schlüssel ist gespeichert. Gib einen neuen ein, um ihn zu ersetzen.",
     "save": "Speichern",
     "saved": "KI-Einstellungen gespeichert",
-    "link": "KI-Einstellungen verwalten"
+    "link": "KI-Einstellungen verwalten",
+    "verify": "Prüfen",
+    "keyValid": "Schlüssel gültig",
+    "keyInvalid": "Schlüssel ungültig",
+    "keyUnreachable": "Nicht prüfbar"
   },
   "welcome": {
     "title": "Willkommen bei Cookless!",

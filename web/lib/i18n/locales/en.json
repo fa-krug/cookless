@@ -570,7 +570,11 @@
     "apiKeySet": "A key is saved. Enter a new one to replace it.",
     "save": "Save",
     "saved": "AI settings saved",
-    "link": "Manage AI settings"
+    "link": "Manage AI settings",
+    "verify": "Verify",
+    "keyValid": "Key is valid",
+    "keyInvalid": "Invalid key",
+    "keyUnreachable": "Couldn't verify"
   },
   "welcome": {
     "title": "Welcome to Cookless!",
