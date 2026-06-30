@@ -65,7 +65,9 @@
     "deletePasskey": "Entfernen",
     "confirmDelete": "Diesen Passkey entfernen?",
     "cannotDeleteLast": "Du brauchst mindestens einen Passkey.",
-    "added": "Hinzugefügt {{date}}"
+    "added": "Hinzugefügt {{date}}",
+    "empty": "Noch keine Passkeys.",
+    "created": "Hinzugefügt {{date}}"
   },
   "tokens": {
     "title": "API-Zugang",

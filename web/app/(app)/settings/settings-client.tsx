@@ -9,8 +9,19 @@ import { toast } from "@/components/ui/sonner";
 import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import type { Locale } from "@/lib/i18n/config";
+import { AccountSection } from "./account-section";
 
-export function SettingsClient({ currentLanguage }: { currentLanguage: Locale }) {
+export function SettingsClient({
+  currentLanguage,
+  email,
+  hasPassword,
+  hasPasskey,
+}: {
+  currentLanguage: Locale;
+  email: string;
+  hasPassword: boolean;
+  hasPasskey: boolean;
+}) {
   const { t } = useT();
   const router = useRouter();
   const { theme, setTheme } = useTheme();
@@ -71,6 +82,13 @@ export function SettingsClient({ currentLanguage }: { currentLanguage: Locale })
         <h2 className="text-sm font-medium">{t("aiSettings.title")}</h2>
         <Button asChild variant="outline"><Link href="/settings/ai">{t("aiSettings.link")}</Link></Button>
       </section>
+
+      <section className="space-y-2">
+        <h2 className="text-sm font-medium">{t("nav.manageHousehold")}</h2>
+        <Button asChild variant="outline"><Link href="/settings/household">{t("nav.manageHousehold")}</Link></Button>
+      </section>
+
+      <AccountSection email={email} hasPassword={hasPassword} hasPasskey={hasPasskey} />
     </div>
   );
 }
