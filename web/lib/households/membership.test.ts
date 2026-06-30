@@ -98,6 +98,81 @@ describe("delete", () => {
   });
 });
 
+describe("reassign active household on leave/remove/delete", () => {
+  // Fixture: user "mem" is MEMBER of hA (active) and hB (joined earlier).
+  // "owner" is the OWNER of hA.
+  function multiMembershipFixture(db: ReturnType<typeof createTestDb>) {
+    const t0 = new Date("2026-01-01T00:00:00Z"); // hB joined earlier
+    const t1 = new Date("2026-06-01T00:00:00Z"); // hA joined later
+
+    db.insert(users)
+      .values({ id: "owner", email: "owner@x.test", onboardingStep: "COMPLETED", createdAt: now })
+      .run();
+    const hAId = createHousehold(db, "owner", { name: "Household A" }, now).id;
+
+    db.insert(households).values({ id: "hB", name: "Household B", createdAt: now }).run();
+
+    // "mem" has hA as their active household
+    db.insert(users)
+      .values({ id: "mem", email: "mem@x.test", activeHouseholdId: hAId, createdAt: now })
+      .run();
+    // mem joined hB earlier (t0), then hA later (t1)
+    db.insert(householdMembers)
+      .values({ householdId: "hB", userId: "mem", role: "MEMBER", joinedAt: t0 })
+      .run();
+    db.insert(householdMembers)
+      .values({ householdId: hAId, userId: "mem", role: "MEMBER", joinedAt: t1 })
+      .run();
+
+    return { hAId, hBId: "hB", ownerId: "owner", memberUserId: "mem" };
+  }
+
+  test("leaving reassigns active household to the next membership", () => {
+    const db = createTestDb();
+    const { hAId, hBId, memberUserId } = multiMembershipFixture(db);
+    // get mem's membership row id in hA
+    const memRow = db
+      .select()
+      .from(householdMembers)
+      .where(eq(householdMembers.userId, memberUserId))
+      .all()
+      .find((m) => m.householdId === hAId)!;
+    // mem is a MEMBER (not owner), so leaveHousehold should work
+    leaveHousehold(db, memberUserId, hAId);
+    const u = db.select().from(users).where(eq(users.id, memberUserId)).get();
+    expect(u!.activeHouseholdId).toBe(hBId); // reassigned to hB, not nulled
+  });
+
+  test("leaving your only household nulls active household", () => {
+    const db = createTestDb();
+    // Solo user: owner of their only household
+    db.insert(users)
+      .values({ id: "solo", email: "solo@x.test", onboardingStep: "COMPLETED", createdAt: now })
+      .run();
+    const soloHouseholdId = createHousehold(db, "solo", { name: "Solo Home" }, now).id;
+    // update solo's activeHouseholdId
+    db.update(users).set({ activeHouseholdId: soloHouseholdId }).where(eq(users.id, "solo")).run();
+    // solo leaves their only household
+    leaveHousehold(db, "solo", soloHouseholdId);
+    const u = db.select().from(users).where(eq(users.id, "solo")).get();
+    expect(u!.activeHouseholdId).toBeNull();
+  });
+
+  test("removeMember reassigns the removed member's active household", () => {
+    const db = createTestDb();
+    const { hAId, hBId, ownerId, memberUserId } = multiMembershipFixture(db);
+    const memberRow = db
+      .select()
+      .from(householdMembers)
+      .where(eq(householdMembers.userId, memberUserId))
+      .all()
+      .find((m) => m.householdId === hAId)!;
+    removeMember(db, ownerId, hAId, memberRow.id);
+    const m = db.select().from(users).where(eq(users.id, memberUserId)).get();
+    expect(m!.activeHouseholdId).toBe(hBId); // reassigned, not nulled
+  });
+});
+
 describe("joinHousehold", () => {
   test("adds membership, consumes invite, sets active household when joiner had none", () => {
     const db = createTestDb();

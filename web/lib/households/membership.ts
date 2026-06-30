@@ -14,11 +14,20 @@ export interface MemberDto {
   joinedAt: Date;
 }
 
-function clearActiveHouseholdIfPointingHere(db: Db, userId: string, householdId: string): void {
+function reassignActiveHousehold(db: Db, userId: string, leavingHouseholdId: string): void {
   const u = db.select().from(users).where(eq(users.id, userId)).get();
-  if (u?.activeHouseholdId === householdId) {
-    db.update(users).set({ activeHouseholdId: null }).where(eq(users.id, userId)).run();
-  }
+  if (u?.activeHouseholdId !== leavingHouseholdId) return;
+  const next = db
+    .select({ householdId: householdMembers.householdId })
+    .from(householdMembers)
+    .where(eq(householdMembers.userId, userId))
+    .orderBy(householdMembers.joinedAt)
+    .all()
+    .find((m) => m.householdId !== leavingHouseholdId);
+  db.update(users)
+    .set({ activeHouseholdId: next?.householdId ?? null })
+    .where(eq(users.id, userId))
+    .run();
 }
 
 export function listMembers(db: Db, householdId: string): MemberDto[] {
@@ -64,7 +73,7 @@ export function leaveHousehold(db: Db, userId: string, householdId: string): voi
     throw new AuthError(400, "Transfer ownership before leaving.");
   }
   db.delete(householdMembers).where(eq(householdMembers.id, me.id)).run();
-  clearActiveHouseholdIfPointingHere(db, userId, householdId);
+  reassignActiveHousehold(db, userId, householdId);
 }
 
 export function removeMember(
@@ -79,7 +88,7 @@ export function removeMember(
     throw new AuthError(400, "Use leave to remove yourself.");
   }
   db.delete(householdMembers).where(eq(householdMembers.id, member.id)).run();
-  clearActiveHouseholdIfPointingHere(db, member.userId, householdId);
+  reassignActiveHousehold(db, member.userId, householdId);
 }
 
 export function transferOwnership(
@@ -106,7 +115,7 @@ export function deleteHousehold(db: Db, userId: string, householdId: string): vo
     .all().length;
   if (count > 1) throw new AuthError(400, "You must be the sole member to delete a household.");
   db.delete(households).where(eq(households.id, householdId)).run(); // cascades members
-  clearActiveHouseholdIfPointingHere(db, userId, householdId);
+  reassignActiveHousehold(db, userId, householdId);
 }
 
 export function joinHousehold(
