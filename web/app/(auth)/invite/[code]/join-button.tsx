@@ -20,7 +20,7 @@ export function JoinButton({ code }: { code: string }) {
         router.push("/welcome");
         router.refresh();
       } else {
-        toast.error(res.message);
+        toast.error(t("errors.householdJoin"));
       }
     });
   }
