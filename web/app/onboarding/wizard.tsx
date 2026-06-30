@@ -13,9 +13,16 @@ export function OnboardingWizard({ step, email }: { step: string; email: string 
   const router = useRouter();
   const currentIndex = STEPS.indexOf(step as (typeof STEPS)[number]);
 
-  // Each step calls this after its action succeeds; re-running the server
-  // component reads the advanced onboardingStep (or redirects when COMPLETED).
-  const advance = () => router.refresh();
+  // Each intermediate step refreshes so the server component reads the
+  // advanced onboardingStep. The final CREATE_HOUSEHOLD step navigates
+  // directly to /welcome (the post-onboarding landing page).
+  const advance = () => {
+    if (step === "CREATE_HOUSEHOLD") {
+      router.push("/welcome");
+    } else {
+      router.refresh();
+    }
+  };
 
   return (
     <div>
