@@ -36,3 +36,4 @@ export const householdSettingsSchema = z.object({
   aiEnabled: z.boolean().optional(),
   geminiApiKey: z.string().optional(),
 });
+export const joinHouseholdSchema = z.object({ code: z.string().min(1) });

@@ -16,16 +16,19 @@ import {
 import {
   createHouseholdInvite,
   deleteHousehold,
+  joinHousehold,
   leaveHousehold,
   listMembers,
   removeMember,
   transferOwnership,
 } from "@/lib/households/membership";
+import { verifyGeminiKey } from "@/lib/ai/verify";
 import { isHouseholdMember } from "@/lib/auth/scoping";
 import {
   householdCreateSchema,
   householdSettingsSchema,
   householdUpdateSchema,
+  joinHouseholdSchema,
 } from "@/lib/schemas/auth";
 
 type Result<T = undefined> =
@@ -72,3 +75,7 @@ export const transferOwnershipAction = async (id: string, memberId: number) =>
 export const deleteHouseholdAction = async (id: string) => run((uid) => deleteHousehold(db, uid, id));
 export const createHouseholdInviteAction = async (id: string) =>
   run((uid) => createHouseholdInvite(db, uid, id, new Date()));
+export const joinHouseholdAction = async (input: unknown) =>
+  run((uid) => joinHousehold(db, uid, joinHouseholdSchema.parse(input).code, new Date()));
+export const verifyGeminiKeyAction = async (apiKey: string) =>
+  run(() => verifyGeminiKey(apiKey));
