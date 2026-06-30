@@ -1,5 +1,5 @@
 import { describe, expect, it, test } from "vitest";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { createTestDb } from "@/lib/test/db";
 import { households, householdMembers, users } from "@/lib/db/schema";
 import { createHousehold } from "./manage";
@@ -83,6 +83,35 @@ describe("remove + transfer", () => {
     transferOwnership(db, "u1", hid, member.id);
     const roles = Object.fromEntries(listMembers(db, hid).map((m) => [m.userId, m.role]));
     expect(roles).toEqual({ u1: "MEMBER", u2: "OWNER" });
+  });
+});
+
+describe("transferOwnership guards", () => {
+  test("transferOwnership rejects transferring to yourself", () => {
+    const db = createTestDb();
+    const hId = ownerAndMember(db);
+    const ownerId = "u1";
+    const ownMembership = db
+      .select()
+      .from(householdMembers)
+      .where(and(eq(householdMembers.householdId, hId), eq(householdMembers.userId, ownerId)))
+      .get()!;
+    expect(() => transferOwnership(db, ownerId, hId, ownMembership.id)).toThrow(/already own/i);
+  });
+
+  test("transferOwnership swaps roles atomically", () => {
+    const db = createTestDb();
+    const hId = ownerAndMember(db);
+    const ownerId = "u1";
+    const memberUserId = "u2";
+    const memberRowId = listMembers(db, hId).find((m) => m.userId === memberUserId)!.id;
+    transferOwnership(db, ownerId, hId, memberRowId);
+    const roles = listMembers(db, hId).reduce<Record<string, string>>((acc, m) => {
+      acc[m.userId] = m.role;
+      return acc;
+    }, {});
+    expect(roles[memberUserId]).toBe("OWNER");
+    expect(roles[ownerId]).toBe("MEMBER");
   });
 });
 

@@ -99,11 +99,16 @@ export function transferOwnership(
 ): void {
   requireOwner(db, actorId, householdId);
   const target = memberById(db, householdId, memberId);
-  db.update(householdMembers).set({ role: "OWNER" }).where(eq(householdMembers.id, target.id)).run();
-  db.update(householdMembers)
-    .set({ role: "MEMBER" })
-    .where(and(eq(householdMembers.householdId, householdId), eq(householdMembers.userId, actorId)))
-    .run();
+  if (target.userId === actorId) {
+    throw new AuthError(400, "You already own this household.");
+  }
+  db.transaction(() => {
+    db.update(householdMembers).set({ role: "OWNER" }).where(eq(householdMembers.id, target.id)).run();
+    db.update(householdMembers)
+      .set({ role: "MEMBER" })
+      .where(and(eq(householdMembers.householdId, householdId), eq(householdMembers.userId, actorId)))
+      .run();
+  });
 }
 
 export function deleteHousehold(db: Db, userId: string, householdId: string): void {
