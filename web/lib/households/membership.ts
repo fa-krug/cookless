@@ -2,8 +2,9 @@ import { and, eq } from "drizzle-orm";
 import type { Db } from "@/lib/db";
 import { households, householdMembers, users } from "@/lib/db/schema";
 import { AuthError } from "@/lib/auth/errors";
-import { createInvite } from "./invites";
+import { consumeInvite, createInvite, validateInvite } from "./invites";
 import { requireOwner } from "./manage";
+import { isHouseholdMember } from "@/lib/auth/scoping";
 
 export interface MemberDto {
   id: number;
@@ -106,6 +107,32 @@ export function deleteHousehold(db: Db, userId: string, householdId: string): vo
   if (count > 1) throw new AuthError(400, "You must be the sole member to delete a household.");
   db.delete(households).where(eq(households.id, householdId)).run(); // cascades members
   clearActiveHouseholdIfPointingHere(db, userId, householdId);
+}
+
+export function joinHousehold(
+  db: Db,
+  userId: string,
+  code: string,
+  now: Date,
+): { id: string; name: string } {
+  const invite = validateInvite(db, code, now);
+  if (isHouseholdMember(db, userId, invite.householdId)) {
+    throw new AuthError(400, "You are already a member of this household.");
+  }
+  const h = db.select().from(households).where(eq(households.id, invite.householdId)).get();
+  if (!h) throw new AuthError(400, "Invalid invite code.");
+
+  db.transaction(() => {
+    db.insert(householdMembers)
+      .values({ householdId: invite.householdId, userId, role: "MEMBER", joinedAt: now })
+      .run();
+    consumeInvite(db, invite.id, userId);
+    const u = db.select().from(users).where(eq(users.id, userId)).get();
+    if (u && !u.activeHouseholdId) {
+      db.update(users).set({ activeHouseholdId: invite.householdId }).where(eq(users.id, userId)).run();
+    }
+  });
+  return { id: h.id, name: h.name };
 }
 
 export function createHouseholdInvite(

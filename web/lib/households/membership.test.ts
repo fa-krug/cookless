@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, test } from "vitest";
 import { eq } from "drizzle-orm";
 import { createTestDb } from "@/lib/test/db";
 import { households, householdMembers, users } from "@/lib/db/schema";
@@ -6,11 +6,14 @@ import { createHousehold } from "./manage";
 import {
   createHouseholdInvite,
   deleteHousehold,
+  joinHousehold,
   leaveHousehold,
   listMembers,
   removeMember,
   transferOwnership,
 } from "./membership";
+import { createInvite } from "./invites";
+import { isHouseholdMember } from "@/lib/auth/scoping";
 
 const now = new Date("2026-06-27T12:00:00Z");
 const getUser = (db: ReturnType<typeof createTestDb>, id: string) =>
@@ -92,5 +95,51 @@ describe("delete", () => {
     deleteHousehold(db, "u1", hid);
     expect(db.select().from(households).where(eq(households.id, hid)).get()).toBeUndefined();
     expect(getUser(db, "u1").activeHouseholdId).toBeNull();
+  });
+});
+
+describe("joinHousehold", () => {
+  test("adds membership, consumes invite, sets active household when joiner had none", () => {
+    const db = createTestDb();
+    // owner u1 with household h1
+    db.insert(users).values({ id: "u1", email: "a@x.test", onboardingStep: "COMPLETED", createdAt: now }).run();
+    const hid = createHousehold(db, "u1", { name: "Home" }, now).id;
+    // u2 has no active household
+    db.insert(users).values({ id: "u2", email: "b@x.test", createdAt: now }).run();
+    // u3 for the "already used" check
+    db.insert(users).values({ id: "u3", email: "c@x.test", createdAt: now }).run();
+
+    const inv = createInvite(db, { householdId: hid, createdById: "u1" }, now);
+    const res = joinHousehold(db, "u2", inv.code, now);
+    expect(res).toEqual({ id: hid, name: "Home" });
+    expect(isHouseholdMember(db, "u2", hid)).toBe(true);
+    // invite consumed — second join attempt throws
+    expect(() => joinHousehold(db, "u3", inv.code, now)).toThrow(/already been used/i);
+    // active household set because u2 had none
+    const u2 = db.select().from(users).where(eq(users.id, "u2")).get();
+    expect(u2!.activeHouseholdId).toBe(hid);
+  });
+
+  test("rejects an existing member", () => {
+    const db = createTestDb();
+    db.insert(users).values({ id: "u1", email: "a@x.test", onboardingStep: "COMPLETED", createdAt: now }).run();
+    const hid = createHousehold(db, "u1", { name: "Home" }, now).id;
+
+    const inv = createInvite(db, { householdId: hid, createdById: "u1" }, now);
+    expect(() => joinHousehold(db, "u1", inv.code, now)).toThrow(/already a member/i);
+  });
+
+  test("does not change active household when joiner already has one", () => {
+    const db = createTestDb();
+    db.insert(users).values({ id: "u1", email: "a@x.test", onboardingStep: "COMPLETED", createdAt: now }).run();
+    const hid = createHousehold(db, "u1", { name: "Home" }, now).id;
+    // u2 already has a different active household
+    db.insert(households).values({ id: "other", name: "Other", createdAt: now }).run();
+    db.insert(users).values({ id: "u2", email: "b@x.test", activeHouseholdId: "other", createdAt: now }).run();
+
+    const inv = createInvite(db, { householdId: hid, createdById: "u1" }, now);
+    joinHousehold(db, "u2", inv.code, now);
+    const u2 = db.select().from(users).where(eq(users.id, "u2")).get();
+    expect(u2!.activeHouseholdId).toBe("other");
   });
 });
