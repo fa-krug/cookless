@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useT } from "@/lib/i18n/provider";
 import { useConfirm } from "@/components/ui/confirm-dialog";
 import type { HouseholdDto } from "@/lib/households/serialize";
 import type { MemberDto } from "@/lib/households/membership";
@@ -26,6 +27,7 @@ export function HouseholdClient({
   currentEmail,
 }: HouseholdClientProps) {
   const router = useRouter();
+  const { t } = useT();
   const { confirm, dialog } = useConfirm();
 
   const isOwner = active?.role === "OWNER";
@@ -38,7 +40,7 @@ export function HouseholdClient({
     <>
       {!active && (
         <p className="text-sm text-muted-foreground">
-          {/* no active household */}
+          {t("household.noHousehold")}
         </p>
       )}
 
@@ -68,7 +70,6 @@ export function HouseholdClient({
       <ManageHouseholds
         households={households}
         activeId={activeId}
-        confirm={confirm}
         onRefresh={refresh}
       />
 

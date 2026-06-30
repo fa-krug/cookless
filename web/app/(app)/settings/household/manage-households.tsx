@@ -18,13 +18,11 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import type { HouseholdDto } from "@/lib/households/serialize";
-import type { ConfirmOpts } from "@/components/ui/confirm-dialog";
 import { cn } from "@/lib/utils";
 
 interface ManageHouseholdsProps {
   households: HouseholdDto[];
   activeId: string | null;
-  confirm: (opts: ConfirmOpts) => Promise<string | boolean>;
   onRefresh: () => void;
 }
 
@@ -151,34 +149,36 @@ export function ManageHouseholds({
       </div>
 
       {/* Switch dialog */}
-      <Dialog open={switchOpen} onOpenChange={setSwitchOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{t("household.switchHousehold")}</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-2">
-            {households.map((h) => (
-              <Button
-                key={h.id}
-                variant="ghost"
-                onClick={() => handleSwitch(h.id)}
-                disabled={isSwitching}
-                className={cn(
-                  "w-full justify-start px-4 py-3 text-sm font-medium",
-                  h.id === activeId
-                    ? "bg-primary/10 text-primary ring-1 ring-primary/30"
-                    : "bg-muted text-foreground hover:bg-muted",
-                )}
-              >
-                {h.name}
-                {h.id === activeId && (
-                  <Check size={16} className="ml-auto text-primary" />
-                )}
-              </Button>
-            ))}
-          </div>
-        </DialogContent>
-      </Dialog>
+      {households.length > 1 && (
+        <Dialog open={switchOpen} onOpenChange={setSwitchOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>{t("household.switchHousehold")}</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-2">
+              {households.map((h) => (
+                <Button
+                  key={h.id}
+                  variant="ghost"
+                  onClick={() => handleSwitch(h.id)}
+                  disabled={isSwitching}
+                  className={cn(
+                    "w-full justify-start px-4 py-3 text-sm font-medium",
+                    h.id === activeId
+                      ? "bg-primary/10 text-primary ring-1 ring-primary/30"
+                      : "bg-muted text-foreground hover:bg-muted",
+                  )}
+                >
+                  {h.name}
+                  {h.id === activeId && (
+                    <Check size={16} className="ml-auto text-primary" />
+                  )}
+                </Button>
+              ))}
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </>
   );
 }
