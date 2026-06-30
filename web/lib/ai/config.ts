@@ -6,6 +6,7 @@ export const GEMINI_IMAGE_MODEL = "gemini-2.5-flash-image";
 const BASE = "https://generativelanguage.googleapis.com/v1beta/models";
 export const textGenerateUrl = (): string => `${BASE}/${GEMINI_TEXT_MODEL}:generateContent`;
 export const imageGenerateUrl = (): string => `${BASE}/${GEMINI_IMAGE_MODEL}:generateContent`;
+export const modelsListUrl = (): string => BASE;
 
 export const TEXT_TIMEOUT_MS = 60_000;
 export const IMAGE_TIMEOUT_MS = 30_000;
