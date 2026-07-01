@@ -20,9 +20,10 @@ const TAG_VARIANT: Record<string, "dietary" | "protein" | "cuisine" | "meal_type
 interface RecipeCardProps {
   recipe: RecipeSummary;
   locale: string;
+  onDelete: (recipe: RecipeSummary) => void;
 }
 
-export function RecipeCard({ recipe, locale }: RecipeCardProps): JSX.Element {
+export function RecipeCard({ recipe, locale, onDelete }: RecipeCardProps): JSX.Element {
   const { t } = useT();
   const imageUrl = recipeImageUrl(recipe.image);
 
@@ -73,7 +74,7 @@ export function RecipeCard({ recipe, locale }: RecipeCardProps): JSX.Element {
             )}
           </div>
         </Link>
-        <RecipeCardDelete recipeId={recipe.id} title={recipe.title} />
+        <RecipeCardDelete onDelete={() => onDelete(recipe)} title={recipe.title} />
       </CardContent>
     </Card>
   );

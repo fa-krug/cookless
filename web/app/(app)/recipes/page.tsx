@@ -25,6 +25,7 @@ export default async function RecipesPage({
   const q = typeof sp.q === "string" ? sp.q : "";
   const sort = typeof sp.sort === "string" ? sp.sort : "name-asc";
   const tagIds = typeof sp.tags === "string" && sp.tags ? sp.tags.split(",") : [];
+  const deletedId = typeof sp.deleted === "string" ? sp.deleted : undefined;
 
   const allTags = listTags(db, householdId);
   const { aiEnabled, hasKey } = getHouseholdAiSettings(db, householdId);
@@ -102,6 +103,7 @@ export default async function RecipesPage({
           sort={sort}
           tags={tagIds}
           locale={locale}
+          deletedId={deletedId}
         />
       )}
     </div>
