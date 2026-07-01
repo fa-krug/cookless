@@ -1,8 +1,17 @@
-import { Decimal } from "@/lib/domain/decimal";
-
 export function formatQuantity(quantity: string): string {
-  // Normalize then strip trailing zeros / trailing dot.
-  return new Decimal(quantity).toDecimalPlaces(2).toString();
+  // Round to at most 2 decimal places using banker's rounding (half-to-even),
+  // matching the prior Decimal.js behaviour without pulling decimal.js into the bundle.
+  const scaled = Number(quantity) * 100;
+  const floor = Math.floor(scaled);
+  const diff = scaled - floor;
+  const rounded =
+    Math.abs(diff - 0.5) < 1e-10
+      ? // Exactly halfway — round to even
+        floor % 2 === 0
+        ? floor
+        : floor + 1
+      : Math.round(scaled);
+  return String(rounded / 100);
 }
 
 export function pickName(locale: string, row: { nameEn: string; nameDe: string }): string {

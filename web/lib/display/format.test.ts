@@ -7,6 +7,15 @@ describe("formatQuantity", () => {
     expect(formatQuantity("1.50")).toBe("1.5");
     expect(formatQuantity("0.25")).toBe("0.25");
   });
+
+  it("rounds to at most 2 decimal places using banker's rounding (half-to-even)", () => {
+    // "2.00" → "2" (trailing zeros stripped)
+    expect(formatQuantity("2.00")).toBe("2");
+    // "2.50" → "2.5" (one trailing zero stripped)
+    expect(formatQuantity("2.50")).toBe("2.5");
+    // "0.125" → "0.12": floor=12 (even), banker's rounding stays at 12
+    expect(formatQuantity("0.125")).toBe("0.12");
+  });
 });
 
 describe("pickName", () => {

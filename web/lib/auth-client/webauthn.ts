@@ -1,9 +1,8 @@
 "use client";
 
-import {
-  startAuthentication,
-  startRegistration,
-} from "@simplewebauthn/browser";
+async function getWebAuthn() {
+  return import("@simplewebauthn/browser");
+}
 
 async function post<T>(url: string, body?: unknown): Promise<T> {
   const res = await fetch(url, {
@@ -20,6 +19,7 @@ async function post<T>(url: string, body?: unknown): Promise<T> {
 
 // Returns the UserDto from /complete.
 export async function passkeyLogin<T = unknown>(email: string): Promise<T> {
+  const { startAuthentication } = await getWebAuthn();
   const optionsJSON = await post("/api/auth/webauthn/login/begin", { email });
   const credential = await startAuthentication({ optionsJSON: optionsJSON as never });
   return post<T>("/api/auth/webauthn/login/complete", {
@@ -32,6 +32,7 @@ export async function passkeyRegister<T = unknown>(
   email: string,
   inviteCode: string,
 ): Promise<T> {
+  const { startRegistration } = await getWebAuthn();
   const optionsJSON = await post("/api/auth/webauthn/register/begin", {
     email,
     inviteCode,
@@ -44,6 +45,7 @@ export async function passkeyRegister<T = unknown>(
 }
 
 export async function passkeyRegisterFirstRun<T = unknown>(email: string): Promise<T> {
+  const { startRegistration } = await getWebAuthn();
   const optionsJSON = await post("/api/auth/webauthn/register/begin", { email });
   const credential = await startRegistration({ optionsJSON: optionsJSON as never });
   return post<T>("/api/auth/webauthn/register/complete", {
@@ -53,6 +55,7 @@ export async function passkeyRegisterFirstRun<T = unknown>(email: string): Promi
 }
 
 export async function addPasskey<T = unknown>(): Promise<T> {
+  const { startRegistration } = await getWebAuthn();
   const optionsJSON = await post("/api/auth/webauthn/add/begin");
   const credential = await startRegistration({ optionsJSON: optionsJSON as never });
   return post<T>("/api/auth/webauthn/add/complete", {
