@@ -65,3 +65,23 @@ describe("write / read / delete", () => {
     expect(resolveMediaPath("recipes/ok.webp")).not.toBeNull();
   });
 });
+
+describe("resizeWebp", () => {
+  it("returns a smaller buffer than the original when given width=128", async () => {
+    const { resizeWebp, processToWebp } = await import("./storage");
+    const original = await processToWebp(await bigPng()); // ~1024px WebP
+    const resized = await resizeWebp(original, 128);
+    expect(resized.length).toBeLessThan(original.length);
+    const meta = await sharp(resized).metadata();
+    expect(meta.width).toBeLessThanOrEqual(128);
+  });
+
+  it("does not enlarge when width > image width (withoutEnlargement)", async () => {
+    const { resizeWebp } = await import("./storage");
+    const small = await sharp({ create: { width: 50, height: 50, channels: 3, background: "green" } })
+      .png().toBuffer();
+    const result = await resizeWebp(small, 1024);
+    const meta = await sharp(result).metadata();
+    expect(meta.width).toBe(50); // not enlarged
+  });
+});

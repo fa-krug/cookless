@@ -18,9 +18,10 @@ export function pickName(locale: string, row: { nameEn: string; nameDe: string }
   return locale === "de" ? row.nameDe : row.nameEn;
 }
 
-export function recipeImageUrl(image: string): string | null {
+export function recipeImageUrl(image: string, width?: number): string | null {
   if (!image) return null;
-  return `/api/images/${image}`;
+  const base = `/api/images/${image}`;
+  return width !== undefined ? `${base}?w=${width}` : base;
 }
 
 export const CATEGORY_ORDER = ["PRODUCE", "DAIRY", "MEAT", "PANTRY", "FROZEN", "OTHER"] as const;
