@@ -125,7 +125,7 @@ export function IterationCard({
                 key={date}
                 className={`${
                   isToday
-                    ? "bg-primary/10 ring-2 ring-inset ring-primary/40"
+                    ? "bg-primary/10 ring-2 ring-inset ring-primary/50"
                     : isShoppingDay
                       ? "border-l-4 border-l-blue-300 bg-card"
                       : "bg-card"
@@ -172,7 +172,7 @@ export function IterationCard({
                   <button
                     type="button"
                     className={`flex w-full items-center gap-2 px-4 py-3 text-left ${
-                      entry ? "cursor-pointer hover:bg-accent/50" : "cursor-default"
+                      entry ? "cursor-pointer hover:bg-muted" : "cursor-default"
                     }`}
                     onClick={
                       entry

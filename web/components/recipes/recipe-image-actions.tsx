@@ -66,13 +66,25 @@ export function RecipeImageActions({ recipeId, hasImage, aiEnabled, hasKey }: Pr
         {t("recipeImage.upload")}
       </Button>
       {aiEnabled && hasKey && (
-        <Button variant="outline" size="sm" disabled={pending} onClick={onGenerate}>
+        <Button
+          variant="outline"
+          size="sm"
+          disabled={pending}
+          onClick={onGenerate}
+          className="border-primary/30 text-primary hover:bg-primary/10"
+        >
           <Sparkles size={16} />
           {pending ? t("recipeImage.generating") : t("recipeImage.generate")}
         </Button>
       )}
       {hasImage && (
-        <Button variant="outline" size="sm" disabled={pending} onClick={onRemove} className="text-destructive">
+        <Button
+          variant="outline"
+          size="sm"
+          disabled={pending}
+          onClick={onRemove}
+          className="border-destructive/30 text-destructive hover:bg-destructive/10"
+        >
           <Trash2 size={16} />
           {t("recipeImage.remove")}
         </Button>

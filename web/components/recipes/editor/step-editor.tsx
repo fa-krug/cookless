@@ -50,7 +50,7 @@ export function StepEditor({
         <SortableContext items={fields.map((f) => f.id)} strategy={verticalListSortingStrategy}>
           <div className="space-y-2">
             {fields.map((field, idx) => (
-              <SortableStep key={field.id} id={field.id}>
+              <SortableStep key={field.id} id={field.id} highlight={method === "machine"}>
                 <div className="space-y-2">
                   {method === "machine" && <ProgramStepForm name={name} index={idx} />}
                   <textarea

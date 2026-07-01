@@ -168,7 +168,7 @@ export function CookingView({ recipe, ingredients, units, locale }: Props) {
       </div>
 
       <div
-        className="rounded-xl border bg-card p-6"
+        className="rounded-xl border border-primary bg-primary/5 p-6"
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
       >
@@ -178,7 +178,7 @@ export function CookingView({ recipe, ingredients, units, locale }: Props) {
         <p className="text-lg leading-relaxed">{step?.instruction}</p>
         {step && <StepParams step={step} />}
         {step && step.ingredients.length > 0 && (
-          <ul className="mt-4 space-y-1 border-t pt-3 text-sm text-muted-foreground">
+          <ul className="mt-4 space-y-1 border-t border-border/50 pt-3 text-sm text-muted-foreground">
             {step.ingredients.map((si) => {
               const ri = recipe.ingredients.find((x) => x.id === si.recipeIngredientId);
               if (!ri) return null;

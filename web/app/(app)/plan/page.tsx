@@ -62,7 +62,7 @@ export default async function PlanPage() {
       </div>
 
       {ended && (
-        <div className="flex items-center justify-between rounded-lg border border-orange-300 bg-orange-50 p-3 text-sm dark:border-orange-900 dark:bg-orange-950">
+        <div className="flex items-center justify-between rounded-lg border border-orange-200 bg-primary/10 p-3 text-sm dark:border-orange-900">
           <span>{t("plan.iterationEnded")}</span>
           <NextIterationButton />
         </div>

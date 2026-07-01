@@ -15,8 +15,9 @@ export default async function OnboardingPage() {
     <Providers locale={locale} dict={dict}>
       <main className="flex min-h-screen items-center justify-center bg-muted px-4">
         <div className="w-full max-w-md rounded-xl bg-card p-6 shadow-lg">
-          <h1 className="mb-6 text-center text-2xl font-bold text-primary">
-            Cookless
+          <h1 className="mb-6 text-center text-2xl font-bold">
+            <span className="text-primary">Cook</span>
+            <span className="text-blue-500">less</span>
           </h1>
           <OnboardingWizard step={dto.onboardingStep} email={dto.email} />
         </div>

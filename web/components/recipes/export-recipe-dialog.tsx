@@ -71,7 +71,11 @@ export function ExportRecipeDialog({ model, locale }: Props) {
 
   return (
     <>
-      <Button variant="outline" onClick={() => setOpen(true)}>
+      <Button
+        variant="outline"
+        onClick={() => setOpen(true)}
+        className="border-primary text-primary hover:bg-primary/10"
+      >
         <Share2 size={16} />
         {t("export.button")}
       </Button>

@@ -21,7 +21,7 @@ export function RenewButton({ iterationId }: { iterationId: string }) {
           else toast.error(t("common.errorRetry"));
         })
       }
-      className="rounded border border-primary/50 px-3 py-1 text-xs text-primary disabled:cursor-not-allowed disabled:opacity-50"
+      className="rounded border border-primary/50 px-3 py-1 text-xs text-primary hover:bg-primary/10 disabled:cursor-not-allowed disabled:opacity-50"
     >
       {t("plan.renew")}
     </button>

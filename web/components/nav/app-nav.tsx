@@ -88,7 +88,12 @@ export function AppNav({
             collapsed ? "justify-center px-2" : "justify-between px-5",
           )}
         >
-          {!collapsed && <span className="text-2xl font-bold text-primary">Cookless</span>}
+          {!collapsed && (
+            <span className="text-2xl font-bold">
+              <span className="text-primary">Cook</span>
+              <span className="text-blue-500">less</span>
+            </span>
+          )}
           <Tooltip>
             <TooltipTrigger asChild>
               <Button

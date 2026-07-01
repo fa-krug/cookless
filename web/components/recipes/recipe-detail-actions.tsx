@@ -53,18 +53,28 @@ export function RecipeDetailActions({ recipeId, listType, model, locale }: Props
           {t("common.edit")}
         </Link>
       </Button>
-      <Button variant="outline" asChild>
+      <Button variant="outline" asChild className="border-primary text-primary hover:bg-primary/10">
         <Link href={`/cook/${recipeId}`}>
           <UtensilsCrossed size={16} />
           {t("cooking.start")}
         </Link>
       </Button>
       <ExportRecipeDialog model={model} locale={locale} />
-      <Button variant="outline" disabled={pending} onClick={onMove}>
+      <Button
+        variant="outline"
+        disabled={pending}
+        onClick={onMove}
+        className="border-primary text-primary hover:bg-primary/10"
+      >
         <ArrowRightLeft size={16} />
         {listType === "KNOWN" ? t("recipes.moveToTry") : t("recipes.moveToKnown")}
       </Button>
-      <Button variant="outline" disabled={pending} onClick={onDelete} className="text-destructive">
+      <Button
+        variant="outline"
+        disabled={pending}
+        onClick={onDelete}
+        className="border-destructive/30 text-destructive hover:bg-destructive/10"
+      >
         <Trash2 size={16} />
         {t("common.delete")}
       </Button>
