@@ -116,7 +116,7 @@ export default async function RecipesPage({
       ) : (
         <div className="space-y-3">
           {sorted.map((r) => (
-            <RecipeCard key={r.id} recipe={r} locale={locale} t={t} />
+            <RecipeCard key={r.id} recipe={r} locale={locale} />
           ))}
           {hasMore && (
             <div className="flex justify-center pt-2">

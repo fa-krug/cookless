@@ -1,8 +1,11 @@
+"use client";
+
 import type { JSX } from "react";
 import Link from "next/link";
 import { BookOpen } from "lucide-react";
 import type { RecipeSummary } from "@/lib/queries/recipes";
 import { pickName, recipeImageUrl } from "@/lib/display/format";
+import { useT } from "@/lib/i18n/provider";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { RecipeCardDelete } from "./recipe-card-delete";
@@ -17,10 +20,10 @@ const TAG_VARIANT: Record<string, "dietary" | "protein" | "cuisine" | "meal_type
 interface RecipeCardProps {
   recipe: RecipeSummary;
   locale: string;
-  t: (k: string, v?: Record<string, string | number>) => string;
 }
 
-export function RecipeCard({ recipe, locale, t }: RecipeCardProps): JSX.Element {
+export function RecipeCard({ recipe, locale }: RecipeCardProps): JSX.Element {
+  const { t } = useT();
   const imageUrl = recipeImageUrl(recipe.image);
 
   return (
