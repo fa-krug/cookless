@@ -3,28 +3,14 @@ import Link from "next/link";
 import { requireHousehold } from "@/lib/auth/session";
 import { getI18n } from "@/lib/i18n/server";
 import { db } from "@/lib/db";
-import { listRecipes, listTags, type RecipeSummary } from "@/lib/queries/recipes";
+import { listRecipes, listTags } from "@/lib/queries/recipes";
 import { getHouseholdAiSettings } from "@/lib/queries/household";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
-import { RecipeCard } from "@/components/recipes/recipe-card";
 import { RecipeFilters } from "@/components/recipes/recipe-filters";
+import { RecipeList } from "@/components/recipes/recipe-list";
 
 const PAGE = 20;
-
-function sortItems(items: RecipeSummary[], sort: string): RecipeSummary[] {
-  const arr = [...items];
-  switch (sort) {
-    case "name-desc":
-      return arr.sort((a, b) => b.title.localeCompare(a.title));
-    case "newest":
-      return arr.sort((a, b) => +b.createdAt - +a.createdAt);
-    case "updated":
-      return arr.sort((a, b) => +b.updatedAt - +a.updatedAt);
-    default:
-      return arr.sort((a, b) => a.title.localeCompare(b.title));
-  }
-}
 
 export default async function RecipesPage({
   searchParams,
@@ -38,12 +24,7 @@ export default async function RecipesPage({
   const list = typeof sp.list === "string" ? sp.list : "KNOWN";
   const q = typeof sp.q === "string" ? sp.q : "";
   const sort = typeof sp.sort === "string" ? sp.sort : "name-asc";
-  const tagIds =
-    typeof sp.tags === "string" && sp.tags ? sp.tags.split(",") : [];
-  const offset =
-    typeof sp.offset === "string"
-      ? Math.max(0, parseInt(sp.offset, 10) || 0)
-      : 0;
+  const tagIds = typeof sp.tags === "string" && sp.tags ? sp.tags.split(",") : [];
 
   const allTags = listTags(db, householdId);
   const { aiEnabled, hasKey } = getHouseholdAiSettings(db, householdId);
@@ -51,13 +32,11 @@ export default async function RecipesPage({
     listType: list,
     search: q,
     tagIds,
+    sort,
+    locale,
     limit: PAGE,
-    offset,
+    offset: 0,
   });
-  const sorted = sortItems(items, sort);
-
-  const hasMore = offset + items.length < totalCount;
-  const nextOffset = offset + PAGE;
 
   return (
     <div className="space-y-4">
@@ -91,7 +70,7 @@ export default async function RecipesPage({
         locale={locale}
       />
 
-      {sorted.length === 0 ? (
+      {totalCount === 0 ? (
         q ? (
           <EmptyState
             icon={Search}
@@ -114,27 +93,16 @@ export default async function RecipesPage({
           />
         )
       ) : (
-        <div className="space-y-3">
-          {sorted.map((r) => (
-            <RecipeCard key={r.id} recipe={r} locale={locale} />
-          ))}
-          {hasMore && (
-            <div className="flex justify-center pt-2">
-              <a
-                href={`?${new URLSearchParams({
-                  ...(list !== "KNOWN" ? { list } : {}),
-                  ...(q ? { q } : {}),
-                  ...(sort !== "name-asc" ? { sort } : {}),
-                  ...(tagIds.length ? { tags: tagIds.join(",") } : {}),
-                  offset: String(nextOffset),
-                }).toString()}`}
-                className="text-sm text-primary underline-offset-4 hover:underline"
-              >
-                {t("recipes.loadMore", { count: totalCount - offset - items.length })}
-              </a>
-            </div>
-          )}
-        </div>
+        <RecipeList
+          key={`${list}|${q}|${sort}|${tagIds.join(",")}`}
+          initialItems={items}
+          totalCount={totalCount}
+          list={list}
+          q={q}
+          sort={sort}
+          tags={tagIds}
+          locale={locale}
+        />
       )}
     </div>
   );

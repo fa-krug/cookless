@@ -115,7 +115,6 @@
     "noRecipesTitle": "No recipes yet",
     "noRecipesSubtitle": "Start building your collection",
     "addFirstRecipe": "Add your first recipe",
-    "loadMore": "Load more ({{count}} remaining)",
     "noSearchResults": "No matches",
     "noSearchResultsSubtitle": "Try a different search term",
     "sortLabel": "Sort recipes",
