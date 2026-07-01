@@ -4,6 +4,15 @@
 
 ---
 
+## Cutover Mechanics
+
+The Django → Next.js switch runs as a single self-migrating container that reuses the existing `cookless_data` volume — no separate data-copy step. On first boot it detects the old Django database, imports it, and verifies row-count/integrity parity before serving traffic; every deploy after that just re-applies schema migrations. Two consequences for users:
+
+- **All sessions are invalidated** — everyone needs to log in again after the cutover.
+- **All passwords are reset** — passkey users are unaffected, but password-only users need an admin to set a new password for them (see below).
+
+---
+
 ## Breaking Changes
 
 ### 1. Password reset required

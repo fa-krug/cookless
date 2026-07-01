@@ -1,21 +1,36 @@
-# docker-compose.production.yml
+# docker-compose.production.yml — Next.js single-container app, self-migrating on startup.
 services:
   web:
-    build:
-      context: ./web
-      dockerfile: Dockerfile
-    restart: unless-stopped
-    ports:
-      - "3000:3000"
+    image: sascha384/cookless:latest
+    container_name: cookless
+    restart: always
+    expose:
+      - "8000"
     environment:
-      AUTH_SECRET: ${AUTH_SECRET:?set AUTH_SECRET}
-      DATABASE_FILE: /app/data/cookless.db
-      MEDIA_ROOT: /app/data/media
-      WEBAUTHN_RP_ID: ${WEBAUTHN_RP_ID}
-      WEBAUTHN_RP_NAME: ${WEBAUTHN_RP_NAME}
-      WEBAUTHN_ORIGIN: ${WEBAUTHN_ORIGIN}
-      NODE_ENV: production
+      - AUTH_SECRET=${AUTH_SECRET:?set AUTH_SECRET}
+      - WEBAUTHN_RP_ID=cookless.fa-krug.de
+      - WEBAUTHN_RP_NAME=Cookless
+      - WEBAUTHN_ORIGIN=https://cookless.fa-krug.de
+      - PORT=8000
+      # DATABASE_FILE=/app/data/cookless.db and MEDIA_ROOT=/app/data/media are image defaults.
     volumes:
-      - app-data:/app/data
+      - cookless_data:/app/data
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:8000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    networks:
+      - default
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.cookless.rule=Host(`cookless.fa-krug.de`)"
+      - "traefik.http.routers.cookless.entrypoints=web"
+      - "traefik.http.services.cookless.loadbalancer.server.port=8000"
 volumes:
-  app-data:
+  cookless_data:
+networks:
+  default:
+    name: gitops_default
+    external: true

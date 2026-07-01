@@ -1,228 +1,142 @@
 # Production Cutover Runbook — Django → Next.js
 
-**Branch:** `design/nextjs-migration`  
-**Cutover type:** offline (brief maintenance window; no dual-write)  
-**Reversible:** yes — the old Django DB is never mutated
+**Branch:** `design/nextjs-migration`
+**Cutover type:** one-command, self-migrating (brief availability gap while the container restarts; no dual-write)
+**Reversible:** yes — the old Django DB (`/app/data/db.sqlite3`) is never mutated
+
+---
+
+## How it works
+
+The published `sascha384/cookless` image migrates itself on startup via `web/docker-entrypoint.sh`:
+
+1. **Schema migrations (always).** Drizzle migrations are applied to `DATABASE_FILE` (default `/app/data/cookless.db`) on every boot. Idempotent — this is also how future releases pick up new migrations.
+2. **One-time data import (guarded).** If the `users` table has `0` rows **and** `/app/data/db.sqlite3` (the old Django DB) exists in the mounted volume, the entrypoint imports it (`migrate-data.ts`) and immediately runs `verify-migration.ts`. Row-count/integrity mismatches, or any failure in either step, exit the container non-zero. On subsequent boots the guard is already false (`users > 0`), so import is skipped — it no-ops silently and only the schema-migrate step runs.
+3. **Serve.** Only after 1–2 succeed does the entrypoint `exec node server.js`.
+
+Because the old Django DB and media both live in the same `cookless_data` volume that the new container mounts at `/app/data`, no file copying is needed: the new app's `MEDIA_ROOT=/app/data/media` already points at the existing media, and the new DB (`cookless.db`) is a separate file from the untouched Django DB (`db.sqlite3`).
+
+**Failure mode:** any migration/import/verify error → the container exits non-zero and refuses to start. Traefik/GitOps keeps the previous container running until a healthy one replaces it. No half-migrated database is ever served.
 
 ---
 
 ## Prerequisites
 
-- Deploy host has Docker and Docker Compose available.
-- `.env` file (or shell environment) contains:
-  - `AUTH_SECRET` — required; generate with `openssl rand -base64 32`
-  - `WEBAUTHN_RP_ID`, `WEBAUTHN_RP_NAME`, `WEBAUTHN_ORIGIN`
-- Git worktree is on the migration branch (`design/nextjs-migration`) with all Plan 8 commits present.
-- A backup location (e.g. `/backup`) is available on the deploy host.
+- `AUTH_SECRET` is set in the shell/GitOps env (generate with `openssl rand -base64 32`).
+- The new `sascha384/cookless:latest` image has been published.
+- The compose file points `volumes: - cookless_data:/app/data` at the **same** volume the old Django stack used (so the old DB is present for auto-import).
 
 ---
 
-## Dry Run
+## Cutover
 
-The migration pipeline has been validated **end-to-end at the script level** (Task 8):
+1. **(Optional, belt-and-suspenders) Back up the volume.** The old DB is never mutated by the new app, but a backup costs little:
+   ```bash
+   docker run --rm -v cookless_data:/d -v "$PWD":/b busybox cp /d/db.sqlite3 /b/db.sqlite3.bak
+   ```
+2. **Publish the new image** via the normal CI/release flow (`sascha384/cookless:latest`).
+3. **Apply the compose file** — replace `docker-compose.production.yml` with the version at the repo root (see below); ensure `AUTH_SECRET` is set.
+4. **Deploy:**
+   ```bash
+   docker compose -f docker-compose.production.yml up -d
+   ```
+   (or let GitOps redeploy on the new image/compose). The container self-migrates: schema-migrate → detect old DB + empty `users` → import → verify → serve.
+5. **Log in with a passkey.** Passkey auth is unaffected by the migration. Reset any password-only users (see below).
 
-- Ran from `web/` against a copy of `backend/db.sqlite3`.
-- Command sequence: `SOURCE_DB=<old db.sqlite3> DATABASE_FILE=<dest> npm run db:migrate && npm run data:import && npx tsx scripts/verify-migration.ts`
-- Result: **121 recipes, 898 recipe_ingredients migrated; all `verify-migration.ts` checks PASS; no `/media/` prefixes present in image paths.**
+### `docker-compose.production.yml`
 
-**Remaining pre-cutover gate:** a full Docker-based dry run on a staging host (steps 4–7 below executed against a prod-copy backup). Capture the `verify-migration.ts` output (table row counts) and confirm parity with the Django source before executing against production.
-
----
-
-## Step 1 — Announce Maintenance Window
-
-Notify all users of a brief offline window. The cutover replaces the Django service; the app will be unavailable until step 6 completes.
-
----
-
-## Step 2 — Backup
-
-On the **current production host** (old Django stack), copy the database and media files to a safe location before making any changes:
-
-```bash
-# On the deploy host (adjust paths to your prod layout)
-mkdir -p /backup/prod-$(date +%Y%m%d)
-cp backend/db.sqlite3  /backup/prod-$(date +%Y%m%d)/db.sqlite3
-cp -r backend/media/   /backup/prod-$(date +%Y%m%d)/media/
+```yaml
+# docker-compose.production.yml — Next.js single-container app, self-migrating on startup.
+services:
+  web:
+    image: sascha384/cookless:latest
+    container_name: cookless
+    restart: always
+    expose:
+      - "8000"
+    environment:
+      - AUTH_SECRET=${AUTH_SECRET:?set AUTH_SECRET}
+      - WEBAUTHN_RP_ID=cookless.fa-krug.de
+      - WEBAUTHN_RP_NAME=Cookless
+      - WEBAUTHN_ORIGIN=https://cookless.fa-krug.de
+      - PORT=8000
+      # DATABASE_FILE=/app/data/cookless.db and MEDIA_ROOT=/app/data/media are image defaults.
+    volumes:
+      - cookless_data:/app/data
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:8000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    networks:
+      - default
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.cookless.rule=Host(`cookless.fa-krug.de`)"
+      - "traefik.http.routers.cookless.entrypoints=web"
+      - "traefik.http.services.cookless.loadbalancer.server.port=8000"
+volumes:
+  cookless_data:
+networks:
+  default:
+    name: gitops_default
+    external: true
 ```
 
-Verify the copies are complete before proceeding. **These files are your rollback artefacts; do not modify them.**
+**Every release after this cutover** is just a new image push — the entrypoint reapplies schema migrations (import stays a no-op) and boots. No manual steps.
 
 ---
 
-## Step 3 — Stop the Old Django Stack
+## Reset password-only users
 
-```bash
-docker compose -f docker-compose.production.yml down
-```
+The migration sets **all** user passwords to an unusable hash (Django convention for passkey-only accounts). Passkey users log in normally; users who relied on a password and have no registered passkey have no usable credential after cutover.
 
-> If the old stack uses a different compose file or a bare process, stop it by its appropriate method. Confirm no process is listening on the old port before continuing.
-
----
-
-## Step 4 — Provision the Volume and Run Migration
-
-`tsx` (used by the migration scripts) is a **dev dependency** that is NOT included in the slim runtime image. Migration must therefore run inside the `build` stage image which retains the full `node_modules`.
-
-### 4a. Build the `build`-stage image
-
-```bash
-docker build --target build -t cookless-web:build ./web
-```
-
-### 4b. Run migrate + import + verify in a one-off container
-
-Mount the backup directory as `/src` (read-only) and the named volume as `/app/data`:
-
-```bash
-docker run --rm \
-  -v app-data:/app/data \
-  -v /backup/prod-$(date +%Y%m%d):/src:ro \
-  -e SOURCE_DB=/src/db.sqlite3 \
-  -e DATABASE_FILE=/app/data/cookless.db \
-  cookless-web:build \
-  sh -c "npm run db:migrate && npm run data:import && npx tsx scripts/verify-migration.ts"
-```
-
-**Do not proceed if `verify-migration.ts` reports any failures.** Record the row-count output for the dry-run record.
-
-> `npm run db:migrate` → `scripts/db-migrate.ts`  
-> `npm run data:import` → `scripts/migrate-data.ts`
-
----
-
-## Step 5 — Copy Images into the Volume
-
-Recipe image files live in `backend/media/recipes/` on the old host. Copy them into the `app-data` volume at `media/recipes/`. The simplest way is a second one-off container:
-
-```bash
-docker run --rm \
-  -v app-data:/app/data \
-  -v /backup/prod-$(date +%Y%m%d)/media/recipes:/src:ro \
-  busybox \
-  sh -c "mkdir -p /app/data/media/recipes && cp -r /src/. /app/data/media/recipes/"
-```
-
-**Verify:** `recipes.image` stores relative paths (confirmed by Task 8 check #3 — no `/media/` prefixes). The new `/api/images/[...path]` route serves files directly from `MEDIA_ROOT=/app/data/media`.
-
----
-
-## Step 6 — Start the New Stack
-
-```bash
-docker compose -f docker-compose.production.yml up -d --build
-```
-
-The `docker-compose.production.yml` at repo root defines a single `web` service:
-- Image built from `./web/Dockerfile`
-- Volume: `app-data:/app/data`
-- `DATABASE_FILE=/app/data/cookless.db`, `MEDIA_ROOT=/app/data/media`
-- Exposes port `3000`
-- `CMD ["node", "server.js"]` (Next.js standalone output at `.next/standalone/server.js`)
-
-Wait for the container to reach healthy/running state:
-
-```bash
-docker compose -f docker-compose.production.yml ps
-docker compose -f docker-compose.production.yml logs -f web
-```
-
----
-
-## Step 7 — Smoke Tests
-
-Run each check manually after the stack is up. All must pass before the cutover is declared successful.
-
-| # | Check | Expected |
-|---|-------|----------|
-| 1 | Log in with an existing passkey | Session established; dashboard visible |
-| 2 | Reset one password-only user (see Step 8) then log in with new password | Login succeeds |
-| 3 | Navigate to Recipes list | All recipes present |
-| 4 | Open a recipe that has an image | Image renders via `/api/images/recipes/<filename>` |
-| 5 | Navigate to Plan page | Migrated active iteration visible with correct meals |
-| 6 | Navigate to Shopping list | Items load; toggle one item (online) — state persists on refresh |
-| 7 | Navigate to AI Settings | Page loads; key shows "set" if it was configured |
-
----
-
-## Step 8 — Reset Password-Only Users
-
-The migration sets **all** user passwords to an unusable hash (Django convention for passkey-only accounts). Passkey users log in normally. Users who relied on a password and have no registered passkey have no usable credential after cutover.
-
-**Identify password-only users** — query the migrated DB directly (these are users with no registered passkey):
+**Identify password-only users** — query the migrated DB directly:
 
 ```bash
 sqlite3 /path/to/cookless.db \
   "SELECT email FROM users u WHERE NOT EXISTS (SELECT 1 FROM passkey_credentials p WHERE p.user_id = u.id);"
 ```
 
-**Reset each user's password** (coordinate new password out-of-band, e.g. by email or phone):
+**Reset each user's password** (coordinate the new password out-of-band, e.g. by email or phone). Run inside a container built from the image (it carries the full toolchain):
 
 ```bash
 docker run --rm \
-  -v app-data:/app/data \
+  -v cookless_data:/app/data \
   -e DATABASE_FILE=/app/data/cookless.db \
-  cookless-web:build \
-  npx tsx scripts/set-password.ts <email> <newPassword>
+  sascha384/cookless:latest \
+  ./node_modules/.bin/tsx scripts/set-password.ts <email> <newPassword>
 ```
 
-> Note: if no SMTP is configured, password reset emails are unavailable. The admin must set passwords manually via the command above and deliver them securely.
+> Note: no SMTP is configured in this deployment, so there is no self-service "forgot my password" flow. The admin must set passwords manually via the command above and deliver them securely.
 
 ---
 
-## Step 9 — Rollback (if needed)
+## Rollback
 
-If any smoke test fails:
+If the new container fails its healthcheck or a smoke test fails:
 
-1. Stop the new stack:
+1. Revert the compose file's `image` and environment variables to the old Django values and redeploy (or let GitOps roll back to the previous known-good revision).
+2. `/app/data/db.sqlite3` (the Django DB) was never written by the new app — it is intact and the old stack resumes from where it left off.
+3. To re-arm a fresh auto-import on the next cutover attempt, delete the new DB from the volume so the `users == 0` guard fires again:
    ```bash
-   docker compose -f docker-compose.production.yml down
+   docker run --rm -v cookless_data:/app/data busybox rm -f /app/data/cookless.db
    ```
 
-2. Check out the old commit (the last commit on the Django stack):
-   ```bash
-   git checkout <old-commit-sha>
-   ```
+---
 
-3. Restart the old Django stack:
-   ```bash
-   docker compose -f docker-compose.production.yml up -d
-   # (or whatever command started the old stack)
-   ```
+## Dry-run record
 
-4. Restore the database if it was overwritten (it should not have been — the old `backend/db.sqlite3` was never mounted into the new migration):
-   ```bash
-   cp /backup/prod-<date>/db.sqlite3 backend/db.sqlite3
-   ```
+The migration pipeline has been validated **at the script level** against a real production DB copy:
 
-The `app-data` Docker volume can be deleted and recreated on the next cutover attempt:
-```bash
-docker volume rm app-data
+- Ran from `web/` against a copy of `backend/db.sqlite3`.
+- Command sequence: `SOURCE_DB=<old db.sqlite3> DATABASE_FILE=<dest> npm run db:migrate && npm run data:import && npx tsx scripts/verify-migration.ts`
+- Result: **121 recipes, 898 recipe_ingredients migrated; all `verify-migration.ts` checks PASS; no `/media/` prefixes present in image paths.**
+
+**Remaining pre-cutover gate:** a full Docker-level dry run of the self-migrating image against a copy of the real `cookless_data` volume (fresh-boot import+verify+serve, then a second boot confirming the no-op guard) has not yet been executed in this environment — no Docker daemon is available here. Before cutover, run it on a host with Docker and paste the two result lines here:
+
 ```
-
----
-
-## Environment Variable Reference
-
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `AUTH_SECRET` | Yes | Random secret for NextAuth session signing (`openssl rand -base64 32`) |
-| `DATABASE_FILE` | Yes (set in compose) | Absolute path to SQLite file inside container: `/app/data/cookless.db` |
-| `MEDIA_ROOT` | Yes (set in compose) | Absolute path to media dir inside container: `/app/data/media` |
-| `WEBAUTHN_RP_ID` | Yes | Relying Party ID, e.g. `cookless.example.com` |
-| `WEBAUTHN_RP_NAME` | Yes | Human-readable RP name, e.g. `Cookless` |
-| `WEBAUTHN_ORIGIN` | Yes | Full origin, e.g. `https://cookless.example.com` |
-| `NODE_ENV` | Set in compose | `production` |
-
----
-
-## Script Reference
-
-All scripts live under `web/scripts/`:
-
-| Script file | npm alias | Purpose |
-|-------------|-----------|---------|
-| `db-migrate.ts` | `npm run db:migrate` | Apply Drizzle schema migrations to destination DB |
-| `migrate-data.ts` | `npm run data:import` | Import all data from Django SQLite into new schema |
-| `verify-migration.ts` | _(direct)_ `npx tsx scripts/verify-migration.ts` | Assert row-count parity and data integrity |
-| `set-password.ts` | _(direct)_ `npx tsx scripts/set-password.ts <email> <pw>` | Set a bcrypt password for a user without a passkey |
+[fresh boot]  <paste the verify-migration.ts PASS/row-count line>
+[second boot] [entrypoint] no import needed (users=<N>, old DB present: yes)
+```
