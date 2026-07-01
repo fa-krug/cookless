@@ -30,6 +30,9 @@ RUN chmod +x ./docker-entrypoint.sh && mkdir -p /app/data/media
 ENV DATABASE_FILE=/app/data/cookless.db
 ENV MEDIA_ROOT=/app/data/media
 ENV PORT=8000
+# Next.js standalone server.js binds to $HOSTNAME; Docker auto-sets HOSTNAME to
+# the container ID, so force 0.0.0.0 or loopback (healthcheck) can't reach it.
+ENV HOSTNAME=0.0.0.0
 EXPOSE 8000
 ENTRYPOINT ["./docker-entrypoint.sh"]
 CMD ["node", "server.js"]
