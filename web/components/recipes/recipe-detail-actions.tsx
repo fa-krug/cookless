@@ -10,15 +10,16 @@ import { toast } from "@/components/ui/sonner";
 import { useConfirm } from "@/components/ui/confirm-dialog";
 import { moveRecipeAction } from "@/app/(app)/actions";
 import { ExportRecipeDialog } from "./export-recipe-dialog";
+import type { RecipeExportModel } from "@/lib/recipes/export";
 
 interface Props {
   recipeId: string;
   listType: string;
-  exportText: string;
-  exportTitle: string;
+  model: RecipeExportModel;
+  locale: string;
 }
 
-export function RecipeDetailActions({ recipeId, listType, exportText, exportTitle }: Props) {
+export function RecipeDetailActions({ recipeId, listType, model, locale }: Props) {
   const { t } = useT();
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -58,7 +59,7 @@ export function RecipeDetailActions({ recipeId, listType, exportText, exportTitl
           {t("cooking.start")}
         </Link>
       </Button>
-      <ExportRecipeDialog title={exportTitle} text={exportText} />
+      <ExportRecipeDialog model={model} locale={locale} />
       <Button variant="outline" disabled={pending} onClick={onMove}>
         <ArrowRightLeft size={16} />
         {listType === "KNOWN" ? t("recipes.moveToTry") : t("recipes.moveToKnown")}

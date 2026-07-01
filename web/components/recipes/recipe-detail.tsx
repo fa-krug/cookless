@@ -5,6 +5,7 @@ import type {
   RecipeDetail as RecipeDetailDto,
   IngredientLite,
   UnitLite,
+  RecipeIngredientDto,
 } from "@/lib/queries/recipes";
 import { formatDuration, pickName, formatQuantity, recipeImageUrl } from "@/lib/display/format";
 import { Badge, type BadgeProps } from "@/components/ui/badge";
@@ -12,6 +13,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { RecipeDetailActions } from "./recipe-detail-actions";
 import { RecipeImageActions } from "./recipe-image-actions";
 import { StepParams } from "./step-params";
+import type { RecipeExportModel, ExportIngredient, ExportStep } from "@/lib/recipes/export";
 
 const TAG_VARIANT: Record<string, BadgeProps["variant"]> = {
   DIETARY: "dietary",
@@ -19,6 +21,62 @@ const TAG_VARIANT: Record<string, BadgeProps["variant"]> = {
   CUISINE: "cuisine",
   MEAL_TYPE: "meal_type",
 };
+
+function resolveIngredient(
+  ri: { ingredientId: number; unitId: number; quantity: string },
+  locale: string,
+  ingredientsById: Map<number, IngredientLite>,
+  unitsById: Map<number, UnitLite>,
+): ExportIngredient | null {
+  const ingredient = ingredientsById.get(ri.ingredientId);
+  if (!ingredient) return null;
+  const unit = unitsById.get(ri.unitId);
+  return {
+    name: pickName(locale, ingredient),
+    unitAbbr: unit?.abbreviation ?? "",
+    quantity: parseFloat(ri.quantity),
+  };
+}
+
+function buildExportModel(
+  recipe: RecipeDetailDto,
+  ingredientsById: Map<number, IngredientLite>,
+  unitsById: Map<number, UnitLite>,
+  locale: string,
+): RecipeExportModel {
+  const riMap = new Map<number, RecipeIngredientDto>(recipe.ingredients.map((ri) => [ri.id, ri]));
+
+  const ingredients: ExportIngredient[] = [...recipe.ingredients]
+    .sort((a, b) => a.order - b.order)
+    .map((ri) => resolveIngredient(ri, locale, ingredientsById, unitsById))
+    .filter((ing): ing is ExportIngredient => ing !== null);
+
+  const toExportStep = (step: RecipeDetailDto["manualSteps"][number]): ExportStep => ({
+    stepNumber: step.stepNumber,
+    instruction: step.instruction,
+    ingredients: step.ingredients
+      .map((si) => {
+        const ri = riMap.get(si.recipeIngredientId);
+        if (!ri) return null;
+        const resolved = resolveIngredient(ri, locale, ingredientsById, unitsById);
+        if (!resolved) return null;
+        return { ...resolved, quantity: parseFloat(si.quantity) };
+      })
+      .filter((ing): ing is ExportIngredient => ing !== null),
+  });
+
+  return {
+    title: recipe.title,
+    description: recipe.description,
+    defaultServings: recipe.defaultServings,
+    prepTimeMinutes: recipe.prepTimeMinutes,
+    cookTimeMinutes: recipe.cookTimeMinutes,
+    imageUrl: recipeImageUrl(recipe.image),
+    ingredients,
+    manualSteps: recipe.manualSteps.map(toExportStep),
+    machineSteps: recipe.machineSteps.map(toExportStep),
+  };
+}
 
 interface RecipeDetailProps {
   recipe: RecipeDetailDto;
@@ -184,24 +242,8 @@ export function RecipeDetail({
       <RecipeDetailActions
         recipeId={recipe.id}
         listType={recipe.listType}
-        exportTitle={recipe.title}
-        exportText={[
-          recipe.title,
-          "",
-          ...recipe.ingredients
-            .map((ri) => {
-              const ing = ingredientsById.get(ri.ingredientId);
-              const unit = unitsById.get(ri.unitId);
-              if (!ing) return null;
-              return `- ${formatQuantity(ri.quantity)}${unit ? " " + unit.abbreviation : ""} ${pickName(locale, ing)}`;
-            })
-            .filter((line): line is string => line !== null),
-          "",
-          ...recipe.manualSteps
-            .slice()
-            .sort((a, b) => a.stepNumber - b.stepNumber)
-            .map((s) => `${s.stepNumber}. ${s.instruction}`),
-        ].join("\n")}
+        model={buildExportModel(recipe, ingredientsById, unitsById, locale)}
+        locale={locale}
       />
     </div>
   );
