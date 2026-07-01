@@ -3,6 +3,7 @@
 import type { JSX } from "react";
 import { useEffect, useRef } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { BookOpen } from "lucide-react";
 import type { RecipeSummary } from "@/lib/queries/recipes";
 import { pickName, recipeImageUrl } from "@/lib/display/format";
@@ -44,10 +45,12 @@ export function RecipeCard({ recipe, locale, onDelete, highlight }: RecipeCardPr
           className="flex min-w-0 flex-1 items-center gap-3"
         >
           {imageUrl !== null ? (
-            <img
+            <Image
               src={imageUrl}
               alt={recipe.title}
-              loading="lazy"
+              width={64}
+              height={64}
+              sizes="64px"
               className="h-16 w-16 shrink-0 rounded-lg object-cover"
             />
           ) : (

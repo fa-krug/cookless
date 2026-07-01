@@ -57,7 +57,7 @@ export function AppNav({
   return (
     <>
       {/* Mobile: bottom bar */}
-      <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-background pb-[env(safe-area-inset-bottom)] md:hidden">
+      <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-background pb-[max(0.5rem,env(safe-area-inset-bottom))] md:hidden">
         <div className="flex items-center justify-around">
           {NAV.map((item) => (
             <Link

@@ -6,7 +6,7 @@ export async function GET(
 ): Promise<Response> {
   const { path } = await params;
   const relative = path.join("/");
-  const bytes = readImage(relative);
+  const bytes = await readImage(relative);
   if (!bytes) return new Response("Not found", { status: 404 });
   return new Response(new Uint8Array(bytes), {
     status: 200,
