@@ -36,12 +36,30 @@ export default async function PlanPage() {
     );
   }
 
-  const [active, ...archived] = plan.iterations;
-  const ended = active && active.endDate < todayIso;
+  const defaults = {
+    iterationWeeks: plan.iterationWeeks,
+    shoppingDays: plan.shoppingDays,
+    servings: plan.servings,
+    knownRatio: Number(plan.knownRatio),
+    defaultLeftoverDays: plan.defaultLeftoverDays,
+    excludedTagIds: plan.excludedTagIds,
+  };
+
+  const active = plan.iterations.find((it) => it.status === "ACTIVE") ?? null;
+  const archived = plan.iterations.filter((it) => it.id !== active?.id);
+  const ended = active !== null && active.endDate < todayIso;
 
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-bold">{t("plan.title")}</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold">{t("plan.title")}</h1>
+        <GeneratePlanDrawer
+          triggerLabel={t("plan.updateConfig")}
+          tags={tags}
+          defaults={defaults}
+          triggerClassName="rounded-md border border-border bg-transparent px-3 py-1.5 text-sm font-medium text-foreground hover:bg-accent"
+        />
+      </div>
 
       {ended && (
         <div className="flex items-center justify-between rounded-lg border border-orange-300 bg-orange-50 p-3 text-sm dark:border-orange-900 dark:bg-orange-950">
@@ -56,6 +74,15 @@ export default async function PlanPage() {
           shoppingDays={plan.shoppingDays}
           isArchived={false}
           todayIso={todayIso}
+        />
+      )}
+
+      {!active && (
+        <EmptyState
+          icon={Calendar}
+          title={t("plan.noActiveTitle")}
+          subtitle={t("plan.noActiveSubtitle")}
+          action={<NextIterationButton />}
         />
       )}
 
