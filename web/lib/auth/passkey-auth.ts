@@ -5,6 +5,7 @@ import { householdMembers, passkeyCredentials, users } from "@/lib/db/schema";
 import { consumeInvite, validateInvite } from "@/lib/households/invites";
 import type { CeremonyState } from "./ceremony";
 import { AuthError } from "./errors";
+import { hasAnyUser } from "./first-run";
 import { roleForInviteCreator } from "./register";
 import type { User } from "./session-store";
 import {
@@ -44,6 +45,27 @@ export async function beginPasskeyRegistration(
   };
 }
 
+export async function beginFirstRunPasskeyRegistration(
+  db: Db,
+  args: { email: string },
+  rpId: string,
+): Promise<{ options: Awaited<ReturnType<typeof getRegistrationOptions>>; ceremony: CeremonyState }> {
+  if (hasAnyUser(db)) {
+    throw new AuthError(409, "Setup has already been completed.");
+  }
+  const tempUserId = randomUUID();
+  const options = await getRegistrationOptions({
+    userId: tempUserId,
+    userEmail: args.email,
+    rpId,
+    excludeCredentialIds: [],
+  });
+  return {
+    options,
+    ceremony: { type: "register", firstRun: true, challenge: options.challenge, email: args.email, tempUserId },
+  };
+}
+
 export async function completePasskeyRegistration(
   db: Db,
   args: { responseJson: string; deviceName: string },
@@ -51,6 +73,46 @@ export async function completePasskeyRegistration(
   rpId: string,
   now: Date,
 ): Promise<User> {
+  if (ceremony.firstRun) {
+    if (ceremony.type !== "register" || !ceremony.email) {
+      throw new AuthError(400, "No registration in progress.");
+    }
+    const verified = await verifyRegistration({
+      responseJson: args.responseJson,
+      expectedChallenge: ceremony.challenge,
+      rpId,
+    });
+    const email = ceremony.email;
+    return db.transaction((tx) => {
+      if (hasAnyUser(tx)) {
+        throw new AuthError(409, "Setup has already been completed.");
+      }
+      const user = tx
+        .insert(users)
+        .values({
+          id: randomUUID(),
+          email,
+          password: "",
+          onboardingStep: "CREATE_HOUSEHOLD",
+          isActive: true,
+          createdAt: now,
+        })
+        .returning()
+        .get();
+      tx.insert(passkeyCredentials)
+        .values({
+          id: randomUUID(),
+          userId: user.id,
+          credentialId: verified.credentialId,
+          publicKey: verified.publicKey,
+          signCount: verified.signCount,
+          deviceName: args.deviceName,
+          createdAt: now,
+        })
+        .run();
+      return user;
+    });
+  }
   if (ceremony.type !== "register" || !ceremony.email || !ceremony.inviteCode) {
     throw new AuthError(400, "No registration in progress.");
   }

@@ -20,6 +20,7 @@ vi.mock("./webauthn", async (importOriginal) => {
 });
 
 import {
+  beginFirstRunPasskeyRegistration,
   beginPasskeyLogin,
   beginPasskeyRegistration,
   completePasskeyLogin,
@@ -87,5 +88,47 @@ describe("passkey login", () => {
     expect(user.id).toBe("u1");
     const cred = db.select().from(passkeyCredentials).where(eq(passkeyCredentials.id, "p1")).get();
     expect(cred?.signCount).toBe(7);
+  });
+});
+
+describe("passkey first-run registration", () => {
+  it("begin returns a firstRun ceremony on an empty db", async () => {
+    const db = createTestDb();
+    const { ceremony } = await beginFirstRunPasskeyRegistration(db, { email: "boss@x.test" }, "localhost");
+    expect(ceremony).toMatchObject({ type: "register", firstRun: true, email: "boss@x.test" });
+    expect(ceremony.inviteCode).toBeUndefined();
+  });
+
+  it("begin rejects with 409 when a user already exists", async () => {
+    const db = createTestDb();
+    db.insert(users).values({ id: "u1", email: "a@x.test", createdAt: now }).run();
+    await expect(
+      beginFirstRunPasskeyRegistration(db, { email: "boss@x.test" }, "localhost"),
+    ).rejects.toMatchObject({ status: 409 });
+  });
+
+  it("complete creates a CREATE_HOUSEHOLD user + credential, no household", async () => {
+    const db = createTestDb();
+    const ceremony = {
+      type: "register" as const,
+      firstRun: true,
+      challenge: "chal-reg",
+      email: "boss@x.test",
+      tempUserId: "tmp",
+    };
+    const user = await completePasskeyRegistration(db, { responseJson: "{}", deviceName: "Phone" }, ceremony, "localhost", now);
+    expect(user.onboardingStep).toBe("CREATE_HOUSEHOLD");
+    expect(user.activeHouseholdId).toBeNull();
+    const cred = db.select().from(passkeyCredentials).where(eq(passkeyCredentials.userId, user.id)).get();
+    expect(cred?.deviceName).toBe("Phone");
+  });
+
+  it("complete rejects with 409 if a user appeared meanwhile", async () => {
+    const db = createTestDb();
+    db.insert(users).values({ id: "u1", email: "a@x.test", createdAt: now }).run();
+    const ceremony = { type: "register" as const, firstRun: true, challenge: "chal-reg", email: "boss@x.test", tempUserId: "tmp" };
+    await expect(
+      completePasskeyRegistration(db, { responseJson: "{}", deviceName: "" }, ceremony, "localhost", now),
+    ).rejects.toMatchObject({ status: 409 });
   });
 });

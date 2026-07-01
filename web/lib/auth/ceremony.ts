@@ -6,6 +6,7 @@ export interface CeremonyState {
   email?: string;
   inviteCode?: string;
   tempUserId?: string;
+  firstRun?: boolean;
 }
 
 export function encodeCeremony(state: CeremonyState, secret: string): string {
