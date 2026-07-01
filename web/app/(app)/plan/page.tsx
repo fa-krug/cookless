@@ -18,9 +18,10 @@ export default async function PlanPage() {
   const plan = getMealPlanView(db, householdId);
   if (!plan || plan.iterations.length === 0) {
     return (
-      <div className="space-y-4">
+      <div className="flex flex-1 flex-col gap-4">
         <h1 className="text-2xl font-bold">{t("plan.title")}</h1>
         <EmptyState
+          fill
           icon={Calendar}
           title={t("plan.noPlanTitle")}
           subtitle={t("plan.noPlanSubtitle")}
