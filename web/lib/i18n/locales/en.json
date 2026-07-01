@@ -42,7 +42,8 @@
     "passwordPlaceholder": "Enter password",
     "passwordLoginFailed": "That email or password doesn't look right.",
     "orDivider": "or",
-    "register": "Register"
+    "register": "Register",
+    "passkeyInsecure": "Passkeys need a secure (HTTPS) connection. Open this app over its https:// address to use them."
   },
   "invite": {
     "invalid": "This invite link is no longer valid.",

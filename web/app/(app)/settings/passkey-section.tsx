@@ -5,6 +5,7 @@ import { Plus, Trash2 } from "lucide-react";
 
 import { useT } from "@/lib/i18n/provider";
 import { addPasskey } from "@/lib/auth-client/webauthn";
+import { useWebAuthnSupport } from "@/lib/hooks/use-webauthn-support";
 import { listPasskeysAction, deletePasskeyAction } from "@/app/(account)/actions";
 import { useConfirm } from "@/components/ui/confirm-dialog";
 import { toast } from "@/components/ui/sonner";
@@ -19,6 +20,7 @@ interface PasskeyDto {
 export function PasskeySection({ hasPassword }: { hasPassword: boolean }) {
   const { t } = useT();
   const { confirm, dialog } = useConfirm();
+  const passkeySupported = useWebAuthnSupport();
 
   const [passkeys, setPasskeys] = useState<PasskeyDto[]>([]);
   const [loading, setLoading] = useState(true);
@@ -37,6 +39,7 @@ export function PasskeySection({ hasPassword }: { hasPassword: boolean }) {
   }, [fetchPasskeys]);
 
   async function handleAdd() {
+    if (!passkeySupported) return;
     setAdding(true);
     try {
       await addPasskey();
@@ -111,11 +114,15 @@ export function PasskeySection({ hasPassword }: { hasPassword: boolean }) {
         </div>
       )}
 
+      {!passkeySupported && (
+        <p className="text-sm text-destructive">{t("auth.passkeyInsecure")}</p>
+      )}
+
       <Button
         variant="outline"
         className="w-full border-primary text-primary hover:bg-primary/10"
         onClick={handleAdd}
-        disabled={adding}
+        disabled={adding || !passkeySupported}
       >
         {adding ? null : <Plus size={16} />}
         {adding ? t("common.loading") : t("passkeys.addPasskey")}

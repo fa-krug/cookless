@@ -16,7 +16,7 @@ export function InstallBanner() {
       <div className="flex shrink-0 gap-2">
         <Button
           size="sm"
-          className="bg-background text-primary hover:bg-primary/10"
+          className="bg-background text-primary hover:bg-background/90"
           onClick={promptInstall}
         >
           {t("install.install")}
