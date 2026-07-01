@@ -1,0 +1,27 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1782518493776,
+      "tag": "0000_vengeful_eternity",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1782539356272,
+      "tag": "0001_sloppy_randall",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1782888069021,
+      "tag": "0002_luxuriant_yellowjacket",
+      "breakpoints": true
+    }
+  ]
+}

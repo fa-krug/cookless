@@ -1,26 +1,19 @@
+# docker-compose.yml
 services:
   web:
-    build: .
+    build:
+      context: ./web
+      dockerfile: Dockerfile
     ports:
-      - "8000:8000"
-    volumes:
-      - ./backend:/app  # Hot-reload backend code
-    # Note: frontend is served by the Vite dev server at port 5173 in development.
-    # Run `cd frontend && npm run dev` separately.
+      - "3000:3000"
     environment:
-      - DEBUG=True
-      - SECRET_KEY=dev-secret-key-not-for-production
-      - ALLOWED_HOSTS=localhost,127.0.0.1
-      - CORS_ALLOWED_ORIGINS=http://localhost:3000,http://localhost:5173
-      - EMAIL_HOST=${EMAIL_HOST:-}
-      - EMAIL_PORT=${EMAIL_PORT:-587}
-      - EMAIL_USE_TLS=${EMAIL_USE_TLS:-True}
-      - EMAIL_USE_SSL=${EMAIL_USE_SSL:-False}
-      - EMAIL_HOST_USER=${EMAIL_HOST_USER:-}
-      - EMAIL_HOST_PASSWORD=${EMAIL_HOST_PASSWORD:-}
-      - DEFAULT_FROM_EMAIL=${DEFAULT_FROM_EMAIL:-noreply@localhost}
-      - SERVER_EMAIL=${SERVER_EMAIL:-server@localhost}
-      - ADMIN_EMAIL=${ADMIN_EMAIL:-}
-      - SUPERUSER_EMAIL=${SUPERUSER_EMAIL:-}
-      - SUPERUSER_PASSWORD=${SUPERUSER_PASSWORD:-}
-    command: python manage.py runserver 0.0.0.0:8000
+      AUTH_SECRET: dev-only-not-secret
+      DATABASE_FILE: /app/data/cookless.db
+      MEDIA_ROOT: /app/data/media
+      WEBAUTHN_RP_ID: localhost
+      WEBAUTHN_RP_NAME: Cookless
+      WEBAUTHN_ORIGIN: http://localhost:3000
+    volumes:
+      - app-data-dev:/app/data
+volumes:
+  app-data-dev:

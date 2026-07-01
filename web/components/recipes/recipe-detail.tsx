@@ -1,0 +1,250 @@
+import type { JSX } from "react";
+import Link from "next/link";
+import { BookOpen, ChevronLeft } from "lucide-react";
+import type {
+  RecipeDetail as RecipeDetailDto,
+  IngredientLite,
+  UnitLite,
+  RecipeIngredientDto,
+} from "@/lib/queries/recipes";
+import { formatDuration, pickName, formatQuantity, recipeImageUrl } from "@/lib/display/format";
+import { Badge, type BadgeProps } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { RecipeDetailActions } from "./recipe-detail-actions";
+import { RecipeImageActions } from "./recipe-image-actions";
+import { StepParams } from "./step-params";
+import type { RecipeExportModel, ExportIngredient, ExportStep } from "@/lib/recipes/export";
+
+const TAG_VARIANT: Record<string, BadgeProps["variant"]> = {
+  DIETARY: "dietary",
+  PROTEIN: "protein",
+  CUISINE: "cuisine",
+  MEAL_TYPE: "meal_type",
+};
+
+function resolveIngredient(
+  ri: { ingredientId: number; unitId: number; quantity: string },
+  locale: string,
+  ingredientsById: Map<number, IngredientLite>,
+  unitsById: Map<number, UnitLite>,
+): ExportIngredient | null {
+  const ingredient = ingredientsById.get(ri.ingredientId);
+  if (!ingredient) return null;
+  const unit = unitsById.get(ri.unitId);
+  return {
+    name: pickName(locale, ingredient),
+    unitAbbr: unit?.abbreviation ?? "",
+    quantity: parseFloat(ri.quantity),
+  };
+}
+
+function buildExportModel(
+  recipe: RecipeDetailDto,
+  ingredientsById: Map<number, IngredientLite>,
+  unitsById: Map<number, UnitLite>,
+  locale: string,
+): RecipeExportModel {
+  const riMap = new Map<number, RecipeIngredientDto>(recipe.ingredients.map((ri) => [ri.id, ri]));
+
+  const ingredients: ExportIngredient[] = [...recipe.ingredients]
+    .sort((a, b) => a.order - b.order)
+    .map((ri) => resolveIngredient(ri, locale, ingredientsById, unitsById))
+    .filter((ing): ing is ExportIngredient => ing !== null);
+
+  const toExportStep = (step: RecipeDetailDto["manualSteps"][number]): ExportStep => ({
+    stepNumber: step.stepNumber,
+    instruction: step.instruction,
+    ingredients: step.ingredients
+      .map((si) => {
+        const ri = riMap.get(si.recipeIngredientId);
+        if (!ri) return null;
+        const resolved = resolveIngredient(ri, locale, ingredientsById, unitsById);
+        if (!resolved) return null;
+        return { ...resolved, quantity: parseFloat(si.quantity) };
+      })
+      .filter((ing): ing is ExportIngredient => ing !== null),
+  });
+
+  return {
+    title: recipe.title,
+    description: recipe.description,
+    defaultServings: recipe.defaultServings,
+    prepTimeMinutes: recipe.prepTimeMinutes,
+    cookTimeMinutes: recipe.cookTimeMinutes,
+    imageUrl: recipeImageUrl(recipe.image),
+    ingredients,
+    manualSteps: recipe.manualSteps.map(toExportStep),
+    machineSteps: recipe.machineSteps.map(toExportStep),
+  };
+}
+
+interface RecipeDetailProps {
+  recipe: RecipeDetailDto;
+  ingredientsById: Map<number, IngredientLite>;
+  unitsById: Map<number, UnitLite>;
+  locale: string;
+  t: (key: string, vars?: Record<string, string | number>) => string;
+  aiEnabled: boolean;
+  hasKey: boolean;
+}
+
+export function RecipeDetail({
+  recipe,
+  ingredientsById,
+  unitsById,
+  locale,
+  t,
+  aiEnabled,
+  hasKey,
+}: RecipeDetailProps): JSX.Element {
+  const imageUrl = recipeImageUrl(recipe.image);
+
+  return (
+    <div className="space-y-6">
+      {/* Back link */}
+      <Link
+        href="/recipes"
+        className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+      >
+        <ChevronLeft size={16} />
+        {t("common.back")}
+      </Link>
+
+      {/* Hero image or placeholder */}
+      {imageUrl !== null ? (
+        <img
+          src={imageUrl}
+          alt={recipe.title}
+          className="h-56 w-full rounded-xl object-cover"
+        />
+      ) : (
+        <div className="flex h-56 w-full items-center justify-center rounded-xl bg-muted">
+          <BookOpen size={48} className="text-muted-foreground" />
+        </div>
+      )}
+
+      {/* Image actions */}
+      <RecipeImageActions recipeId={recipe.id} hasImage={imageUrl !== null} aiEnabled={aiEnabled} hasKey={hasKey} />
+
+      {/* Title */}
+      <h1 className="text-3xl font-bold">{recipe.title}</h1>
+
+      {/* Metadata row */}
+      <div className="flex flex-wrap gap-x-6 gap-y-1 text-sm text-muted-foreground">
+        <span>
+          {t("recipes.servings")}: {recipe.defaultServings}
+        </span>
+        {recipe.prepTimeMinutes != null && (
+          <span>
+            {t("recipes.prepTime")}: {recipe.prepTimeMinutes}{" "}
+            {t("recipes.minutes")}
+          </span>
+        )}
+        {recipe.cookTimeMinutes != null && (
+          <span>
+            {t("recipes.cookTime")}: {recipe.cookTimeMinutes}{" "}
+            {t("recipes.minutes")}
+          </span>
+        )}
+      </div>
+
+      {/* Description */}
+      {recipe.description && (
+        <p className="text-muted-foreground">{recipe.description}</p>
+      )}
+
+      {/* Tags */}
+      {recipe.tags.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {recipe.tags.map((tag) => (
+            <Badge key={tag.id} variant={TAG_VARIANT[tag.category]}>
+              {pickName(locale, tag)}
+            </Badge>
+          ))}
+        </div>
+      )}
+
+      {/* Ingredients */}
+      {recipe.ingredients.length > 0 && (
+        <Card>
+          <CardContent className="p-4">
+            <h2 className="mb-3 text-lg font-semibold">
+              {t("ingredients.title")}
+            </h2>
+            <ul className="space-y-1">
+              {recipe.ingredients.map((ri) => {
+                const ingredient = ingredientsById.get(ri.ingredientId);
+                const unit = unitsById.get(ri.unitId);
+                if (!ingredient) return null;
+                return (
+                  <li key={ri.id} className="flex items-baseline gap-1 text-sm">
+                    <span className="font-medium">
+                      {formatQuantity(ri.quantity)}
+                    </span>
+                    {unit && (
+                      <span className="text-muted-foreground">
+                        {unit.abbreviation}
+                      </span>
+                    )}
+                    <span>{pickName(locale, ingredient)}</span>
+                  </li>
+                );
+              })}
+            </ul>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Manual steps */}
+      {recipe.manualSteps.length > 0 && (
+        <div className="space-y-3">
+          <h2 className="text-lg font-semibold">{t("steps.manualSteps")}</h2>
+          <ol className="space-y-3">
+            {recipe.manualSteps.map((step) => (
+              <li key={step.id} className="flex gap-3">
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
+                  {step.stepNumber}
+                </span>
+                <p className="pt-0.5 text-sm leading-relaxed">
+                  {step.instruction}
+                </p>
+              </li>
+            ))}
+          </ol>
+        </div>
+      )}
+
+      {/* Machine steps */}
+      {recipe.machineSteps.length > 0 && (
+        <div className="space-y-3">
+          <h2 className="text-lg font-semibold">{t("steps.machineSteps")}</h2>
+          <ol className="space-y-3">
+            {recipe.machineSteps.map((step) => (
+              <li key={step.id} className="flex gap-3">
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-secondary text-xs font-bold text-secondary-foreground">
+                  {step.stepNumber}
+                </span>
+                <div className="flex-1 space-y-1">
+                  {step.programType && (
+                    <p className="text-sm font-medium">
+                      {t(`steps.programs.${step.programType}`)}
+                    </p>
+                  )}
+                  <p className="text-sm leading-relaxed">{step.instruction}</p>
+                  <StepParams step={step} />
+                </div>
+              </li>
+            ))}
+          </ol>
+        </div>
+      )}
+
+      <RecipeDetailActions
+        recipeId={recipe.id}
+        listType={recipe.listType}
+        model={buildExportModel(recipe, ingredientsById, unitsById, locale)}
+        locale={locale}
+      />
+    </div>
+  );
+}
