@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowLeftRight, Check, Plus, UserPlus } from "lucide-react";
+import { ArrowLeftRight, Building2, Check, Plus, UserPlus } from "lucide-react";
 import { useT } from "@/lib/i18n/provider";
 import {
   createHouseholdAction,
@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/dialog";
 import type { HouseholdDto } from "@/lib/households/serialize";
 import { cn } from "@/lib/utils";
+import { SettingsSection } from "../settings-section";
 
 interface ManageHouseholdsProps {
   households: HouseholdDto[];
@@ -94,10 +95,11 @@ export function ManageHouseholds({
     <>
       {/* Switch household (only when multiple) */}
       {households.length > 1 && (
-        <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
-          <h2 className="mb-3 text-lg font-semibold text-foreground">
-            {t("household.switchHousehold")}
-          </h2>
+        <SettingsSection
+          icon={Building2}
+          title={t("household.switchHousehold")}
+          description={t("household.manageDescription")}
+        >
           <Button
             variant="outline"
             onClick={() => setSwitchOpen(true)}
@@ -105,14 +107,14 @@ export function ManageHouseholds({
             <ArrowLeftRight size={16} />
             {t("household.switchHousehold")}
           </Button>
-        </div>
+        </SettingsSection>
       )}
 
       {/* Create household */}
-      <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
-        <h2 className="mb-3 text-lg font-semibold text-foreground">
-          {t("household.createHousehold")}
-        </h2>
+      <SettingsSection
+        icon={Plus}
+        title={t("household.createHousehold")}
+      >
         <form onSubmit={handleCreate} className="flex gap-2">
           <Input
             type="text"
@@ -126,13 +128,13 @@ export function ManageHouseholds({
             {t("common.add")}
           </Button>
         </form>
-      </div>
+      </SettingsSection>
 
       {/* Join household */}
-      <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
-        <h2 className="mb-3 text-lg font-semibold text-foreground">
-          {t("household.joinHousehold")}
-        </h2>
+      <SettingsSection
+        icon={UserPlus}
+        title={t("household.joinHousehold")}
+      >
         <form onSubmit={handleJoin} className="flex gap-2">
           <Input
             type="text"
@@ -146,7 +148,7 @@ export function ManageHouseholds({
             {t("household.joinHousehold")}
           </Button>
         </form>
-      </div>
+      </SettingsSection>
 
       {/* Switch dialog */}
       {households.length > 1 && (

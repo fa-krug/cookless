@@ -1,13 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { Pencil } from "lucide-react";
+import { Home, Pencil } from "lucide-react";
 import { useT } from "@/lib/i18n/provider";
 import { updateHouseholdAction } from "@/app/(account)/actions";
 import { toast } from "@/components/ui/sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { HouseholdDto } from "@/lib/households/serialize";
+import { SettingsSection } from "../settings-section";
 
 interface HouseholdInfoProps {
   active: HouseholdDto;
@@ -40,8 +41,11 @@ export function HouseholdInfo({ active, isOwner, onRefresh }: HouseholdInfoProps
   }
 
   return (
-    <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
-      <h2 className="mb-2 text-lg font-semibold text-foreground">{t("household.currentHousehold")}</h2>
+    <SettingsSection
+      icon={Home}
+      title={t("household.currentHousehold")}
+      description={t("household.infoDescription")}
+    >
       {isEditing ? (
         <div className="space-y-2">
           <Input
@@ -84,6 +88,6 @@ export function HouseholdInfo({ active, isOwner, onRefresh }: HouseholdInfoProps
           )}
         </div>
       )}
-    </div>
+    </SettingsSection>
   );
 }

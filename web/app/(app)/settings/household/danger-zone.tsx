@@ -1,13 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { LogOut, Trash2 } from "lucide-react";
+import { LogOut, Trash2, TriangleAlert } from "lucide-react";
 import { useT } from "@/lib/i18n/provider";
 import { leaveHouseholdAction, deleteHouseholdAction } from "@/app/(account)/actions";
 import { toast } from "@/components/ui/sonner";
 import { Button } from "@/components/ui/button";
 import type { ConfirmOpts } from "@/components/ui/confirm-dialog";
 import type { HouseholdDto } from "@/lib/households/serialize";
+import { SettingsSection } from "../settings-section";
 
 interface DangerZoneProps {
   active: HouseholdDto;
@@ -66,7 +67,12 @@ export function DangerZone({ active, isOwner, confirm, onRefresh }: DangerZonePr
 
   if (!isOwner) {
     return (
-      <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
+      <SettingsSection
+        icon={TriangleAlert}
+        title={t("household.leaveHousehold")}
+        description={t("household.dangerDescription")}
+        variant="destructive"
+      >
         <Button
           variant="outline"
           onClick={handleLeave}
@@ -76,19 +82,21 @@ export function DangerZone({ active, isOwner, confirm, onRefresh }: DangerZonePr
           <LogOut size={16} />
           {t("household.leaveHousehold")}
         </Button>
-      </div>
+      </SettingsSection>
     );
   }
 
   return (
-    <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-4 dark:border-destructive/30 dark:bg-destructive/10">
-      <h2 className="mb-2 text-lg font-semibold text-destructive dark:text-destructive">
-        {t("household.deleteHousehold")}
-      </h2>
+    <SettingsSection
+      icon={TriangleAlert}
+      title={t("household.deleteHousehold")}
+      description={t("household.dangerDescription")}
+      variant="destructive"
+    >
       <Button variant="destructive" onClick={handleDelete} disabled={isPending}>
         <Trash2 size={16} />
         {t("household.deleteHousehold")}
       </Button>
-    </div>
+    </SettingsSection>
   );
 }

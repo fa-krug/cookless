@@ -1,11 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { Clipboard, Link } from "lucide-react";
+import { Clipboard, Link, UserPlus } from "lucide-react";
 import { useT } from "@/lib/i18n/provider";
 import { createHouseholdInviteAction } from "@/app/(account)/actions";
 import { toast } from "@/components/ui/sonner";
 import { Button } from "@/components/ui/button";
+import { SettingsSection } from "../settings-section";
 
 interface InviteData {
   code: string;
@@ -42,8 +43,11 @@ export function InviteSection({ householdId }: InviteSectionProps) {
   }
 
   return (
-    <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
-      <h2 className="mb-3 text-lg font-semibold text-foreground">{t("household.generateInvite")}</h2>
+    <SettingsSection
+      icon={UserPlus}
+      title={t("household.generateInvite")}
+      description={t("household.inviteDescription")}
+    >
       <Button onClick={handleGenerate} disabled={isPending}>
         <Link size={16} />
         {t("household.generateInvite")}
@@ -67,6 +71,6 @@ export function InviteSection({ householdId }: InviteSectionProps) {
           </p>
         </div>
       )}
-    </div>
+    </SettingsSection>
   );
 }

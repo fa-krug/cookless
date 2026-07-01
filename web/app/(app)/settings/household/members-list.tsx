@@ -1,12 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { Shield, UserMinus } from "lucide-react";
+import { Shield, UserMinus, Users } from "lucide-react";
 import { useT } from "@/lib/i18n/provider";
 import { removeMemberAction, transferOwnershipAction } from "@/app/(account)/actions";
 import { toast } from "@/components/ui/sonner";
 import type { ConfirmOpts } from "@/components/ui/confirm-dialog";
 import type { MemberDto } from "@/lib/households/membership";
+import { SettingsSection } from "../settings-section";
 
 interface MembersListProps {
   householdId: string;
@@ -69,8 +70,11 @@ export function MembersList({
   }
 
   return (
-    <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
-      <h2 className="mb-3 text-lg font-semibold text-foreground">{t("household.members")}</h2>
+    <SettingsSection
+      icon={Users}
+      title={t("household.members")}
+      description={t("household.membersDescription")}
+    >
       <ul className="divide-y divide-border">
         {members.map((member) => (
           <li key={member.id} className="flex items-center justify-between py-2">
@@ -124,6 +128,6 @@ export function MembersList({
           </li>
         ))}
       </ul>
-    </div>
+    </SettingsSection>
   );
 }
