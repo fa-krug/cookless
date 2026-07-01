@@ -8,6 +8,7 @@ import { z } from "zod";
 
 import { useT } from "@/lib/i18n/provider";
 import { passkeyRegisterFirstRun } from "@/lib/auth-client/webauthn";
+import { useWebAuthnSupport } from "@/lib/hooks/use-webauthn-support";
 import { registerFirstUserPasswordAction } from "@/app/(auth)/actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,6 +29,7 @@ type Values = z.infer<typeof schema>;
 export function SetupForm() {
   const { t } = useT();
   const router = useRouter();
+  const passkeySupported = useWebAuthnSupport();
   const [showPassword, setShowPassword] = useState(false);
   const form = useForm<Values>({
     resolver: zodResolver(schema),
@@ -52,6 +54,9 @@ export function SetupForm() {
           return;
         }
       } else {
+        // Passkeys are unavailable outside a secure context; the message below
+        // explains why, so bail out instead of throwing an opaque error.
+        if (!passkeySupported) return;
         await passkeyRegisterFirstRun(values.email);
       }
       done();
@@ -123,13 +128,21 @@ export function SetupForm() {
           </>
         )}
 
+        {!showPassword && !passkeySupported && (
+          <p className="text-center text-xs text-destructive">{t("auth.passkeyInsecure")}</p>
+        )}
+
         {form.formState.errors.root && (
           <p className="text-center text-xs text-destructive">
             {form.formState.errors.root.message}
           </p>
         )}
 
-        <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
+        <Button
+          type="submit"
+          className="w-full"
+          disabled={form.formState.isSubmitting || (!showPassword && !passkeySupported)}
+        >
           {showPassword ? t("auth.register") : t("auth.signInWithPasskey")}
         </Button>
 

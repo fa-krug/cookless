@@ -6,7 +6,6 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
 import { ServiceWorkerRegistration } from "@/components/offline/service-worker-registration";
 import { OfflineIndicator } from "@/components/offline/offline-indicator";
-import { InstallBanner } from "@/components/offline/install-banner";
 import type { Locale } from "@/lib/i18n/config";
 import type { Dictionary } from "@/lib/i18n/translate";
 
@@ -25,7 +24,6 @@ export function Providers({
         <TooltipProvider>
           <ServiceWorkerRegistration />
           <OfflineIndicator />
-          <InstallBanner />
           {children}
         </TooltipProvider>
         <Toaster />

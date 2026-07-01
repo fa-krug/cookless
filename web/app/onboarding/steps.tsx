@@ -6,6 +6,7 @@ import { KeyRound } from "lucide-react";
 
 import { useT } from "@/lib/i18n/provider";
 import { addPasskey } from "@/lib/auth-client/webauthn";
+import { useWebAuthnSupport } from "@/lib/hooks/use-webauthn-support";
 import { setPasswordAction, skipPasskeyAction } from "@/app/(auth)/actions";
 import { createHouseholdAction } from "@/app/(account)/actions";
 import { Button } from "@/components/ui/button";
@@ -74,10 +75,12 @@ export function ChangePasswordStep({
 
 export function AddPasskeyStep({ onDone }: { onDone: () => void }) {
   const { t } = useT();
+  const passkeySupported = useWebAuthnSupport();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
   async function add() {
+    if (!passkeySupported) return;
     setBusy(true);
     setError("");
     try {
@@ -108,8 +111,9 @@ export function AddPasskeyStep({ onDone }: { onDone: () => void }) {
     <div className="space-y-4">
       <h2 className="text-xl font-semibold">{t("setup.addPasskey.title")}</h2>
       <p className="text-sm text-muted-foreground">{t("setup.addPasskey.description")}</p>
+      {!passkeySupported && <p className="text-sm text-destructive">{t("auth.passkeyInsecure")}</p>}
       {error && <p className="text-sm text-destructive">{error}</p>}
-      <Button className="w-full" onClick={add} disabled={busy}>
+      <Button className="w-full" onClick={add} disabled={busy || !passkeySupported}>
         <KeyRound size={18} />
         {busy ? t("common.loading") : t("setup.addPasskey.add")}
       </Button>
