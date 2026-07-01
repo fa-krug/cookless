@@ -119,6 +119,27 @@ describe("upsertRecipe — create", () => {
   });
 });
 
+describe("upsertRecipe — ingredient dedup", () => {
+  it("reuses an existing ingredient instead of duplicating on auto-create", () => {
+    const db = createTestDb();
+    db.insert(households).values({ id: "h1", name: "Home", createdAt: now }).run();
+    db.insert(units).values({ id: 1, nameEn: "gram", nameDe: "Gramm", abbreviation: "g" }).run();
+    db.insert(ingredients).values({ id: 1, nameEn: "Onion", nameDe: "Zwiebel", category: "OTHER" }).run();
+
+    upsertRecipe(db, "h1", null, {
+      title: "Soup", description: "", listType: "KNOWN", defaultServings: 2,
+      prepTimeMinutes: null, cookTimeMinutes: null, leftoverDays: null,
+      ingredients: [
+        { ingredientId: null, nameEn: "onion", nameDe: "zwiebel", quantity: "100", unitId: 1, order: 0 },
+      ],
+      steps: [], tagIds: [],
+    }, now);
+
+    const all = db.select().from(ingredients).all();
+    expect(all.length).toBe(1); // reused, not duplicated
+  });
+});
+
 describe("upsertRecipe — edit", () => {
   it("replaces nested data on update", () => {
     const db = seed();

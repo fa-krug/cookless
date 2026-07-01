@@ -8,7 +8,7 @@ import {
 } from "@/lib/db/schema";
 import { validateStepIngredientTotals } from "@/lib/domain/recipes/step-validation";
 import { validateProgramStep } from "@/lib/domain/recipes/program-validation";
-import { createIngredient } from "./ingredients";
+import { findOrCreateIngredient } from "./ingredients";
 
 export interface UpsertIngredientInput {
   ingredientId: number | null; // null => auto-create from nameEn/nameDe
@@ -141,7 +141,7 @@ export function upsertRecipe(
     const orderToRiId = new Map<number, number>();
     for (const ing of input.ingredients) {
       const ingredientId =
-        ing.ingredientId ?? createIngredient(tx as unknown as Db, { nameEn: ing.nameEn, nameDe: ing.nameDe }).id;
+        ing.ingredientId ?? findOrCreateIngredient(tx as unknown as Db, { nameEn: ing.nameEn, nameDe: ing.nameDe }).id;
       const ri = tx
         .insert(recipeIngredients)
         .values({ recipeId: id, ingredientId, quantity: ing.quantity, unitId: ing.unitId, order: ing.order })
