@@ -7,6 +7,7 @@ import { useT } from "@/lib/i18n/provider";
 import { logoutAction } from "@/app/(auth)/actions";
 import { useConfirm } from "@/components/ui/confirm-dialog";
 import { Button } from "@/components/ui/button";
+import { clear as clearOfflineQueue } from "@/lib/offline/queue";
 import { PasswordForm } from "./password-form";
 import { PasskeySection } from "./passkey-section";
 
@@ -31,6 +32,14 @@ export function AccountSection({
       destructive: true,
     });
     if (!confirmed) return;
+
+    // Clear offline caches + pending queue so the next account on this device
+    // can't see this session's cached pages or replay its queued toggles.
+    if (typeof navigator !== "undefined" && navigator.serviceWorker?.controller) {
+      navigator.serviceWorker.controller.postMessage({ type: "CLEAR_CACHES" });
+    }
+    await clearOfflineQueue();
+
     await logoutAction();
     router.push("/login");
   }

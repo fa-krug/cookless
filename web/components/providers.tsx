@@ -4,6 +4,8 @@ import { I18nProvider } from "@/lib/i18n/provider";
 import { ThemeProvider } from "@/components/theme/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
+import { ServiceWorkerRegistration } from "@/components/offline/service-worker-registration";
+import { OfflineIndicator } from "@/components/offline/offline-indicator";
 import type { Locale } from "@/lib/i18n/config";
 import type { Dictionary } from "@/lib/i18n/translate";
 
@@ -19,7 +21,11 @@ export function Providers({
   return (
     <I18nProvider locale={locale} dict={dict}>
       <ThemeProvider>
-        <TooltipProvider>{children}</TooltipProvider>
+        <TooltipProvider>
+          <ServiceWorkerRegistration />
+          <OfflineIndicator />
+          {children}
+        </TooltipProvider>
         <Toaster />
       </ThemeProvider>
     </I18nProvider>
