@@ -27,7 +27,8 @@
     "collapseSidebar": "Collapse sidebar",
     "expandSidebar": "Expand sidebar",
     "account": "Account",
-    "manageHousehold": "Manage Household"
+    "manageHousehold": "Manage Household",
+    "householdDescription": "Members, invites, and household settings."
   },
   "auth": {
     "login": "Log in",
@@ -333,13 +334,17 @@
   },
   "household": {
     "title": "Household",
+    "info": "Current household",
+    "infoDescription": "Name and details of your active household.",
     "currentHousehold": "Your Household",
     "switchHousehold": "Switch Household",
     "createHousehold": "Create Household",
     "householdName": "Household name",
     "members": "Members",
+    "membersDescription": "People who share this household.",
     "invites": "Invites",
     "inviteMember": "Invite someone",
+    "inviteDescription": "Invite someone to join.",
     "owner": "Owner",
     "member": "Member",
     "generateInvite": "Create Invite",
@@ -363,6 +368,8 @@
     "transferOwnership": "Make Owner",
     "transferOwnershipConfirm": "Transfer ownership to {{email}}?",
     "manage": "Manage Household",
+    "manageDescription": "Switch between or create households.",
+    "dangerDescription": "Irreversible actions for this household.",
     "role": {
       "owner": "Owner",
       "member": "Member"
@@ -438,13 +445,19 @@
   },
   "settings": {
     "title": "Settings",
+    "subtitle": "Manage your preferences, household, and account.",
+    "preferences": "Preferences",
+    "dataGroup": "Recipes & Household",
+    "accountGroup": "Account",
     "admin": "Admin Panel",
     "language": "Language",
+    "languageDescription": "Choose the app language.",
     "languages": {
       "en": "English",
       "de": "Deutsch"
     },
     "theme": "Theme",
+    "themeDescription": "Pick light, dark, or match your system.",
     "themes": {
       "light": "Light",
       "dark": "Dark",
@@ -452,7 +465,8 @@
     },
     "logout": "Log out",
     "logoutConfirm": "Are you sure you want to log out?",
-    "account": "Account"
+    "account": "Account",
+    "accountDescription": "Your sign-in and security options."
   },
   "errors": {
     "recipeSave": "Couldn't save the recipe. Try again?",
@@ -519,6 +533,8 @@
   },
   "tags": {
     "title": "Tags",
+    "subtitle": "Organize your recipes with tags.",
+    "manageDescription": "Create, rename, and organize your tags.",
     "DIETARY": "Dietary",
     "PROTEIN": "Protein",
     "CUISINE": "Cuisine",
@@ -575,6 +591,7 @@
   "aiSettings": {
     "title": "AI Features",
     "subtitle": "Generate recipes and photos with Google Gemini.",
+    "navDescription": "Generate recipes and photos with AI.",
     "enable": "Enable AI features",
     "apiKey": "Gemini API key",
     "apiKeyPlaceholder": "Paste your Gemini API key",

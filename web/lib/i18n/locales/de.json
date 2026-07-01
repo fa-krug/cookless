@@ -27,7 +27,8 @@
     "collapseSidebar": "Seitenleiste einklappen",
     "expandSidebar": "Seitenleiste ausklappen",
     "account": "Konto",
-    "manageHousehold": "Haushalt verwalten"
+    "manageHousehold": "Haushalt verwalten",
+    "householdDescription": "Mitglieder, Einladungen und Haushaltseinstellungen."
   },
   "auth": {
     "login": "Anmelden",
@@ -333,13 +334,17 @@
   },
   "household": {
     "title": "Haushalt",
+    "info": "Aktueller Haushalt",
+    "infoDescription": "Name und Details deines aktiven Haushalts.",
     "currentHousehold": "Dein Haushalt",
     "switchHousehold": "Haushalt wechseln",
     "createHousehold": "Haushalt erstellen",
     "householdName": "Haushaltsname",
     "members": "Mitglieder",
+    "membersDescription": "Personen, die diesen Haushalt teilen.",
     "invites": "Einladungen",
     "inviteMember": "Jemanden einladen",
+    "inviteDescription": "Lade jemanden ein.",
     "owner": "Eigentümer",
     "member": "Mitglied",
     "generateInvite": "Einladung erstellen",
@@ -363,6 +368,8 @@
     "transferOwnership": "Zum Eigentümer machen",
     "transferOwnershipConfirm": "Eigentümerschaft an {{email}} übertragen?",
     "manage": "Haushalt verwalten",
+    "manageDescription": "Zwischen Haushalten wechseln oder neue erstellen.",
+    "dangerDescription": "Unwiderrufliche Aktionen für diesen Haushalt.",
     "role": {
       "owner": "Eigentümer",
       "member": "Mitglied"
@@ -438,13 +445,19 @@
   },
   "settings": {
     "title": "Einstellungen",
+    "subtitle": "Verwalte deine Einstellungen, deinen Haushalt und dein Konto.",
+    "preferences": "Einstellungen",
+    "dataGroup": "Rezepte & Haushalt",
+    "accountGroup": "Konto",
     "admin": "Admin-Bereich",
     "language": "Sprache",
+    "languageDescription": "Wähle die App-Sprache.",
     "languages": {
       "en": "English",
       "de": "Deutsch"
     },
     "theme": "Design",
+    "themeDescription": "Hell, dunkel oder wie dein System.",
     "themes": {
       "light": "Hell",
       "dark": "Dunkel",
@@ -452,7 +465,8 @@
     },
     "logout": "Abmelden",
     "logoutConfirm": "Möchtest du dich wirklich abmelden?",
-    "account": "Konto"
+    "account": "Konto",
+    "accountDescription": "Deine Anmelde- und Sicherheitsoptionen."
   },
   "errors": {
     "recipeSave": "Rezept speichern hat nicht geklappt. Nochmal?",
@@ -519,6 +533,8 @@
   },
   "tags": {
     "title": "Tags",
+    "subtitle": "Organisiere deine Rezepte mit Tags.",
+    "manageDescription": "Tags erstellen, umbenennen und organisieren.",
     "DIETARY": "Ernährung",
     "PROTEIN": "Protein",
     "CUISINE": "Küche",
@@ -575,6 +591,7 @@
   "aiSettings": {
     "title": "KI-Funktionen",
     "subtitle": "Rezepte und Fotos mit Google Gemini erstellen.",
+    "navDescription": "Rezepte und Fotos mit KI generieren.",
     "enable": "KI-Funktionen aktivieren",
     "apiKey": "Gemini API-Schlüssel",
     "apiKeyPlaceholder": "Gemini API-Schlüssel einfügen",
