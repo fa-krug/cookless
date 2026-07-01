@@ -25,6 +25,7 @@ Because the old Django DB and media both live in the same `cookless_data` volume
 - `AUTH_SECRET` is set in the shell/GitOps env (generate with `openssl rand -base64 32`).
 - The new `sascha384/cookless:latest` image has been published.
 - The compose file points `volumes: - cookless_data:/app/data` at the **same** volume the old Django stack used (so the old DB is present for auto-import).
+- **Critical:** Verify the Docker Compose project name matches the live stack. Docker Compose prefixes plain volume names with the project name (from directory or `docker-compose.yml`). If the new compose deploys under a different project name, it creates a **fresh empty volume** instead of attaching the existing one — the auto-import guard fires (old DB not found), skips silently, and you get an empty app **with no error**. Before cutover: (1) note the current volume name with `docker volume ls | grep cookless` on the GitOps host; (2) deploy the new compose under the **same project directory/name** so it resolves to that same volume; (3) confirm with `docker compose -f docker-compose.production.yml config` and `docker compose ls`. If you discover a mismatch post-cutover: the old data is safe in its original volume — redeploy under the correct project name to reattach it.
 
 ---
 
