@@ -36,7 +36,7 @@ export function loadSelectablePools(
   db: Db,
   householdId: string,
   excludedTagIds: string[],
-): { known: PoolRecipe[]; tryList: PoolRecipe[] } {
+): { known: PoolRecipe[]; tryList: PoolRecipe[]; all: PoolRecipe[] } {
   const recRows = db
     .select({ id: recipes.id, listType: recipes.listType, leftoverDays: recipes.leftoverDays })
     .from(recipes)
@@ -68,13 +68,15 @@ export function loadSelectablePools(
 
   const known: PoolRecipe[] = [];
   const tryList: PoolRecipe[] = [];
+  const all: PoolRecipe[] = [];
   for (const r of recRows) {
-    if (excluded.has(r.id)) continue;
     const pr: PoolRecipe = { id: r.id, ingredientIds: ingByRecipe.get(r.id) ?? [], leftoverDays: r.leftoverDays };
+    all.push(pr); // every household recipe, regardless of tag/listType (A1 gap-fill pool)
+    if (excluded.has(r.id)) continue;
     if (r.listType === "KNOWN") known.push(pr);
     else if (r.listType === "TO_TRY") tryList.push(pr);
   }
-  return { known, tryList };
+  return { known, tryList, all };
 }
 
 function daysBetween(startDate: string, endDate: string): number {
@@ -104,7 +106,7 @@ export function populateIteration(
     .all()
     .map((r) => r.tagId);
 
-  const { known, tryList } = loadSelectablePools(db, plan.householdId, excludedTagIds);
+  const { known, tryList, all } = loadSelectablePools(db, plan.householdId, excludedTagIds);
 
   const selected = selectRecipes({
     known: known.map((r): SelectableRecipe => ({ id: r.id, ingredientIds: r.ingredientIds })),
@@ -116,18 +118,28 @@ export function populateIteration(
     rng,
   });
 
-  // leftoverDays lookup for scheduling
-  const leftoverById = new Map<string, number | null>(
-    [...known, ...tryList].map((r) => [r.id, r.leftoverDays]),
-  );
+  // leftoverDays lookup for scheduling (all recipes, so any id resolves)
+  const leftoverById = new Map<string, number | null>(all.map((r) => [r.id, r.leftoverDays]));
   const scheduleRecipes: ScheduleRecipe[] = selected.map((r) => ({
     id: r.id,
     leftoverDays: leftoverById.get(r.id) ?? null,
   }));
 
+  // A1: fill empty days from OTHER household recipes for variety (Django parity:
+  // planner/services.py _assign_schedule_lunch_only). Fall back to all recipes
+  // only when the "others" pool is empty. Excluded tags are intentionally NOT
+  // applied here, matching Django.
+  const selectedIds = new Set(selected.map((r) => r.id));
+  const others = all.filter((r) => !selectedIds.has(r.id));
+  const fallbackPool = others.length > 0 ? others : all;
+  const fallbackRecipes: ScheduleRecipe[] = fallbackPool.map((r) => ({
+    id: r.id,
+    leftoverDays: r.leftoverDays,
+  }));
+
   const planned = assignSchedule({
     recipes: scheduleRecipes,
-    fallbackRecipes: scheduleRecipes, // cycle the selected set to fill gaps (Django parity)
+    fallbackRecipes, // A1: other-recipe variety pool, not the selected set
     startDate,
     days,
     servings: plan.servings,

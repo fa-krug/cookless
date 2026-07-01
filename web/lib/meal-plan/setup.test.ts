@@ -37,8 +37,9 @@ function seed() {
 describe("loadSelectablePools", () => {
   it("excludes recipes carrying an excluded tag", () => {
     const db = seed();
-    const { known } = loadSelectablePools(db, "h1", ["tEx"]);
+    const { known, all } = loadSelectablePools(db, "h1", ["tEx"]);
     expect(known.map((r) => r.id).sort()).toEqual(["k1", "k2", "k3"]);
+    expect(all.map((r) => r.id).sort()).toEqual(["k1", "k2", "k3", "k4", "t1", "t2"]); // all recipes, tags ignored
   });
 });
 
@@ -81,5 +82,68 @@ describe("setupMealPlan", () => {
     const db = seed();
     setupMealPlan(db, "h1", { iterationWeeks: 1, shoppingDays: [1], servings: 2, knownRatio: 0.7, defaultLeftoverDays: 1, excludedTagIds: ["tEx"] }, now, mulberry32(1));
     expect(db.select().from(mealPlanExcludedTags).all().map((r) => r.tagId)).toEqual(["tEx"]);
+  });
+});
+
+describe("populateIteration gap-fill (A1)", () => {
+  // With one selected recipe over a 7-day iteration and 3 leftover days,
+  // days 1/3/5 are empty and must be filled from OTHER recipes (variety),
+  // so more than one distinct recipe appears. The old bug recycled the
+  // single selected recipe -> exactly one distinct recipe.
+  it("fills empty days from recipes outside the selected set", () => {
+    const db = seed(); // 6 recipes total (k1-k4 KNOWN, t1-t2 TO_TRY)
+    const { iterationId } = setupMealPlan(
+      db, "h1",
+      { iterationWeeks: 1, shoppingDays: [1], servings: 2, knownRatio: 1, defaultLeftoverDays: 3, excludedTagIds: [] },
+      now, mulberry32(42),
+    );
+    const entries = db.select().from(mealPlanEntries).where(eq(mealPlanEntries.iterationId, iterationId)).all();
+    const distinct = new Set(entries.map((e) => e.recipeId));
+    expect(entries.length).toBe(7);           // all days filled
+    expect(distinct.size).toBeGreaterThan(1); // gap-fill pulled OTHER recipes
+  });
+
+  // When every recipe is already selected, "others" is empty and Django falls
+  // back to the full pool. A single-recipe household proves the fallback path:
+  // no crash, all days filled, only that recipe used.
+  it("falls back to the full pool when no other recipes exist", () => {
+    const db = createTestDb();
+    db.insert(households).values({ id: "h1", name: "Home", createdAt: now }).run();
+    db.insert(units).values({ id: 1, nameEn: "gram", nameDe: "Gramm", abbreviation: "g", conversionFactor: "1" }).run();
+    db.insert(ingredients).values({ id: 1, nameEn: "Tomato", nameDe: "Tomate", category: "PRODUCE" }).run();
+    db.insert(recipes).values({ id: "only", householdId: "h1", title: "only", description: "", listType: "KNOWN", defaultServings: 2, createdAt: now, updatedAt: now }).run();
+    db.insert(recipeIngredients).values({ recipeId: "only", ingredientId: 1, quantity: "100", unitId: 1, order: 0 }).run();
+    const { iterationId } = setupMealPlan(
+      db, "h1",
+      { iterationWeeks: 1, shoppingDays: [1], servings: 2, knownRatio: 1, defaultLeftoverDays: 3, excludedTagIds: [] },
+      now, mulberry32(5),
+    );
+    const entries = db.select().from(mealPlanEntries).where(eq(mealPlanEntries.iterationId, iterationId)).all();
+    expect(entries.length).toBe(7);
+    expect(new Set(entries.map((e) => e.recipeId))).toEqual(new Set(["only"]));
+  });
+
+  // Django parity: excluded tags filter the SELECTION pool but NOT the gap-fill
+  // pool. With r1 (untagged) selected and r2 (tagged-out) as the only "other"
+  // recipe, r2 must appear on gap-fill days.
+  it("ignores excluded tags in the gap-fill pool (Django parity)", () => {
+    const db = createTestDb();
+    db.insert(households).values({ id: "h1", name: "Home", createdAt: now }).run();
+    db.insert(units).values({ id: 1, nameEn: "gram", nameDe: "Gramm", abbreviation: "g", conversionFactor: "1" }).run();
+    db.insert(ingredients).values({ id: 1, nameEn: "Tomato", nameDe: "Tomate", category: "PRODUCE" }).run();
+    db.insert(tags).values({ id: "tEx", householdId: "h1", category: "DIETARY", nameEn: "Spicy", nameDe: "Scharf" }).run();
+    db.insert(recipes).values([
+      { id: "r1", householdId: "h1", title: "r1", description: "", listType: "KNOWN", defaultServings: 2, createdAt: now, updatedAt: now },
+      { id: "r2", householdId: "h1", title: "r2", description: "", listType: "KNOWN", defaultServings: 2, createdAt: now, updatedAt: now },
+    ]).run();
+    for (const id of ["r1", "r2"]) db.insert(recipeIngredients).values({ recipeId: id, ingredientId: 1, quantity: "100", unitId: 1, order: 0 }).run();
+    db.insert(recipeTags).values({ recipeId: "r2", tagId: "tEx" }).run();
+    const { iterationId } = setupMealPlan(
+      db, "h1",
+      { iterationWeeks: 1, shoppingDays: [1], servings: 2, knownRatio: 1, defaultLeftoverDays: 3, excludedTagIds: ["tEx"] },
+      now, mulberry32(9),
+    );
+    const used = new Set(db.select().from(mealPlanEntries).where(eq(mealPlanEntries.iterationId, iterationId)).all().map((e) => e.recipeId));
+    expect(used.has("r2")).toBe(true); // tagged-out recipe still reached gap-fill
   });
 });
