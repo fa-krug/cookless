@@ -42,9 +42,11 @@ function isCacheableNav(url, request) {
   return OFFLINE_ROUTES.some((r) => url.pathname === r || url.pathname.startsWith(r + "/"));
 }
 
-function pageCacheKey(url) {
+function pageCacheKey(url, request) {
   const u = new URL(url);
   u.searchParams.delete("_rsc");
+  const isRsc = request.headers.get("RSC") === "1" || url.searchParams.has("_rsc");
+  u.searchParams.set("__sw", isRsc ? "rsc" : "doc");
   return u.toString();
 }
 
@@ -59,7 +61,7 @@ async function cacheFirst(request) {
 
 async function networkFirst(request, url) {
   const cache = await caches.open(PAGES_CACHE);
-  const key = pageCacheKey(url);
+  const key = pageCacheKey(url, request);
   try {
     const res = await fetch(request);
     if (res.ok) cache.put(key, res.clone());

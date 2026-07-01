@@ -14,6 +14,7 @@ export async function submitToggle(
     const res = await fetch(ENDPOINT, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      credentials: "include",
       body: JSON.stringify({ kind: "toggle", itemId }),
     });
     if (!res.ok) return { result: "error" };
@@ -30,6 +31,7 @@ export async function submitUncheckAll(itemIds: string[]): Promise<SubmitResult>
     const res = await fetch(ENDPOINT, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      credentials: "include",
       body: JSON.stringify({ kind: "uncheck-all", itemIds }),
     });
     if (!res.ok) return "error";

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useTransition } from "react";
+import { useState, useMemo, useTransition, useEffect } from "react";
 import { ChevronDown } from "lucide-react";
 import { useT } from "@/lib/i18n/provider";
 import { formatQuantity } from "@/lib/display/format";
@@ -19,6 +19,26 @@ export function ShoppingCategory({ category, items }: ShoppingCategoryProps) {
   const [, startTransition] = useTransition();
   // Optimistic overrides keyed by item id.
   const [optimistic, setOptimistic] = useState<Record<string, boolean>>({});
+
+  // Reconcile with server truth: when fresh `items` arrive (e.g. after
+  // router.refresh() following an offline drain or uncheck-all), drop any
+  // optimistic override that the server has now confirmed. Overrides that
+  // still differ from the server value (still in-flight) are kept.
+  useEffect(() => {
+    setOptimistic((current) => {
+      let changed = false;
+      const next: Record<string, boolean> = {};
+      for (const [id, val] of Object.entries(current)) {
+        const serverItem = items.find((i) => i.id === id);
+        if (serverItem && serverItem.isChecked === val) {
+          changed = true;
+          continue;
+        }
+        next[id] = val;
+      }
+      return changed ? next : current;
+    });
+  }, [items]);
 
   const checkedOf = (item: ShoppingItemDto) => optimistic[item.id] ?? item.isChecked;
 
