@@ -66,6 +66,44 @@ describe("listRecipes", () => {
     expect(items.length).toBe(2);
     expect(totalCount).toBe(3);
   });
+
+  it("sorts the WHOLE collection before paginating (newest, not page-local)", () => {
+    // seed() has r1 Pasta (2026-06-27) and r2 Pizza (2026-06-28) in KNOWN.
+    const { items } = listRecipes(seed(), "h1", { listType: "KNOWN", sort: "newest", limit: 1 });
+    expect(items.map((r) => r.id)).toEqual(["r2"]); // newest first, not alphabetical "Pasta"
+  });
+
+  it("orders by name ascending by default", () => {
+    const { items } = listRecipes(seed(), "h1", { listType: "KNOWN" });
+    expect(items.map((r) => r.id)).toEqual(["r1", "r2"]); // Pasta, Pizza
+  });
+
+  it("orders by name descending", () => {
+    const { items } = listRecipes(seed(), "h1", { listType: "KNOWN", sort: "name-desc" });
+    expect(items.map((r) => r.id)).toEqual(["r2", "r1"]); // Pizza, Pasta
+  });
+
+  it("paginates with a stable totalCount", () => {
+    const p1 = listRecipes(seed(), "h1", { listType: "KNOWN", limit: 1, offset: 0 });
+    const p2 = listRecipes(seed(), "h1", { listType: "KNOWN", limit: 1, offset: 1 });
+    expect(p1.totalCount).toBe(2);
+    expect(p2.totalCount).toBe(2);
+    expect(p1.items.map((r) => r.id)).toEqual(["r1"]);
+    expect(p2.items.map((r) => r.id)).toEqual(["r2"]);
+  });
+
+  it("fuzzy search tolerates diacritics and ranks by relevance", () => {
+    const db = createTestDb();
+    db.insert(households).values({ id: "h1", name: "Home", createdAt: now }).run();
+    db.insert(recipes).values([
+      { id: "a", householdId: "h1", title: "Pürée Soup", description: "", listType: "KNOWN", defaultServings: 2, createdAt: now, updatedAt: now },
+      { id: "b", householdId: "h1", title: "Chunky Puree Bowl", description: "", listType: "KNOWN", defaultServings: 2, createdAt: now, updatedAt: now },
+      { id: "c", householdId: "h1", title: "Pizza", description: "", listType: "KNOWN", defaultServings: 2, createdAt: now, updatedAt: now },
+    ]).run();
+    const { items, totalCount } = listRecipes(db, "h1", { search: "puree" });
+    expect(totalCount).toBe(2);              // Pizza excluded
+    expect(items.map((r) => r.id)).toEqual(["a", "b"]); // prefix "Pürée…" ranks above substring
+  });
 });
 
 function seedDetail() {

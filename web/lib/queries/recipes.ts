@@ -1,4 +1,4 @@
-import { and, asc, eq, inArray, like, sql } from "drizzle-orm";
+import { and, asc, eq, inArray } from "drizzle-orm";
 import type { Db } from "@/lib/db";
 import {
   recipeTags,
@@ -10,6 +10,7 @@ import {
   ingredients,
   units,
 } from "@/lib/db/schema";
+import { fuzzyScore } from "@/lib/domain/recipes/search";
 
 export interface RecipeTagDto {
   id: string;
@@ -37,6 +38,8 @@ export interface ListRecipesOpts {
   listType?: string;
   tagIds?: string[];
   search?: string;
+  sort?: string; // "name-asc" (default) | "name-desc" | "newest" | "updated"; unknown => name-asc
+  locale?: string; // default "en" — locale-aware name ordering
   limit?: number;
   offset?: number;
 }
@@ -46,20 +49,34 @@ export interface RecipeListResult {
   totalCount: number;
 }
 
+function compareRecipes(
+  a: { title: string; createdAt: Date; updatedAt: Date },
+  b: { title: string; createdAt: Date; updatedAt: Date },
+  sort: string,
+  locale: string,
+): number {
+  switch (sort) {
+    case "name-desc":
+      return b.title.localeCompare(a.title, locale);
+    case "newest":
+      return +b.createdAt - +a.createdAt;
+    case "updated":
+      return +b.updatedAt - +a.updatedAt;
+    default: // "name-asc"
+      return a.title.localeCompare(b.title, locale);
+  }
+}
+
 export function listRecipes(
   db: Db,
   householdId: string,
   opts: ListRecipesOpts = {},
 ): RecipeListResult {
-  const { listType, tagIds, search, limit = 20, offset = 0 } = opts;
+  const { listType, tagIds, search, sort = "name-asc", locale = "en", limit = 20, offset = 0 } = opts;
 
   const conditions = [eq(recipes.householdId, householdId)];
   if (listType) conditions.push(eq(recipes.listType, listType));
-  if (search && search.trim()) {
-    conditions.push(like(recipes.title, `%${search.trim()}%`));
-  }
   if (tagIds && tagIds.length > 0) {
-    // recipe ids that have at least one of the requested tags
     const tagged = db
       .selectDistinct({ recipeId: recipeTags.recipeId })
       .from(recipeTags)
@@ -69,24 +86,27 @@ export function listRecipes(
     conditions.push(inArray(recipes.id, tagged.length ? tagged : ["__none__"]));
   }
 
-  const where = and(...conditions);
+  // Fetch all structurally-matching rows; sort/search/paginate in JS so the
+  // whole collection is ordered correctly (SQLite has no locale-aware ORDER BY
+  // and no diacritic-insensitive search). Household collections are small.
+  const allRows = db.select().from(recipes).where(and(...conditions)).all();
 
-  const totalCount = db
-    .select({ n: sql<number>`count(*)` })
-    .from(recipes)
-    .where(where)
-    .get()!.n;
+  const q = search?.trim() ?? "";
+  let ordered: typeof allRows;
+  if (q) {
+    ordered = allRows
+      .map((r) => ({ r, score: fuzzyScore(r.title, q) }))
+      .filter((x) => x.score > 0)
+      .sort((a, b) => b.score - a.score || a.r.title.localeCompare(b.r.title, locale))
+      .map((x) => x.r);
+  } else {
+    ordered = [...allRows].sort((a, b) => compareRecipes(a, b, sort, locale));
+  }
 
-  const rows = db
-    .select()
-    .from(recipes)
-    .where(where)
-    .orderBy(recipes.title)
-    .limit(limit)
-    .offset(offset)
-    .all();
+  const totalCount = ordered.length;
+  const rows = ordered.slice(offset, offset + limit);
 
-  // Attach tags in one extra query, grouped in JS.
+  // Attach tags for the current page in one extra query, grouped in JS.
   const ids = rows.map((r) => r.id);
   const tagRows = ids.length
     ? db
