@@ -7,6 +7,7 @@ import { useT } from "@/lib/i18n/provider";
 import { logoutAction } from "@/app/(auth)/actions";
 import { useConfirm } from "@/components/ui/confirm-dialog";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { clear as clearOfflineQueue } from "@/lib/offline/queue";
 import { PasswordForm } from "./password-form";
 import { PasskeySection } from "./passkey-section";
@@ -45,7 +46,7 @@ export function AccountSection({
   }
 
   return (
-    <section className="space-y-4">
+    <Card className="space-y-4 p-4">
       <h2 className="text-sm font-medium">{t("settings.account")}</h2>
 
       <p className="text-sm text-muted-foreground">{email}</p>
@@ -60,6 +61,6 @@ export function AccountSection({
       </Button>
 
       {dialog}
-    </section>
+    </Card>
   );
 }

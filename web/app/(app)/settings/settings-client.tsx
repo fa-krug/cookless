@@ -7,6 +7,7 @@ import { useTheme, type Theme } from "@/components/theme/use-theme";
 import { updateProfileAction } from "@/app/(account)/actions";
 import { toast } from "@/components/ui/sonner";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import type { Locale } from "@/lib/i18n/config";
 import { AccountSection } from "./account-section";
@@ -43,7 +44,7 @@ export function SettingsClient({
 
   return (
     <div className="space-y-8">
-      <section className="space-y-2">
+      <Card className="space-y-2 p-4">
         <h2 className="text-sm font-medium">{t("settings.language")}</h2>
         <ToggleGroup
           type="single"
@@ -56,9 +57,9 @@ export function SettingsClient({
             </ToggleGroupItem>
           ))}
         </ToggleGroup>
-      </section>
+      </Card>
 
-      <section className="space-y-2">
+      <Card className="space-y-2 p-4">
         <h2 className="text-sm font-medium">{t("settings.theme")}</h2>
         <ToggleGroup
           type="single"
@@ -71,22 +72,22 @@ export function SettingsClient({
             </ToggleGroupItem>
           ))}
         </ToggleGroup>
-      </section>
+      </Card>
 
-      <section className="space-y-2">
+      <Card className="space-y-2 p-4">
         <h2 className="text-sm font-medium">{t("tags.manageTags")}</h2>
         <Button asChild variant="outline"><Link href="/settings/tags">{t("tags.manageLink")}</Link></Button>
-      </section>
+      </Card>
 
-      <section className="space-y-2">
+      <Card className="space-y-2 p-4">
         <h2 className="text-sm font-medium">{t("aiSettings.title")}</h2>
         <Button asChild variant="outline"><Link href="/settings/ai">{t("aiSettings.link")}</Link></Button>
-      </section>
+      </Card>
 
-      <section className="space-y-2">
+      <Card className="space-y-2 p-4">
         <h2 className="text-sm font-medium">{t("nav.manageHousehold")}</h2>
         <Button asChild variant="outline"><Link href="/settings/household">{t("nav.manageHousehold")}</Link></Button>
-      </section>
+      </Card>
 
       <AccountSection email={email} hasPassword={hasPassword} hasPasskey={hasPasskey} />
     </div>
