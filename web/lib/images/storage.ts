@@ -1,4 +1,5 @@
-import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
+import { readFile } from "node:fs/promises";
 import { dirname, join, resolve, sep } from "node:path";
 import sharp from "sharp";
 import { mediaRoot } from "./config";
@@ -34,8 +35,12 @@ export function deleteImageFile(relativePath: string): void {
   if (abs && existsSync(abs)) rmSync(abs);
 }
 
-export function readImage(relativePath: string): Buffer | null {
+export async function readImage(relativePath: string): Promise<Buffer | null> {
   const abs = resolveMediaPath(relativePath);
-  if (!abs || !existsSync(abs)) return null;
-  return readFileSync(abs);
+  if (!abs) return null;
+  try {
+    return await readFile(abs);
+  } catch {
+    return null;
+  }
 }

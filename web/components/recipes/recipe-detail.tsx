@@ -1,5 +1,6 @@
 import type { JSX } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { BookOpen, ChevronLeft } from "lucide-react";
 import type {
   RecipeDetail as RecipeDetailDto,
@@ -112,11 +113,16 @@ export function RecipeDetail({
 
       {/* Hero image or placeholder */}
       {imageUrl !== null ? (
-        <img
-          src={imageUrl}
-          alt={recipe.title}
-          className="h-56 w-full rounded-xl object-cover"
-        />
+        <div className="relative h-56 w-full overflow-hidden rounded-xl">
+          <Image
+            src={imageUrl}
+            alt={recipe.title}
+            fill
+            priority
+            sizes="(max-width: 768px) 100vw, 768px"
+            className="object-cover"
+          />
+        </div>
       ) : (
         <div className="flex h-56 w-full items-center justify-center rounded-xl bg-muted">
           <BookOpen size={48} className="text-muted-foreground" />
