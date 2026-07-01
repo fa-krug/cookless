@@ -1,14 +1,14 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { LogOut } from "lucide-react";
+import { LogOut, Mail } from "lucide-react";
 
 import { useT } from "@/lib/i18n/provider";
 import { logoutAction } from "@/app/(auth)/actions";
 import { useConfirm } from "@/components/ui/confirm-dialog";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { clear as clearOfflineQueue } from "@/lib/offline/queue";
+import { SettingsSection } from "./settings-section";
 import { PasswordForm } from "./password-form";
 import { PasskeySection } from "./passkey-section";
 
@@ -46,21 +46,19 @@ export function AccountSection({
   }
 
   return (
-    <Card className="space-y-4 p-4">
-      <h2 className="text-sm font-medium">{t("settings.account")}</h2>
-
+    <SettingsSection
+      icon={Mail}
+      title={t("settings.account")}
+      description={t("settings.accountDescription")}
+    >
       <p className="text-sm text-muted-foreground">{email}</p>
-
       <PasswordForm hasPassword={hasPassword} hasPasskey={hasPasskey} />
-
       <PasskeySection hasPassword={hasPassword} />
-
       <Button variant="destructive" className="w-full" onClick={handleLogout}>
         <LogOut size={16} />
         {t("settings.logout")}
       </Button>
-
       {dialog}
-    </Card>
+    </SettingsSection>
   );
 }

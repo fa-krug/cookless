@@ -14,7 +14,10 @@ export default async function SettingsPage() {
   const account = serializeUser(db, user);
   return (
     <div className="space-y-8">
-      <h1 className="text-2xl font-bold">{t("settings.title")}</h1>
+      <div className="space-y-1">
+        <h1 className="text-2xl font-bold">{t("settings.title")}</h1>
+        <p className="text-sm text-muted-foreground">{t("settings.subtitle")}</p>
+      </div>
       <SettingsClient
         currentLanguage={current}
         email={account.email}
