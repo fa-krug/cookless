@@ -281,6 +281,7 @@
     "allDoneSubtitle": "Alles auf dieser Liste wurde abgehakt",
     "backToPlan": "Zurück zum Essensplan",
     "uncheckAll": "Zurücksetzen",
+    "forDate": "Einkauf für {{date}}",
     "linkedToPlan": "Aus deinem Essensplan",
     "noItems": "Nichts auf der Liste",
     "markBought": "Hab ich!",

@@ -281,6 +281,7 @@
     "allDoneSubtitle": "Everything on this list has been checked off",
     "backToPlan": "Back to meal plan",
     "uncheckAll": "Reset",
+    "forDate": "Shopping for {{date}}",
     "linkedToPlan": "From your meal plan",
     "noItems": "Nothing on the list",
     "markBought": "Got it!",
