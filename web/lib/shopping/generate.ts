@@ -14,11 +14,10 @@ interface GenerateOpts {
   startDate: string;
   endDate: string;
   shoppingDays: readonly number[];
-  servings: number;
 }
 
 export function generateShoppingListsForIteration(db: Db, opts: GenerateOpts): void {
-  const { iterationId, startDate, endDate, shoppingDays, servings } = opts;
+  const { iterationId, startDate, endDate, shoppingDays } = opts;
 
   // Wipe existing lists (items cascade via FK).
   db.delete(shoppingLists).where(eq(shoppingLists.iterationId, iterationId)).run();
@@ -37,6 +36,7 @@ export function generateShoppingListsForIteration(db: Db, opts: GenerateOpts): v
     const entries = db
       .select({
         recipeId: mealPlanEntries.recipeId,
+        servings: mealPlanEntries.servings,
         defaultServings: recipes.defaultServings,
       })
       .from(mealPlanEntries)
@@ -58,7 +58,7 @@ export function generateShoppingListsForIteration(db: Db, opts: GenerateOpts): v
         .where(eq(recipeIngredients.recipeId, e.recipeId))
         .all();
       return {
-        servings,
+        servings: e.servings,
         defaultServings: e.defaultServings,
         isLeftover: false,
         ingredients: ings.map((ri) => ({
@@ -70,21 +70,22 @@ export function generateShoppingListsForIteration(db: Db, opts: GenerateOpts): v
     });
 
     const aggregated = aggregateShoppingItems(shoppingEntries);
-    if (aggregated.length === 0) continue;
 
     const listId = randomUUID();
     db.insert(shoppingLists).values({
       id: listId, iterationId, shoppingDate: seg.shoppingDate, createdAt,
     }).run();
-    db.insert(shoppingListItems).values(
-      aggregated.map((a) => ({
-        id: randomUUID(),
-        shoppingListId: listId,
-        ingredientId: a.ingredientId,
-        quantity: a.quantity.toString(),
-        unitId: a.unitId,
-        isChecked: false,
-      })),
-    ).run();
+    if (aggregated.length > 0) {
+      db.insert(shoppingListItems).values(
+        aggregated.map((a) => ({
+          id: randomUUID(),
+          shoppingListId: listId,
+          ingredientId: a.ingredientId,
+          quantity: a.quantity.toString(),
+          unitId: a.unitId,
+          isChecked: false,
+        })),
+      ).run();
+    }
   }
 }

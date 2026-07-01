@@ -157,7 +157,7 @@ export function populateIteration(
 
   const shoppingDays = [plan.shoppingDay1, plan.shoppingDay2].filter((d): d is number => d != null);
   generateShoppingListsForIteration(db, {
-    iterationId, startDate, endDate, shoppingDays, servings: plan.servings,
+    iterationId, startDate, endDate, shoppingDays,
   });
 }
 

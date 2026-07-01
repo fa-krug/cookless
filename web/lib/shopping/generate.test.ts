@@ -37,7 +37,7 @@ describe("generateShoppingListsForIteration", () => {
   it("aggregates non-leftover ingredients scaled to plan servings", () => {
     const db = seed();
     generateShoppingListsForIteration(db, {
-      iterationId: "it1", startDate: "2026-06-22", endDate: "2026-06-28", shoppingDays: [1], servings: 4,
+      iterationId: "it1", startDate: "2026-06-22", endDate: "2026-06-28", shoppingDays: [1],
     });
     const lists = db.select().from(shoppingLists).where(eq(shoppingLists.iterationId, "it1")).all();
     expect(lists.length).toBe(1);
@@ -50,9 +50,43 @@ describe("generateShoppingListsForIteration", () => {
 
   it("replaces existing lists on re-run (idempotent)", () => {
     const db = seed();
-    const opts = { iterationId: "it1", startDate: "2026-06-22", endDate: "2026-06-28", shoppingDays: [1], servings: 4 } as const;
+    const opts = { iterationId: "it1", startDate: "2026-06-22", endDate: "2026-06-28", shoppingDays: [1] } as const;
     generateShoppingListsForIteration(db, opts);
     generateShoppingListsForIteration(db, opts);
     expect(db.select().from(shoppingLists).where(eq(shoppingLists.iterationId, "it1")).all().length).toBe(1);
+  });
+
+  it("scales each entry by its own servings, not a plan-level value", () => {
+    const db = seed();
+    // Add a second cooking entry on Tue (weekday 2, still in segment) with servings 2 → 1x scale.
+    db.insert(recipes).values({ id: "r2", householdId: "h1", title: "Soup", description: "", listType: "KNOWN", defaultServings: 2, createdAt: now, updatedAt: now }).run();
+    db.insert(recipeIngredients).values({ recipeId: "r2", ingredientId: 1, quantity: "100", unitId: 1, order: 0 }).run();
+    db.insert(mealPlanEntries).values(
+      { id: "e3", iterationId: "it1", date: "2026-06-24", mealType: "LUNCH", recipeId: "r2", servings: 2, isLeftover: false, isLocked: false },
+    ).run();
+    generateShoppingListsForIteration(db, {
+      iterationId: "it1", startDate: "2026-06-22", endDate: "2026-06-28", shoppingDays: [1],
+    });
+    const lists = db.select().from(shoppingLists).where(eq(shoppingLists.iterationId, "it1")).all();
+    const items = db.select().from(shoppingListItems).where(eq(shoppingListItems.shoppingListId, lists[0].id)).all();
+    const byIng = Object.fromEntries(items.map((i) => [i.ingredientId, i.quantity]));
+    // Tomato: r1 200g * (4/2)=400 + r2 100g * (2/2)=100 → 500. Pasta: r1 150 * 2 = 300.
+    expect(byIng[1]).toBe("500");
+    expect(byIng[2]).toBe("300");
+  });
+
+  it("creates a list for a segment even when it aggregates to zero items", () => {
+    const db = createTestDb();
+    db.insert(households).values({ id: "h1", name: "Home", createdAt: now }).run();
+    db.insert(mealPlans).values({ id: "mp1", householdId: "h1", shoppingDay1: 1, servings: 4, knownRatio: "0.7", defaultLeftoverDays: 1, createdAt: now }).run();
+    db.insert(planIterations).values({ id: "it1", mealPlanId: "mp1", startDate: "2026-06-22", endDate: "2026-06-28", status: "ACTIVE", createdAt: now }).run();
+    // No entries at all → one segment, zero aggregated items.
+    generateShoppingListsForIteration(db, {
+      iterationId: "it1", startDate: "2026-06-22", endDate: "2026-06-28", shoppingDays: [1],
+    });
+    const lists = db.select().from(shoppingLists).where(eq(shoppingLists.iterationId, "it1")).all();
+    expect(lists.length).toBe(1);
+    const items = db.select().from(shoppingListItems).where(eq(shoppingListItems.shoppingListId, lists[0].id)).all();
+    expect(items.length).toBe(0);
   });
 });
