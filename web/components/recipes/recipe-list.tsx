@@ -22,6 +22,7 @@ interface RecipeListProps {
   tags: string[];
   locale: string;
   deletedId?: string;
+  highlightId?: string;
 }
 
 export function RecipeList({
@@ -33,6 +34,7 @@ export function RecipeList({
   tags,
   locale,
   deletedId,
+  highlightId,
 }: RecipeListProps) {
   const { t } = useT();
   const router = useRouter();
@@ -150,7 +152,13 @@ export function RecipeList({
       {items
         .filter((r) => !hiddenIds.has(r.id))
         .map((r) => (
-          <RecipeCard key={r.id} recipe={r} locale={locale} onDelete={handleDelete} />
+          <RecipeCard
+            key={r.id}
+            recipe={r}
+            locale={locale}
+            onDelete={handleDelete}
+            highlight={r.id === highlightId}
+          />
         ))}
       {hasMore && (
         <div ref={sentinelRef} className="flex justify-center py-4">

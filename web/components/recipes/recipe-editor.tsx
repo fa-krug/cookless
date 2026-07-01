@@ -50,7 +50,11 @@ export function RecipeEditor(props: {
       return;
     }
     toast.success(t(props.mode === "create" ? "recipes.created" : "recipes.saved"));
-    router.push(`/recipes/${res.data.id}`);
+    if (props.mode === "create") {
+      router.push(`/recipes?new=${res.data.id}`);
+    } else {
+      router.push(`/recipes/${res.data.id}`);
+    }
   }
 
   return (

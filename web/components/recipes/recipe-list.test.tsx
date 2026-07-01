@@ -37,7 +37,11 @@ function makeRecipe(overrides: Partial<RecipeSummary> = {}): RecipeSummary {
   };
 }
 
-function renderList(items: RecipeSummary[], deletedId?: string) {
+function renderList(
+  items: RecipeSummary[],
+  deletedId?: string,
+  highlightId?: string,
+) {
   return render(
     <I18nProvider locale="en" dict={en}>
       <RecipeList
@@ -49,6 +53,7 @@ function renderList(items: RecipeSummary[], deletedId?: string) {
         tags={[]}
         locale="en"
         deletedId={deletedId}
+        highlightId={highlightId}
       />
       <Toaster />
     </I18nProvider>,
@@ -101,5 +106,25 @@ describe("RecipeList delete + undo", () => {
     await vi.advanceTimersByTimeAsync(5000);
 
     await waitFor(() => expect(deleteRecipeAction).toHaveBeenCalledWith("r1"));
+  });
+});
+
+describe("RecipeList highlight", () => {
+  beforeEach(() => {
+    Element.prototype.scrollIntoView = vi.fn();
+  });
+
+  it("applies animate-highlight only to the card matching highlightId", () => {
+    renderList([makeRecipe({ id: "r1", title: "Pasta" }), makeRecipe({ id: "r2", title: "Soup" })], undefined, "r2");
+
+    const pastaCard = screen.getByText("Pasta").closest('[class*="rounded"]');
+    const soupCard = screen.getByText("Soup").closest('[class*="rounded"]');
+
+    expect(soupCard).toHaveClass("animate-highlight");
+    expect(pastaCard).not.toHaveClass("animate-highlight");
+    expect(Element.prototype.scrollIntoView).toHaveBeenCalledWith({
+      behavior: "smooth",
+      block: "center",
+    });
   });
 });

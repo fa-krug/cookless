@@ -1,6 +1,7 @@
 "use client";
 
 import type { JSX } from "react";
+import { useEffect, useRef } from "react";
 import Link from "next/link";
 import { BookOpen } from "lucide-react";
 import type { RecipeSummary } from "@/lib/queries/recipes";
@@ -21,14 +22,22 @@ interface RecipeCardProps {
   recipe: RecipeSummary;
   locale: string;
   onDelete: (recipe: RecipeSummary) => void;
+  highlight?: boolean;
 }
 
-export function RecipeCard({ recipe, locale, onDelete }: RecipeCardProps): JSX.Element {
+export function RecipeCard({ recipe, locale, onDelete, highlight }: RecipeCardProps): JSX.Element {
   const { t } = useT();
   const imageUrl = recipeImageUrl(recipe.image);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (highlight && ref.current) {
+      ref.current.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }, [highlight]);
 
   return (
-    <Card>
+    <Card ref={highlight ? ref : undefined} className={highlight ? "animate-highlight" : ""}>
       <CardContent className="flex min-w-0 items-center justify-between p-4">
         <Link
           href={`/recipes/${recipe.id}`}
