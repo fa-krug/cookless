@@ -20,9 +20,10 @@ export async function ShoppingListView({
 
   if (!list || list.items.length === 0) {
     return (
-      <div className="space-y-4">
+      <div className="flex flex-1 flex-col gap-4">
         {title}
         <EmptyState
+          fill
           icon={ShoppingCart}
           title={t("shopping.emptyTitle")}
           subtitle={t("shopping.emptySubtitle")}
@@ -38,9 +39,10 @@ export async function ShoppingListView({
 
   if (list.items.every((i) => i.isChecked)) {
     return (
-      <div className="space-y-4">
+      <div className="flex flex-1 flex-col gap-4">
         {title}
         <EmptyState
+          fill
           icon={CheckCircle}
           title={t("shopping.allDoneTitle")}
           subtitle={t("shopping.allDoneSubtitle")}
