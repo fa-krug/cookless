@@ -17,5 +17,9 @@ if (dbPath !== ":memory:") mkdirSync(dirname(dbPath), { recursive: true });
 export const sqlite = new Database(dbPath);
 sqlite.pragma("journal_mode = WAL");
 sqlite.pragma("foreign_keys = ON");
+sqlite.pragma("synchronous = NORMAL");
+sqlite.pragma("cache_size = -64000"); // 64 MB page cache (negative = KiB)
+sqlite.pragma("mmap_size = 268435456"); // 256 MB memory-mapped I/O
+sqlite.pragma("temp_store = MEMORY");
 
 export const db = drizzle(sqlite, { schema });
