@@ -60,6 +60,10 @@
     "registerWithPassword": "Create Account with Password",
     "passkeyRecommendation": "Tip: You can add a passkey later in Settings for easier sign-in."
   },
+  "firstRun": {
+    "title": "Welcome to Cookless",
+    "prompt": "No account exists yet. Create the first one — you'll become the owner of your new home."
+  },
   "passkeys": {
     "title": "Passkeys",
     "addPasskey": "Add Passkey",

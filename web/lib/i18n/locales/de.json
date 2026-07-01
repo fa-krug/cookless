@@ -60,6 +60,10 @@
     "registerWithPassword": "Konto mit Passwort erstellen",
     "passkeyRecommendation": "Tipp: Du kannst später in den Einstellungen einen Passkey hinzufügen."
   },
+  "firstRun": {
+    "title": "Willkommen bei Cookless",
+    "prompt": "Es existiert noch kein Konto. Erstelle das erste — du wirst Eigentümer:in deines neuen Zuhauses."
+  },
   "passkeys": {
     "title": "Passkeys",
     "addPasskey": "Passkey hinzufügen",
