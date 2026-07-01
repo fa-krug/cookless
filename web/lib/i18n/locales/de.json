@@ -367,6 +367,10 @@
     "install": "Installieren",
     "dismiss": "Vielleicht später"
   },
+  "offline": {
+    "banner": "Du bist offline — Änderungen werden synchronisiert, sobald du wieder online bist.",
+    "syncing": "Änderungen werden synchronisiert…"
+  },
   "ai": {
     "title": "KI-Unterstützung",
     "description": "Lass dir von der KI bei Rezeptideen und mehr helfen.",

@@ -367,6 +367,10 @@
     "install": "Install",
     "dismiss": "Maybe later"
   },
+  "offline": {
+    "banner": "You're offline — changes will sync when you reconnect.",
+    "syncing": "Syncing your changes…"
+  },
   "ai": {
     "title": "AI Support",
     "description": "Let AI lend a hand with recipe ideas and more.",
