@@ -13,16 +13,23 @@ RUN npm run build
 FROM node:22-bookworm-slim AS runtime
 WORKDIR /app
 ENV NODE_ENV=production
-# better-sqlite3 + sharp ship prebuilt binaries; no build toolchain needed at runtime.
+# Next standalone server + assets.
 COPY --from=build /app/.next/standalone ./
 COPY --from=build /app/.next/static ./.next/static
 COPY --from=build /app/public ./public
-# Drizzle migrations + scripts needed to init/import a fresh volume.
-COPY --from=build /app/drizzle ./drizzle
+# Migration toolchain: full deps (incl. tsx + drizzle migrator) OVERRIDE the pruned
+# standalone node_modules, plus the TS sources the scripts import.
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=build /app/lib ./lib
 COPY --from=build /app/scripts ./scripts
-RUN mkdir -p /app/data/media
+COPY --from=build /app/drizzle ./drizzle
+COPY --from=build /app/tsconfig.json ./tsconfig.json
+COPY --from=build /app/package.json ./package.json
+COPY docker-entrypoint.sh ./docker-entrypoint.sh
+RUN chmod +x ./docker-entrypoint.sh && mkdir -p /app/data/media
 ENV DATABASE_FILE=/app/data/cookless.db
 ENV MEDIA_ROOT=/app/data/media
-ENV PORT=3000
-EXPOSE 3000
+ENV PORT=8000
+EXPOSE 8000
+ENTRYPOINT ["./docker-entrypoint.sh"]
 CMD ["node", "server.js"]
