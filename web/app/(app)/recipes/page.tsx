@@ -6,6 +6,7 @@ import { db } from "@/lib/db";
 import { listRecipes, listTags } from "@/lib/queries/recipes";
 import { getHouseholdAiSettings } from "@/lib/queries/household";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { RecipeFilters } from "@/components/recipes/recipe-filters";
 import { RecipeList } from "@/components/recipes/recipe-list";
@@ -41,7 +42,7 @@ export default async function RecipesPage({
   });
 
   return (
-    <div className="space-y-4">
+    <div className="flex flex-1 flex-col gap-4">
       <div className="flex items-center justify-between gap-2">
         <h1 className="text-2xl font-bold">{t("recipes.title")}</h1>
         <div className="flex items-center gap-2">
@@ -63,24 +64,28 @@ export default async function RecipesPage({
       </div>
 
       {/* RecipeFilters is a client island — pass only serializable props, NO t function */}
-      <RecipeFilters
-        list={list}
-        q={q}
-        sort={sort}
-        tags={tagIds}
-        allTags={allTags}
-        locale={locale}
-      />
+      <Card className="p-3">
+        <RecipeFilters
+          list={list}
+          q={q}
+          sort={sort}
+          tags={tagIds}
+          allTags={allTags}
+          locale={locale}
+        />
+      </Card>
 
       {totalCount === 0 ? (
         q ? (
           <EmptyState
+            fill
             icon={Search}
             title={t("recipes.noSearchResults")}
             subtitle={t("recipes.noSearchResultsSubtitle")}
           />
         ) : (
           <EmptyState
+            fill
             icon={BookOpen}
             title={t("recipes.noRecipesTitle")}
             subtitle={t("recipes.noRecipesSubtitle")}
