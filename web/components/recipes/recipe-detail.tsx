@@ -98,7 +98,7 @@ export function RecipeDetail({
   aiEnabled,
   hasKey,
 }: RecipeDetailProps): JSX.Element {
-  const imageUrl = recipeImageUrl(recipe.image, 640);
+  const imageUrl = recipeImageUrl(recipe.image);
 
   return (
     <div className="space-y-6">
