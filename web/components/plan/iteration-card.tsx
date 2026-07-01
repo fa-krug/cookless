@@ -158,7 +158,7 @@ export function IterationCard({
                   {/* Shopping list preview on shopping days */}
                   {isShoppingDay && shoppingList && (
                     <Link
-                      href="/shopping"
+                      href={`/shopping/${shoppingList.id}`}
                       className="flex items-center gap-2 px-4 py-3 hover:bg-blue-50 dark:hover:bg-blue-950"
                     >
                       <ShoppingCart size={14} className="text-blue-500" />
