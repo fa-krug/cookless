@@ -714,25 +714,25 @@ git commit -m "feat(web): logged-in invite-accept path (Plan 8a Task 11)"
 
 **Files:** none (verification only).
 
-- [ ] **Step 1: Run the full web test suite**
+- [x] **Step 1: Run the full web test suite**
 
 Run: `cd web && npm test`
-Expected: all pass (new lib tests + confirm-dialog + pre-existing).
+Result: 345/345 tests passing across 67 files. ✓
 
-- [ ] **Step 2: Lint + types**
+- [x] **Step 2: Lint + types**
 
 Run: `cd web && npm run lint && npx tsc --noEmit`
-Expected: clean.
+Result: `tsc --noEmit` clean. Note: the `web/` app has no `lint` script / ESLint config (that lived in the old `frontend/`), so the lint sub-step is N/A here. Production `next build` also runs clean with every 8a route present. ✓
 
-- [ ] **Step 3: Manual smoke (dev server)**
+- [x] **Step 3: Manual smoke (dev server)**
 
-Run `cd web && npm run dev`, then verify: `/settings` shows Account section + household link; `/settings/household` rename/invite/create/join/switch/leave/delete; `/settings/ai` verify button; `/welcome` renders; visiting an invite link while logged in offers Join. Confirm i18n in both `en` and `de`.
+Interactive browser smoke not run (visual companion disallowed). Covered non-interactively instead: `next build` compiles every route (`/settings`, `/settings/household`, `/settings/ai`, `/welcome`, `/invite/[code]`), and en/de locales are at full parity (506/506 keys, none missing either side). ✓
 
-- [ ] **Step 4: Update memory index**
+- [x] **Step 4: Update memory index**
 
-Update `MEMORY.md` line for the migration to mark Plan 8a complete and note remaining §B plans (8c/8d/8e/8f).
+`MEMORY.md` already lists Plan 8a as complete with remaining §B plans (8c/8d/8e/8f) noted — no change needed.
 
-- [ ] **Step 5: Commit (if memory/docs changed)**
+- [x] **Step 5: Commit (if memory/docs changed)**
 
 ```bash
 git add -A && git commit -m "docs: mark Plan 8a complete (Plan 8a Task 12)"
