@@ -2,7 +2,6 @@
 
 import { revalidatePath } from "next/cache";
 import { withHousehold, type Result } from "@/lib/actions/result";
-import { toggleShoppingItem, setShoppingItemsChecked } from "@/lib/shopping/items";
 import { moveRecipe, deleteRecipe } from "@/lib/recipes/mutations";
 import { setupMealPlan } from "@/lib/meal-plan/setup";
 import { renewIteration, generateNextIteration } from "@/lib/meal-plan/iterations";
@@ -17,22 +16,6 @@ import { bulkCreateRecipes } from "@/lib/recipes/bulk-create";
 import { bulkCreateSchema, aiSettingsSchema } from "@/lib/schemas/generate";
 import { updateHouseholdSettings } from "@/lib/households/manage";
 import { ALLOWED_UPLOAD_TYPES, MAX_UPLOAD_BYTES } from "@/lib/images/config";
-
-export async function toggleShoppingItemAction(itemId: string): Promise<Result<boolean>> {
-  const res = await withHousehold(({ db, householdId }) =>
-    toggleShoppingItem(db, householdId, itemId),
-  );
-  if (res.ok) revalidatePath("/shopping");
-  return res;
-}
-
-export async function uncheckAllShoppingAction(itemIds: string[]): Promise<Result<number>> {
-  const res = await withHousehold(({ db, householdId }) =>
-    setShoppingItemsChecked(db, householdId, itemIds, false),
-  );
-  if (res.ok) revalidatePath("/shopping");
-  return res;
-}
 
 export async function moveRecipeAction(recipeId: string): Promise<Result<"KNOWN" | "TO_TRY">> {
   const res = await withHousehold(({ db, householdId, now }) =>

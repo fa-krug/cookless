@@ -5,7 +5,7 @@ import { ChevronDown } from "lucide-react";
 import { useT } from "@/lib/i18n/provider";
 import { formatQuantity } from "@/lib/display/format";
 import { toast } from "@/components/ui/sonner";
-import { toggleShoppingItemAction } from "@/app/(app)/actions";
+import { submitToggle } from "@/lib/offline/submit";
 import type { ShoppingItemDto } from "@/lib/queries/shopping";
 
 interface ShoppingCategoryProps {
@@ -37,11 +37,12 @@ export function ShoppingCategory({ category, items }: ShoppingCategoryProps) {
     const next = !checkedOf(item);
     setOptimistic((o) => ({ ...o, [item.id]: next }));
     startTransition(async () => {
-      const res = await toggleShoppingItemAction(item.id);
-      if (!res.ok) {
+      const { result } = await submitToggle(item.id);
+      if (result === "error") {
         setOptimistic((o) => ({ ...o, [item.id]: !next })); // revert
         toast.error(t("common.errorRetry"));
       }
+      // "queued" (offline) keeps the optimistic state; it replays on reconnect.
     });
   }
 
