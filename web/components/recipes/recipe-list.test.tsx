@@ -107,6 +107,25 @@ describe("RecipeList delete + undo", () => {
 
     await waitFor(() => expect(deleteRecipeAction).toHaveBeenCalledWith("r1"));
   });
+
+  it("restores the row and shows an error toast when the delete action fails", async () => {
+    deleteRecipeAction.mockResolvedValue({ ok: false });
+    renderList([makeRecipe()]);
+
+    fireEvent.click(screen.getByLabelText("Delete Pasta"));
+    const confirmButton = await screen.findByRole("button", { name: "Delete" });
+    fireEvent.click(confirmButton);
+
+    await waitFor(() => expect(screen.queryByText("Pasta")).not.toBeInTheDocument());
+
+    await vi.advanceTimersByTimeAsync(5000);
+
+    await waitFor(() => expect(deleteRecipeAction).toHaveBeenCalledWith("r1"));
+    await waitFor(() => expect(screen.getByText("Pasta")).toBeInTheDocument());
+    await waitFor(() =>
+      expect(screen.getByText(en.common.errorRetry)).toBeInTheDocument(),
+    );
+  });
 });
 
 describe("RecipeList highlight", () => {
