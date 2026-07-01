@@ -20,7 +20,7 @@ export default async function AppLayout({
       <div className="flex min-h-screen bg-background md:flex-row">
         <AppNav email={dto.email} householdName={dto.activeHousehold?.name ?? ""} />
         <div className="flex min-h-screen min-w-0 flex-1 flex-col">
-          <main className="mx-auto w-full max-w-3xl flex-1 overflow-y-auto px-4 pb-[calc(4rem+env(safe-area-inset-bottom))] pt-4 md:pb-8">
+          <main className="mx-auto flex min-h-0 w-full max-w-3xl flex-1 flex-col overflow-y-auto px-4 pb-[calc(4rem+env(safe-area-inset-bottom))] pt-4 md:pb-8">
             {children}
           </main>
         </div>
