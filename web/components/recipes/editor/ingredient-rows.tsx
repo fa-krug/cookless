@@ -48,6 +48,7 @@ function IngredientRow({ index, fieldId, ingredients, units, locale, onRemove }:
   const matches = query.trim()
     ? ingredients
         .filter((i) => ingredientName(i, locale).toLowerCase().includes(query.toLowerCase()))
+        .sort((a, b) => ingredientName(a, locale).localeCompare(ingredientName(b, locale), locale))
         .slice(0, 6)
     : [];
 
