@@ -57,15 +57,17 @@ export function seed(db: Db): void {
 }
 
 if (process.env.VITEST !== "true") {
-  const Database = (await import("better-sqlite3")).default;
-  const { drizzle } = await import("drizzle-orm/better-sqlite3");
-  const schema = await import("@/lib/db/schema");
+  void (async () => {
+    const Database = (await import("better-sqlite3")).default;
+    const { drizzle } = await import("drizzle-orm/better-sqlite3");
+    const schema = await import("@/lib/db/schema");
 
-  const dbPath = process.env.DATABASE_FILE ?? "./data/cookless.db";
-  const sqlite = new Database(dbPath);
-  sqlite.pragma("foreign_keys = ON");
-  const db = drizzle(sqlite, { schema });
+    const dbPath = process.env.DATABASE_FILE ?? "./data/cookless.db";
+    const sqlite = new Database(dbPath);
+    sqlite.pragma("foreign_keys = ON");
+    const db = drizzle(sqlite, { schema });
 
-  seed(db);
-  console.log(`Seeded ${SEED_UNITS.length} units and ${SEED_INGREDIENTS.length} ingredients`);
+    seed(db);
+    console.log(`Seeded ${SEED_UNITS.length} units and ${SEED_INGREDIENTS.length} ingredients`);
+  })();
 }
