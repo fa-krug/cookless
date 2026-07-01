@@ -55,11 +55,10 @@ npm run dev    # starts Vite on :5173, proxies /api to :8000
 
 ### Bootstrap (first deployment)
 
-```bash
-cd backend
-python manage.py create_first_household "My Home"   # prints invite code
-# First user to register with this invite becomes the household owner
-```
+On a fresh install (no users yet), open the app in a browser. The first visitor
+is redirected to `/setup`, where they create the first account (passkey or
+password) and are guided through creating their household — becoming its OWNER.
+Once a user exists, `/setup` is closed and registration is invite-only.
 
 ### Environment Variables
 
