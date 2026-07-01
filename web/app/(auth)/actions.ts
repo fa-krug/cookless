@@ -4,11 +4,13 @@ import { db } from "@/lib/db";
 import { AuthError } from "@/lib/auth/errors";
 import { loginWithPassword } from "@/lib/auth/login";
 import { removePassword, setPassword, skipPasskey } from "@/lib/auth/password-management";
+import { registerFirstUser } from "@/lib/auth/first-run";
 import { registerWithPassword } from "@/lib/auth/register";
 import { serializeUser, type UserDto } from "@/lib/auth/serialize";
 import { clearSessionCookie, requireUser, setSessionCookie } from "@/lib/auth/session";
 import {
   loginPasswordSchema,
+  registerFirstUserSchema,
   registerPasswordSchema,
   removePasswordSchema,
   setPasswordSchema,
@@ -36,6 +38,17 @@ export async function registerPasswordAction(input: unknown): Promise<Result> {
   try {
     const { email, password, inviteCode } = registerPasswordSchema.parse(input);
     const user = await registerWithPassword(db, { email, password, inviteCode }, new Date());
+    await setSessionCookie(user.id);
+    return { ok: true, user: serializeUser(db, user) };
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+export async function registerFirstUserPasswordAction(input: unknown): Promise<Result> {
+  try {
+    const { email, password } = registerFirstUserSchema.parse(input);
+    const user = await registerFirstUser(db, { email, password }, new Date());
     await setSessionCookie(user.id);
     return { ok: true, user: serializeUser(db, user) };
   } catch (e) {

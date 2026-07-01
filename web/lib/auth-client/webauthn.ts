@@ -43,6 +43,15 @@ export async function passkeyRegister<T = unknown>(
   });
 }
 
+export async function passkeyRegisterFirstRun<T = unknown>(email: string): Promise<T> {
+  const optionsJSON = await post("/api/auth/webauthn/register/begin", { email });
+  const credential = await startRegistration({ optionsJSON: optionsJSON as never });
+  return post<T>("/api/auth/webauthn/register/complete", {
+    credential: JSON.stringify(credential),
+    deviceName: navigator.userAgent,
+  });
+}
+
 export async function addPasskey<T = unknown>(): Promise<T> {
   const optionsJSON = await post("/api/auth/webauthn/add/begin");
   const credential = await startRegistration({ optionsJSON: optionsJSON as never });

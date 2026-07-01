@@ -11,6 +11,11 @@ export const registerPasswordSchema = z.object({
   inviteCode: z.string().min(1),
 });
 
+export const registerFirstUserSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(1),
+});
+
 export const setPasswordSchema = z.object({
   currentPassword: z.string().optional(),
   newPassword: z.string().min(1),
