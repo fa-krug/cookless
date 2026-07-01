@@ -22,6 +22,13 @@
       "when": 1782888069021,
       "tag": "0002_luxuriant_yellowjacket",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1782939659087,
+      "tag": "0003_glorious_ultimo",
+      "breakpoints": true
     }
   ]
 }

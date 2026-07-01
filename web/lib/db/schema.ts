@@ -1,5 +1,6 @@
 import {
   blob,
+  index,
   integer,
   sqliteTable,
   text,
@@ -44,7 +45,10 @@ export const householdMembers = sqliteTable(
     role: text("role").notNull().default("MEMBER"),
     joinedAt: integer("joined_at", { mode: "timestamp" }).notNull(),
   },
-  (t) => ({ uniqHouseholdUser: uniqueIndex("uniq_household_user").on(t.householdId, t.userId) }),
+  (t) => ({
+    uniqHouseholdUser: uniqueIndex("uniq_household_user").on(t.householdId, t.userId),
+    householdMembersUserIdIdx: index("household_members_user_id_idx").on(t.userId),
+  }),
 );
 
 export const invites = sqliteTable("invites", {
@@ -117,65 +121,89 @@ export const tags = sqliteTable(
   }),
 );
 
-export const recipes = sqliteTable("recipes", {
-  id: text("id").primaryKey(),
-  householdId: text("household_id")
-    .notNull()
-    .references(() => households.id, { onDelete: "cascade" }),
-  title: text("title").notNull(),
-  description: text("description").notNull().default(""),
-  listType: text("list_type").notNull(),
-  defaultServings: integer("default_servings").notNull().default(2),
-  prepTimeMinutes: integer("prep_time_minutes"),
-  cookTimeMinutes: integer("cook_time_minutes"),
-  leftoverDays: integer("leftover_days"),
-  image: text("image").notNull().default(""), // relative path under data/media
-  createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
-  updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
-});
+export const recipes = sqliteTable(
+  "recipes",
+  {
+    id: text("id").primaryKey(),
+    householdId: text("household_id")
+      .notNull()
+      .references(() => households.id, { onDelete: "cascade" }),
+    title: text("title").notNull(),
+    description: text("description").notNull().default(""),
+    listType: text("list_type").notNull(),
+    defaultServings: integer("default_servings").notNull().default(2),
+    prepTimeMinutes: integer("prep_time_minutes"),
+    cookTimeMinutes: integer("cook_time_minutes"),
+    leftoverDays: integer("leftover_days"),
+    image: text("image").notNull().default(""), // relative path under data/media
+    createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
+    updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
+  },
+  (t) => ({
+    recipesHouseholdIdIdx: index("recipes_household_id_idx").on(t.householdId),
+  }),
+);
 
-export const recipeIngredients = sqliteTable("recipe_ingredients", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  recipeId: text("recipe_id")
-    .notNull()
-    .references(() => recipes.id, { onDelete: "cascade" }),
-  ingredientId: integer("ingredient_id")
-    .notNull()
-    .references(() => ingredients.id, { onDelete: "cascade" }),
-  quantity: text("quantity").notNull(),
-  unitId: integer("unit_id")
-    .notNull()
-    .references(() => units.id, { onDelete: "cascade" }),
-  order: integer("order").notNull().default(0),
-});
+export const recipeIngredients = sqliteTable(
+  "recipe_ingredients",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    recipeId: text("recipe_id")
+      .notNull()
+      .references(() => recipes.id, { onDelete: "cascade" }),
+    ingredientId: integer("ingredient_id")
+      .notNull()
+      .references(() => ingredients.id, { onDelete: "cascade" }),
+    quantity: text("quantity").notNull(),
+    unitId: integer("unit_id")
+      .notNull()
+      .references(() => units.id, { onDelete: "cascade" }),
+    order: integer("order").notNull().default(0),
+  },
+  (t) => ({
+    recipeIngredientsRecipeIdIdx: index("recipe_ingredients_recipe_id_idx").on(t.recipeId),
+  }),
+);
 
-export const cookingSteps = sqliteTable("cooking_steps", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  recipeId: text("recipe_id")
-    .notNull()
-    .references(() => recipes.id, { onDelete: "cascade" }),
-  method: text("method").notNull(),
-  stepNumber: integer("step_number").notNull(),
-  instruction: text("instruction").notNull().default(""),
-  programType: text("program_type").notNull().default(""),
-  temperature: integer("temperature"),
-  durationSeconds: integer("duration_seconds"),
-  speed: integer("speed"),
-  turbo: integer("turbo", { mode: "boolean" }).notNull().default(false),
-  direction: text("direction").notNull().default(""),
-  weightGrams: integer("weight_grams"),
-});
+export const cookingSteps = sqliteTable(
+  "cooking_steps",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    recipeId: text("recipe_id")
+      .notNull()
+      .references(() => recipes.id, { onDelete: "cascade" }),
+    method: text("method").notNull(),
+    stepNumber: integer("step_number").notNull(),
+    instruction: text("instruction").notNull().default(""),
+    programType: text("program_type").notNull().default(""),
+    temperature: integer("temperature"),
+    durationSeconds: integer("duration_seconds"),
+    speed: integer("speed"),
+    turbo: integer("turbo", { mode: "boolean" }).notNull().default(false),
+    direction: text("direction").notNull().default(""),
+    weightGrams: integer("weight_grams"),
+  },
+  (t) => ({
+    cookingStepsRecipeIdIdx: index("cooking_steps_recipe_id_idx").on(t.recipeId),
+  }),
+);
 
-export const stepIngredients = sqliteTable("step_ingredients", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  stepId: integer("step_id")
-    .notNull()
-    .references(() => cookingSteps.id, { onDelete: "cascade" }),
-  recipeIngredientId: integer("recipe_ingredient_id")
-    .notNull()
-    .references(() => recipeIngredients.id, { onDelete: "cascade" }),
-  quantity: text("quantity").notNull(),
-});
+export const stepIngredients = sqliteTable(
+  "step_ingredients",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    stepId: integer("step_id")
+      .notNull()
+      .references(() => cookingSteps.id, { onDelete: "cascade" }),
+    recipeIngredientId: integer("recipe_ingredient_id")
+      .notNull()
+      .references(() => recipeIngredients.id, { onDelete: "cascade" }),
+    quantity: text("quantity").notNull(),
+  },
+  (t) => ({
+    stepIngredientsStepIdIdx: index("step_ingredients_step_id_idx").on(t.stepId),
+  }),
+);
 
 export const recipeTags = sqliteTable(
   "recipe_tags",
@@ -208,34 +236,46 @@ export const mealPlans = sqliteTable("meal_plans", {
   createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
 });
 
-export const planIterations = sqliteTable("plan_iterations", {
-  id: text("id").primaryKey(),
-  mealPlanId: text("meal_plan_id")
-    .notNull()
-    .references(() => mealPlans.id, { onDelete: "cascade" }),
-  startDate: text("start_date").notNull(),
-  endDate: text("end_date").notNull(),
-  status: text("status").notNull().default("ACTIVE"),
-  createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
-});
-
-export const mealPlanEntries = sqliteTable("meal_plan_entries", {
-  id: text("id").primaryKey(),
-  iterationId: text("iteration_id")
-    .notNull()
-    .references(() => planIterations.id, { onDelete: "cascade" }),
-  date: text("date").notNull(),
-  mealType: text("meal_type").notNull(),
-  recipeId: text("recipe_id")
-    .notNull()
-    .references(() => recipes.id, { onDelete: "cascade" }),
-  servings: integer("servings").notNull(),
-  isLeftover: integer("is_leftover", { mode: "boolean" }).notNull().default(false),
-  sourceEntryId: text("source_entry_id").references((): AnySQLiteColumn => mealPlanEntries.id, {
-    onDelete: "set null",
+export const planIterations = sqliteTable(
+  "plan_iterations",
+  {
+    id: text("id").primaryKey(),
+    mealPlanId: text("meal_plan_id")
+      .notNull()
+      .references(() => mealPlans.id, { onDelete: "cascade" }),
+    startDate: text("start_date").notNull(),
+    endDate: text("end_date").notNull(),
+    status: text("status").notNull().default("ACTIVE"),
+    createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
+  },
+  (t) => ({
+    planIterationsMealPlanIdIdx: index("plan_iterations_meal_plan_id_idx").on(t.mealPlanId),
   }),
-  isLocked: integer("is_locked", { mode: "boolean" }).notNull().default(false),
-});
+);
+
+export const mealPlanEntries = sqliteTable(
+  "meal_plan_entries",
+  {
+    id: text("id").primaryKey(),
+    iterationId: text("iteration_id")
+      .notNull()
+      .references(() => planIterations.id, { onDelete: "cascade" }),
+    date: text("date").notNull(),
+    mealType: text("meal_type").notNull(),
+    recipeId: text("recipe_id")
+      .notNull()
+      .references(() => recipes.id, { onDelete: "cascade" }),
+    servings: integer("servings").notNull(),
+    isLeftover: integer("is_leftover", { mode: "boolean" }).notNull().default(false),
+    sourceEntryId: text("source_entry_id").references((): AnySQLiteColumn => mealPlanEntries.id, {
+      onDelete: "set null",
+    }),
+    isLocked: integer("is_locked", { mode: "boolean" }).notNull().default(false),
+  },
+  (t) => ({
+    mealPlanEntriesIterationIdIdx: index("meal_plan_entries_iteration_id_idx").on(t.iterationId),
+  }),
+);
 
 export const mealPlanExcludedTags = sqliteTable(
   "meal_plan_excluded_tags",
@@ -262,17 +302,25 @@ export const shoppingLists = sqliteTable("shopping_lists", {
   createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
 });
 
-export const shoppingListItems = sqliteTable("shopping_list_items", {
-  id: text("id").primaryKey(),
-  shoppingListId: text("shopping_list_id")
-    .notNull()
-    .references(() => shoppingLists.id, { onDelete: "cascade" }),
-  ingredientId: integer("ingredient_id")
-    .notNull()
-    .references(() => ingredients.id, { onDelete: "cascade" }),
-  quantity: text("quantity").notNull(),
-  unitId: integer("unit_id")
-    .notNull()
-    .references(() => units.id, { onDelete: "cascade" }),
-  isChecked: integer("is_checked", { mode: "boolean" }).notNull().default(false),
-});
+export const shoppingListItems = sqliteTable(
+  "shopping_list_items",
+  {
+    id: text("id").primaryKey(),
+    shoppingListId: text("shopping_list_id")
+      .notNull()
+      .references(() => shoppingLists.id, { onDelete: "cascade" }),
+    ingredientId: integer("ingredient_id")
+      .notNull()
+      .references(() => ingredients.id, { onDelete: "cascade" }),
+    quantity: text("quantity").notNull(),
+    unitId: integer("unit_id")
+      .notNull()
+      .references(() => units.id, { onDelete: "cascade" }),
+    isChecked: integer("is_checked", { mode: "boolean" }).notNull().default(false),
+  },
+  (t) => ({
+    shoppingListItemsShoppingListIdIdx: index("shopping_list_items_shopping_list_id_idx").on(
+      t.shoppingListId,
+    ),
+  }),
+);
