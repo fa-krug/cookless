@@ -4,6 +4,7 @@ import {
   sqliteTable,
   text,
   uniqueIndex,
+  type AnySQLiteColumn,
 } from "drizzle-orm/sqlite-core";
 
 // ---- users app ----
@@ -95,7 +96,7 @@ export const units = sqliteTable("units", {
   nameDe: text("name_de").notNull(),
   nameEn: text("name_en").notNull(),
   abbreviation: text("abbreviation").notNull(),
-  baseUnitId: integer("base_unit_id"),
+  baseUnitId: integer("base_unit_id").references((): AnySQLiteColumn => units.id, { onDelete: "set null" }),
   conversionFactor: text("conversion_factor").notNull().default("1"),
 });
 
@@ -230,7 +231,9 @@ export const mealPlanEntries = sqliteTable("meal_plan_entries", {
     .references(() => recipes.id, { onDelete: "cascade" }),
   servings: integer("servings").notNull(),
   isLeftover: integer("is_leftover", { mode: "boolean" }).notNull().default(false),
-  sourceEntryId: text("source_entry_id"),
+  sourceEntryId: text("source_entry_id").references((): AnySQLiteColumn => mealPlanEntries.id, {
+    onDelete: "set null",
+  }),
   isLocked: integer("is_locked", { mode: "boolean" }).notNull().default(false),
 });
 

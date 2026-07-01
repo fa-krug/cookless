@@ -75,6 +75,13 @@ describe("generateShoppingListsForIteration", () => {
     expect(byIng[2]).toBe("300");
   });
 
+  it("nulls a leftover's sourceEntryId when its source entry is deleted (A9 SET NULL)", () => {
+    const db = seed(); // seeds e1 (source) and e2 (leftover, sourceEntryId 'e1')
+    db.delete(mealPlanEntries).where(eq(mealPlanEntries.id, "e1")).run();
+    const leftover = db.select().from(mealPlanEntries).where(eq(mealPlanEntries.id, "e2")).get();
+    expect(leftover?.sourceEntryId).toBeNull();
+  });
+
   it("creates a list for a segment even when it aggregates to zero items", () => {
     const db = createTestDb();
     db.insert(households).values({ id: "h1", name: "Home", createdAt: now }).run();

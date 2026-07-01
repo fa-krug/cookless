@@ -15,6 +15,13 @@
       "when": 1782539356272,
       "tag": "0001_sloppy_randall",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1782888069021,
+      "tag": "0002_luxuriant_yellowjacket",
+      "breakpoints": true
     }
   ]
 }
