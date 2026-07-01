@@ -1,6 +1,6 @@
 // web/lib/meal-plan/iterations.ts
 import { randomUUID } from "node:crypto";
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, lt } from "drizzle-orm";
 import type { Db } from "@/lib/db";
 import { AuthError } from "@/lib/auth/errors";
 import { type Rng, mulberry32 } from "@/lib/domain/rng";
@@ -16,6 +16,22 @@ function previousRecipeIds(db: Db, iterationId: string): Set<string> {
     .where(and(eq(mealPlanEntries.iterationId, iterationId), eq(mealPlanEntries.isLeftover, false)))
     .all();
   return new Set(rows.map((r) => r.recipeId));
+}
+
+/**
+ * Non-leftover recipe ids of the iteration immediately preceding `currentStartDate`.
+ * Port of planner/services.py _get_previous_iteration_recipe_ids: the exclusion
+ * baseline for BOTH renew and next-iteration is the date-previous iteration.
+ */
+function previousIterationRecipeIds(db: Db, planId: string, currentStartDate: string): Set<string> {
+  const prev = db
+    .select({ id: planIterations.id })
+    .from(planIterations)
+    .where(and(eq(planIterations.mealPlanId, planId), lt(planIterations.startDate, currentStartDate)))
+    .orderBy(desc(planIterations.startDate))
+    .get();
+  if (!prev) return new Set();
+  return previousRecipeIds(db, prev.id);
 }
 
 function ownedIteration(db: Db, householdId: string, iterationId: string) {
@@ -41,7 +57,9 @@ export function renewIteration(
   rng: Rng = mulberry32((Math.random() * 2 ** 32) >>> 0),
 ): void {
   const it = ownedIteration(db, householdId, iterationId);
-  const exclude = previousRecipeIds(db, iterationId);
+  // A2: exclude the DATE-PREVIOUS iteration's recipes (Django parity), not this
+  // iteration's own set. For the first/only iteration this is empty.
+  const exclude = previousIterationRecipeIds(db, it.planId, it.startDate);
   // Entries + shopping lists are replaced inside populateIteration (entries deleted here,
   // shopping lists deleted by generateShoppingListsForIteration).
   db.delete(mealPlanEntries).where(eq(mealPlanEntries.iterationId, iterationId)).run();
