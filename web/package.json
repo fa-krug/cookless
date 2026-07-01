@@ -53,6 +53,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "drizzle-kit": "^0.31.10",
+    "fake-indexeddb": "^6.2.5",
     "jsdom": "^25.0.1",
     "tailwindcss": "^4.3.1",
     "tsx": "^4.22.4",
