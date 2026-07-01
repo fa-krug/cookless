@@ -32,6 +32,10 @@ describe("recipeImageUrl", () => {
     expect(recipeImageUrl("")).toBeNull();
     expect(recipeImageUrl("recipes/abc.webp")).toBe("/api/images/recipes/abc.webp");
   });
+
+  it("appends the width query param when width is provided", () => {
+    expect(recipeImageUrl("recipes/abc.webp", 128)).toBe("/api/images/recipes/abc.webp?w=128");
+  });
 });
 
 describe("CATEGORY_ORDER", () => {
