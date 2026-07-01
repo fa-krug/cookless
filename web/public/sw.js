@@ -31,6 +31,7 @@ self.addEventListener("message", (event) => {
 function isStaticAsset(url, request) {
   return (
     url.pathname.startsWith("/_next/static/") ||
+    url.pathname.startsWith("/api/images/") ||
     ["style", "script", "image", "font"].includes(request.destination)
   );
 }
