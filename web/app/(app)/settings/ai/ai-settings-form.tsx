@@ -6,10 +6,10 @@ import { useT } from "@/lib/i18n/provider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/sonner";
-import { Check, Sparkles, X } from "lucide-react";
+import { Check, X } from "lucide-react";
 import { updateAiSettingsAction } from "@/app/(app)/actions";
 import { verifyGeminiKeyAction } from "@/app/(account)/actions";
-import { SettingsSection } from "../settings-section";
+import { Card } from "@/components/ui/card";
 
 type KeyStatus = "idle" | "valid" | "invalid" | "unreachable";
 
@@ -67,12 +67,7 @@ export function AiSettingsForm({
   }
 
   return (
-    <SettingsSection
-      icon={Sparkles}
-      title={t("aiSettings.title")}
-      description={t("aiSettings.subtitle")}
-      className="max-w-md"
-    >
+    <Card className="max-w-md space-y-4 p-4">
       <label className="flex items-center gap-2 text-sm">
         <input
           type="checkbox"
@@ -124,6 +119,6 @@ export function AiSettingsForm({
       <Button disabled={pending || !isOwner} onClick={onSave}>
         {t("aiSettings.save")}
       </Button>
-    </SettingsSection>
+    </Card>
   );
 }

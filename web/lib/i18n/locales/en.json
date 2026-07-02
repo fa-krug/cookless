@@ -334,7 +334,6 @@
   },
   "household": {
     "title": "Household",
-    "info": "Current household",
     "infoDescription": "Name and details of your active household.",
     "currentHousehold": "Your Household",
     "switchHousehold": "Switch Household",

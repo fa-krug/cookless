@@ -334,7 +334,6 @@
   },
   "household": {
     "title": "Haushalt",
-    "info": "Aktueller Haushalt",
     "infoDescription": "Name und Details deines aktiven Haushalts.",
     "currentHousehold": "Dein Haushalt",
     "switchHousehold": "Haushalt wechseln",
@@ -446,7 +445,7 @@
   "settings": {
     "title": "Einstellungen",
     "subtitle": "Verwalte deine Einstellungen, deinen Haushalt und dein Konto.",
-    "preferences": "Einstellungen",
+    "preferences": "Präferenzen",
     "dataGroup": "Rezepte & Haushalt",
     "accountGroup": "Konto",
     "admin": "Admin-Bereich",
