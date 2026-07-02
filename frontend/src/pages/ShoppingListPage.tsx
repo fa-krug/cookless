@@ -44,10 +44,22 @@ function ShoppingListView({ shoppingList }: { shoppingList: ShoppingList }) {
 
   function handleUncheckAll() {
     if (!hasCheckedItems) return;
+    const idsToRestore = [...checkedItemIds];
     bulkToggle.mutate(
-      { item_ids: checkedItemIds, is_checked: false },
+      { item_ids: idsToRestore, is_checked: false },
       {
         onError: () => toast.error(t("errors.shoppingUpdate")),
+        onSuccess: () =>
+          toast.success(t("shopping.resetDone"), {
+            action: {
+              label: t("common.undo"),
+              onClick: () =>
+                bulkToggle.mutate(
+                  { item_ids: idsToRestore, is_checked: true },
+                  { onError: () => toast.error(t("errors.shoppingUpdate")) },
+                ),
+            },
+          }),
       },
     );
   }

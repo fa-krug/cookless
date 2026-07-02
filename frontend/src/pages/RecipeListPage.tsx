@@ -1,5 +1,5 @@
 import { useQueryClient } from "@tanstack/react-query";
-import { BookOpen, Plus, Search, SlidersHorizontal, Sparkles } from "lucide-react";
+import { BookOpen, Plus, Search, SlidersHorizontal, Sparkles, X } from "lucide-react";
 import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -198,8 +198,18 @@ export default function RecipeListPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder={t("common.search")}
-            className="pl-9"
+            className={search ? "pl-9 pr-9" : "pl-9"}
           />
+          {search && (
+            <button
+              type="button"
+              onClick={() => setSearch("")}
+              aria-label={t("common.clearSearch")}
+              className="absolute right-2 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
+            >
+              <X size={16} />
+            </button>
+          )}
         </div>
         <Button
           size="sm"

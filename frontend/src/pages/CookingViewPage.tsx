@@ -2,7 +2,7 @@ import { ArrowLeft, ChefHat, ChevronLeft, ChevronRight, Hand, Minus, Plus } from
 import { Button } from "@/components/ui/button";
 import { IconButton } from "@/components/ui/IconButton";
 import { cn } from "@/lib/utils";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
 import ProgramStepDisplay from "../components/ProgramStepDisplay";
@@ -104,6 +104,22 @@ export default function CookingViewPage() {
     [goNext, goPrev],
   );
 
+  // Arrow-key navigation while cooking (laptop/tablet keyboards in the kitchen)
+  useEffect(() => {
+    if (!started) return;
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === "ArrowRight") {
+        e.preventDefault();
+        goNext();
+      } else if (e.key === "ArrowLeft") {
+        e.preventDefault();
+        goPrev();
+      }
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [started, goNext, goPrev]);
+
   if (isLoading) {
     return (
       <div className="p-4">
@@ -114,8 +130,12 @@ export default function CookingViewPage() {
 
   if (!recipe || !id) {
     return (
-      <div className="p-4">
+      <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 p-4">
         <p className="text-center text-sm text-muted-foreground">{t("common.error")}</p>
+        <Button type="button" variant="outline" onClick={() => navigate(-1)}>
+          <ArrowLeft size={16} />
+          {t("common.back")}
+        </Button>
       </div>
     );
   }

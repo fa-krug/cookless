@@ -14,6 +14,7 @@
     "retry": "Try again",
     "noResults": "Nothing found",
     "search": "Search",
+    "clearSearch": "Clear search",
     "remove": "Remove",
     "undo": "Undo"
   },
@@ -236,6 +237,7 @@
     "allDoneSubtitle": "Everything on this list has been checked off",
     "backToPlan": "Back to meal plan",
     "uncheckAll": "Reset",
+    "resetDone": "Checkmarks cleared",
     "linkedToPlan": "From your meal plan",
     "noItems": "Nothing on the list",
     "markBought": "Got it!",
@@ -354,6 +356,7 @@
     "upload": "Upload Photo",
     "generate": "Generate with AI",
     "remove": "Remove Photo",
+    "removeConfirm": "Remove this photo? You can always add a new one later.",
     "generating": "Generating...",
     "uploadFailed": "Couldn't upload the photo.",
     "generateFailed": "Couldn't generate the photo.",
