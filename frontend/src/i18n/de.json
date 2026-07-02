@@ -356,6 +356,7 @@
     "upload": "Foto hochladen",
     "generate": "Mit KI erstellen",
     "remove": "Foto entfernen",
+    "removeConfirm": "Dieses Foto entfernen? Du kannst später jederzeit ein neues hinzufügen.",
     "generating": "Wird erstellt...",
     "uploadFailed": "Foto konnte nicht hochgeladen werden.",
     "generateFailed": "Foto konnte nicht erstellt werden.",

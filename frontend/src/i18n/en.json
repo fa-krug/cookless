@@ -356,6 +356,7 @@
     "upload": "Upload Photo",
     "generate": "Generate with AI",
     "remove": "Remove Photo",
+    "removeConfirm": "Remove this photo? You can always add a new one later.",
     "generating": "Generating...",
     "uploadFailed": "Couldn't upload the photo.",
     "generateFailed": "Couldn't generate the photo.",

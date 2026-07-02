@@ -21,7 +21,9 @@ import IngredientForm from "../components/IngredientForm";
 import StepEditor from "../components/StepEditor";
 import ExportRecipeOverlay from "../components/ExportRecipeOverlay";
 import TagFilterDrawer from "../components/TagFilterDrawer";
+import { ConfirmDialog } from "../components/ui/ConfirmDialog";
 import { RecipeDetailSkeleton } from "../components/ui/RecipeDetailSkeleton";
+import { useConfirm } from "../hooks/useConfirm";
 import { useIngredients } from "../hooks/useIngredients";
 import { queryKeys } from "../hooks/queryKeys";
 import { useAuth } from "../hooks/useAuth";
@@ -78,6 +80,7 @@ function RecipeForm({ recipe, recipeId, allIngredients, allUnits }: RecipeFormPr
   const moveRecipe = useMoveRecipe();
   const deleteRecipe = useDeleteRecipe();
   const queryClient = useQueryClient();
+  const { confirm, dialogProps } = useConfirm();
   const { softDelete } = useUndoDelete();
   const uploadImage = useUploadRecipeImage();
   const generateImage = useGenerateRecipeImage();
@@ -178,7 +181,15 @@ function RecipeForm({ recipe, recipeId, allIngredients, allUnits }: RecipeFormPr
     });
   }
 
-  function handleDeleteImage() {
+  async function handleDeleteImage() {
+    const confirmed = await confirm({
+      title: t("recipeImage.remove"),
+      message: t("recipeImage.removeConfirm"),
+      confirmLabel: t("common.delete"),
+      confirmVariant: "danger",
+      cancelLabel: t("common.cancel"),
+    });
+    if (!confirmed) return;
     deleteImage.mutate(recipeId, {
       onError: () => toast.error(t("common.error")),
     });
@@ -430,6 +441,8 @@ function RecipeForm({ recipe, recipeId, allIngredients, allUnits }: RecipeFormPr
       </form>
 
       <ExportRecipeOverlay open={exportOpen} onClose={() => setExportOpen(false)} recipe={recipe} />
+
+      {dialogProps && <ConfirmDialog {...dialogProps} />}
     </div>
   );
 }
