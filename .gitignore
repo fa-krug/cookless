@@ -1,22 +1,19 @@
-# Python
-__pycache__/
-*.py[cod]
-*.egg-info/
-dist/
-build/
-.eggs/
-
-# Virtual environments
-.venv/
-venv/
-
 # Environment
 .env
+.env.*
+!.env.example
 
-# Django
+# Node
+node_modules/
+
+# Next.js
+.next/
+next-env.d.ts
+
+# SQLite databases + local data
 *.sqlite3
-backend/staticfiles/
-backend/media/
+*.db
+web/data/
 
 # IDE
 .idea/
@@ -27,10 +24,6 @@ backend/media/
 # OS
 .DS_Store
 Thumbs.db
-
-# Node (for React frontend)
-node_modules/
-frontend_dist/
 
 # Worktrees
 .worktrees/

@@ -1,6 +1,6 @@
 # Cookless
 
-A meal planning PWA that minimizes cooking effort through batch cooking and ingredient overlap optimization. Built with Django Ninja and React.
+A meal planning PWA that minimizes cooking effort through batch cooking and ingredient overlap optimization. Built with Next.js.
 
 ## Features
 
@@ -11,95 +11,68 @@ A meal planning PWA that minimizes cooking effort through batch cooking and ingr
 - **Multi-user households** -- owner/member roles with a code-based invite system
 - **Onboarding wizard** -- guided setup for new users (set password, add passkey, create household)
 - **AI support** -- optional Gemini integration per household (toggle + API key in settings)
-- **PWA** -- installable with offline shopping list support via Workbox service worker
+- **PWA** -- installable on iOS and Android
 - **i18n** -- English and German
 
 ## Tech Stack
 
 | Layer    | Technology                                                     |
 |----------|----------------------------------------------------------------|
-| Backend  | Python 3.13, Django 6.0, Django Ninja, Pydantic               |
-| Frontend | React 19, TypeScript, Vite, Tailwind CSS 4, TanStack Query    |
-| Auth     | WebAuthn passkeys + email/password, Django sessions            |
-| Database | SQLite (dev), PostgreSQL (prod)                                |
-| Deploy   | Docker single-container, WhiteNoise serves static + SPA        |
+| Framework| Next.js 16 (App Router), React 19, TypeScript                  |
+| Styling  | Tailwind CSS 4, Radix UI primitives                            |
+| Data     | Drizzle ORM over SQLite (`better-sqlite3`)                     |
+| Auth     | WebAuthn passkeys + email/password, signed session cookies     |
+| Deploy   | Docker single-container (Next.js standalone), Traefik          |
 
 ## Prerequisites
 
-- Python 3.13+
-- Node.js 20+
+- Node.js 22.4+
 - Docker and Docker Compose (for containerized setup)
 
 ## Setup
 
-### Backend
-
 ```bash
-python -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt -r requirements-dev.txt
-
-cd backend
-python manage.py migrate
-python manage.py seed_units       # load unit definitions
-python manage.py runserver 0.0.0.0:8000
-```
-
-### Frontend
-
-```bash
-cd frontend
+cd web
 npm install
-npm run dev    # starts Vite on :5173, proxies /api to :8000
+npm run db:migrate    # apply Drizzle schema migrations to the SQLite DB
+npm run db:seed       # load unit + ingredient seed data
+npm run dev           # Next.js dev server on http://localhost:3000
 ```
 
 ### Bootstrap (first deployment)
 
 On a fresh install (no users yet), open the app in a browser. The first visitor
-is redirected to `/setup`, where they create the first account (passkey or
-password) and are guided through creating their household — becoming its OWNER.
-Once a user exists, `/setup` is closed and registration is invite-only.
+is guided through creating the first account (passkey or password) and their
+household — becoming its OWNER. Once a user exists, registration is invite-only.
 
 ### Environment Variables
 
-Configure via `.env` in the project root or export directly. See `.env.example` for all available settings.
+Configure via `.env` in `web/` or export directly.
 
-| Variable                | Default   | Description                                    |
-|-------------------------|-----------|------------------------------------------------|
-| `DEBUG`                 | `True`    | Django debug mode                              |
-| `SECRET_KEY`            | generated | Django secret key (required in production)     |
-| `ALLOWED_HOSTS`         | `*`       | Comma-separated allowed hosts                  |
-| `DATABASE_URL`          | (empty)   | Database URL; empty uses SQLite                |
-| `CORS_ALLOWED_ORIGINS`  | (empty)   | Comma-separated CORS origins                   |
-| `WEBAUTHN_RP_ID`        | --        | WebAuthn relying party ID (comma-separated)    |
-| `WEBAUTHN_RP_NAME`      | --        | WebAuthn relying party name                    |
-| `WEBAUTHN_ORIGIN`       | --        | WebAuthn allowed origins (comma-separated)     |
-| `EMAIL_HOST`            | (empty)   | SMTP host for outbound email                   |
-| `ADMIN_EMAIL`           | (empty)   | Admin email(s) for error notifications         |
-| `SUPERUSER_EMAIL`       | (empty)   | Auto-create superuser on container startup     |
-| `SUPERUSER_PASSWORD`    | (empty)   | Superuser password (required with email above) |
+| Variable            | Default                    | Description                                   |
+|---------------------|----------------------------|-----------------------------------------------|
+| `AUTH_SECRET`       | --                         | Secret used to sign session cookies (required)|
+| `DATABASE_FILE`     | `./data/cookless.db`       | Path to the SQLite database file              |
+| `MEDIA_ROOT`        | `./data/media`             | Directory for uploaded + AI-generated images  |
+| `WEBAUTHN_RP_ID`    | --                         | WebAuthn relying party ID                     |
+| `WEBAUTHN_RP_NAME`  | --                         | WebAuthn relying party name                   |
+| `WEBAUTHN_ORIGIN`   | --                         | WebAuthn allowed origin(s), comma-separated   |
+| `PORT`              | `8000` (image) / `3000`    | Port the server listens on                    |
 
 ## Development
 
-### Running Tests
-
 ```bash
-# Backend (pytest)
-pytest
-pytest backend/recipes/tests/test_api.py               # single file
-pytest backend/recipes/tests/test_api.py::test_name     # single test
-
-# Frontend (Vitest)
-cd frontend && npm test
+cd web
+npm test          # Vitest
+npm run typecheck # tsc --noEmit
 ```
 
-### Linting and Formatting
+### Database migrations
 
 ```bash
-ruff check . --fix && ruff format .       # Python lint + format
-cd backend && mypy --config-file=../pyproject.toml .   # type check
-cd frontend && npm run lint               # ESLint
-pre-commit run --all-files                # all hooks
+cd web
+npm run db:generate   # generate a new Drizzle migration from schema.ts changes
+npm run db:migrate    # apply pending migrations
 ```
 
 ## Deployment
@@ -107,44 +80,42 @@ pre-commit run --all-files                # all hooks
 ### Docker (Development)
 
 ```bash
-docker-compose up
+docker-compose up      # builds ./web, serves on http://localhost:3000
 ```
-
-Hot-reload enabled, serves on port 8000.
 
 ### Docker (Production)
 
 ```bash
-docker-compose -f docker-compose.production.yml up
+docker-compose -f docker-compose.production.yml up -d
 ```
 
-Uses PostgreSQL. Django serves the React SPA and static files via WhiteNoise.
+The published `sascha384/cookless` image runs `web/docker-entrypoint.sh`, which
+applies Drizzle schema migrations on every boot and then serves the Next.js
+standalone server on port 8000.
 
 ## Architecture
 
 ```
-backend/
-  cookless/       # project config, API instance, auth classes
-  users/          # User, Household, HouseholdMember, Invite, PasskeyCredential
-  recipes/        # Recipe, RecipeIngredient, CookingStep, Ingredient, Unit
-  planner/        # MealPlan, PlanIteration, MealPlanEntry
-  shopping/       # ShoppingList, ShoppingListItem
-frontend/
-  src/
-    api/          # API client, types, WebAuthn helpers
-    components/   # app components + ui/ primitives
-    contexts/     # AuthContext, ToastContext
-    hooks/        # React Query hooks, utility hooks
-    i18n/         # translations (en.json, de.json)
-    pages/        # route page components
-    sw.ts         # custom Workbox service worker
-docs/plans/       # implementation plans and design docs
+web/
+  app/            # Next.js App Router
+    (app)/        # authenticated app: recipes, plan, shopping, cook, settings
+    (account)/    # account + household management
+    (auth)/       # login / register
+    api/          # route handlers (auth, images, recipes, shopping, health)
+    onboarding/   # first-run + invite onboarding flow
+  components/     # React components + ui/ primitives
+  lib/            # domain + server logic
+    db/           # Drizzle schema + client
+    auth/         # WebAuthn, password, sessions
+    recipes/ meal-plan/ shopping/ households/ ...  # domain modules
+    i18n/         # translations (en / de)
+  drizzle/        # generated SQL migrations
+  scripts/        # db-migrate, db:seed, set-password admin helper
+docs/             # design + implementation plan archive
 ```
 
-- API endpoints live at `/api/v1/`, with OpenAPI docs at `/api/v1/docs`
-- Each Django app has `api.py` (views), `schemas.py` (Pydantic), and `models.py`
 - All data is scoped to the user's active household (multi-tenant)
-- Auth uses Django sessions with WebAuthn passkeys and/or email/password
+- Auth uses signed session cookies with WebAuthn passkeys and/or email/password
 
 ## License
 

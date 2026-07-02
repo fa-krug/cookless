@@ -17,8 +17,9 @@ ENV NODE_ENV=production
 COPY --from=build /app/.next/standalone ./
 COPY --from=build /app/.next/static ./.next/static
 COPY --from=build /app/public ./public
-# Migration toolchain: full deps (incl. tsx + drizzle migrator) OVERRIDE the pruned
-# standalone node_modules, plus the TS sources the scripts import.
+# Schema-migration toolchain: full deps (incl. tsx + drizzle migrator) OVERRIDE the
+# pruned standalone node_modules, plus the TS sources scripts/db-migrate.ts imports.
+# The entrypoint runs Drizzle migrations on every boot before serving.
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=build /app/lib ./lib
 COPY --from=build /app/scripts ./scripts
