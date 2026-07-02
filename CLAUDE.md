@@ -1,53 +1,50 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository. See also `backend/CLAUDE.md` and `frontend/CLAUDE.md` for detailed per-layer guidance.
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+The application is a single Next.js app under `web/`. Run all commands from that directory.
 
 ## Common Commands
 
-### Backend
 ```bash
-pytest                                                  # all backend tests
-pytest backend/recipes/tests/test_api.py                # one test file
-pytest backend/recipes/tests/test_api.py::test_create_recipe  # one test
-ruff check . --fix && ruff format .                     # lint + format
-cd backend && mypy --config-file=../pyproject.toml .    # type check
-pre-commit run --all-files                              # all pre-commit hooks
-cd backend && python manage.py runserver 0.0.0.0:8000   # dev server
-```
-
-### Frontend
-```bash
-cd frontend && npm run dev      # Vite dev server on :5173, proxies /api to :8000
-cd frontend && npm run build    # production build
-cd frontend && npm run lint     # ESLint
-cd frontend && npm test         # Vitest
+cd web
+npm run dev           # Next.js dev server on http://localhost:3000
+npm run build         # production build (standalone output)
+npm test              # Vitest
+npm run typecheck     # tsc --noEmit
+npm run db:generate   # generate a Drizzle migration from lib/db/schema.ts changes
+npm run db:migrate    # apply pending Drizzle migrations
+npm run db:seed       # load unit + ingredient seed data
 ```
 
 ### Docker
 ```bash
-docker-compose up               # dev (hot-reload, port 8000)
-docker-compose -f docker-compose.production.yml up  # production (Postgres)
+docker-compose up                                   # dev, builds ./web, port 3000
+docker-compose -f docker-compose.production.yml up  # production (sascha384/cookless image)
 ```
 
 ## Architecture Overview
 
-**Meal planning PWA** -- Django Ninja API backend + React/TypeScript frontend.
+**Meal planning PWA** -- a single Next.js 16 (App Router) application in `web/`.
 
-### Backend (Django 6.0 + Django Ninja)
+- **Framework:** Next.js 16, React 19, TypeScript.
+- **Styling:** Tailwind CSS 4 with Radix UI primitives (`components/ui/`).
+- **Data:** Drizzle ORM over SQLite via `better-sqlite3`. Schema in `lib/db/schema.ts`; migrations in `drizzle/`.
+- **Auth:** WebAuthn passkeys + email/password, signed session cookies (`lib/auth/`). No Django/session-server dependency.
+- **Multi-tenant:** all data is scoped to the user's active household.
 
-Five Django apps: `users`, `recipes`, `planner`, `shopping`, `cookless` (project config). All endpoints under `/api/v1/` via 4 routers. Session auth with passkey + password support. Multi-tenant -- all data scoped to `request.user.active_household`.
+### Directory layout (`web/`)
 
-### Frontend (React 19 + TypeScript + Vite + Tailwind CSS 4)
+- `app/` -- App Router. Route groups: `(app)` (recipes, plan, shopping, cook, settings), `(account)`, `(auth)`; `api/` route handlers (auth, images, recipes, shopping, health); `onboarding/`.
+- `components/` -- React components plus `ui/` primitives.
+- `lib/` -- server + domain logic: `db/`, `auth/`, `recipes/`, `meal-plan/`, `shopping/`, `households/`, `ai/`, `images/`, `i18n/`, `offline/`, `queries/`, `actions/`.
+- `drizzle/` -- generated SQL migrations.
+- `scripts/` -- `db-migrate.ts`, `seed.ts`, and the `set-password.ts` admin helper.
 
-TanStack React Query for server state. React Router DOM v7 with lazy-loaded pages. PWA with custom Workbox service worker (offline shopping list toggles). i18n in English and German.
+### Deployment
 
-### Lint/Format Config
+The published `sascha384/cookless` image runs `web/docker-entrypoint.sh`, which applies Drizzle schema migrations on every boot, then serves the Next.js standalone server (`server.js`) on port 8000.
 
-- **Ruff:** line-length 100, Python 3.13, rules: E/F/W/I/B/SIM/C4/DJ
-- **isort sections:** future -> stdlib -> django -> third-party -> first-party -> local
-- **First-party packages:** cookless, planner, recipes, shopping, users
-- **MyPy:** django-stubs plugin, check_untyped_defs enabled
+### Environment Variables
 
-### Environment Variables (via django-environ)
-
-`DEBUG`, `SECRET_KEY`, `ALLOWED_HOSTS`, `DATABASE_URL` (empty = SQLite), `CORS_ALLOWED_ORIGINS`, WebAuthn settings (`WEBAUTHN_RP_ID`, `WEBAUTHN_RP_NAME`, `WEBAUTHN_ORIGIN` -- support comma-separated lists for multiple origins), Email settings (`EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_USE_TLS`, `EMAIL_USE_SSL`, `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD`, `DEFAULT_FROM_EMAIL`, `SERVER_EMAIL`, `ADMIN_EMAIL`), `SUPERUSER_EMAIL`/`SUPERUSER_PASSWORD` (auto-created on container startup via docker-entrypoint.sh)
+`AUTH_SECRET` (signs session cookies), `DATABASE_FILE` (default `/app/data/cookless.db`), `MEDIA_ROOT` (default `/app/data/media`), WebAuthn settings (`WEBAUTHN_RP_ID`, `WEBAUTHN_RP_NAME`, `WEBAUTHN_ORIGIN` -- comma-separated lists supported), `PORT`.

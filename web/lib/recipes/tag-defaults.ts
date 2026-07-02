@@ -1,4 +1,4 @@
-// Ported verbatim from backend/recipes/tag_defaults.py — keep in sync.
+// Default recipe tags, keyed by category (English, German label pairs).
 export const DEFAULT_TAGS: Record<string, [string, string][]> = {
   DIETARY: [
     ["Vegan", "Vegan"],
