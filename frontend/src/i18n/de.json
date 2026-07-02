@@ -14,6 +14,7 @@
     "retry": "Nochmal versuchen",
     "noResults": "Nichts gefunden",
     "search": "Suchen",
+    "clearSearch": "Suche löschen",
     "remove": "Entfernen",
     "undo": "Rückgängig"
   },
@@ -236,6 +237,7 @@
     "allDoneSubtitle": "Alles auf dieser Liste wurde abgehakt",
     "backToPlan": "Zurück zum Essensplan",
     "uncheckAll": "Zurücksetzen",
+    "resetDone": "Häkchen zurückgesetzt",
     "linkedToPlan": "Aus deinem Essensplan",
     "noItems": "Nichts auf der Liste",
     "markBought": "Hab ich!",

@@ -81,6 +81,7 @@ export default function LoginPage() {
                       <Input
                         type="email"
                         placeholder="you@example.com"
+                        autoComplete="username webauthn"
                         {...field}
                       />
                     </FormControl>
@@ -106,7 +107,12 @@ export default function LoginPage() {
                           {t("auth.passwordPlaceholder")}
                         </FormLabel>
                         <FormControl>
-                          <Input type="password" autoFocus {...field} />
+                          <Input
+                            type="password"
+                            autoComplete="current-password"
+                            autoFocus
+                            {...field}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>

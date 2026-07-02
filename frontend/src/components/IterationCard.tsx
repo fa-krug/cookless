@@ -169,7 +169,7 @@ export default function IterationCard({
                   isToday
                     ? "border-primary bg-primary/10 ring-2 ring-primary/50"
                     : isShoppingDay
-                      ? "border-l-4 border-l-blue-300 border-t border-r border-b border-t-border border-r-border border-b-border bg-card"
+                      ? "border-l-4 border-l-blue-400 dark:border-l-blue-500 border-t border-r border-b border-t-border border-r-border border-b-border bg-card"
                       : "border-border bg-card"
                 }`}
               >
@@ -190,7 +190,7 @@ export default function IterationCard({
                       </span>
                     )}
                     {isShoppingDay && (
-                      <ShoppingCart size={16} className="ml-2 text-blue-400" />
+                      <ShoppingCart size={16} className="ml-2 text-blue-500 dark:text-blue-400" />
                     )}
                   </h3>
                 </div>
@@ -200,10 +200,10 @@ export default function IterationCard({
                   {isShoppingDay && shoppingInfo && (
                     <button
                       onClick={() => navigate(`/shopping/${shoppingInfo.id}`)}
-                      className="flex w-full items-center gap-2 px-4 py-3 text-left hover:bg-blue-50"
+                      className="flex w-full items-center gap-2 px-4 py-3 text-left hover:bg-blue-50 dark:hover:bg-blue-950/40"
                     >
-                      <ShoppingCart size={16} className="text-blue-500" />
-                      <span className="text-sm font-medium text-blue-500">
+                      <ShoppingCart size={16} className="text-blue-600 dark:text-blue-400" />
+                      <span className="text-sm font-medium text-blue-600 dark:text-blue-400">
                         {t("plan.shoppingPreview", {
                           count: shoppingInfo.itemCount,
                         })}
