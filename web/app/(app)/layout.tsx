@@ -22,7 +22,7 @@ export default async function AppLayout({
         <AppNav email={dto.email} householdName={dto.activeHousehold?.name ?? ""} />
         <div className="flex min-h-screen min-w-0 flex-1 flex-col">
           <InstallBanner />
-          <main className="mx-auto flex min-h-0 w-full max-w-3xl flex-1 flex-col overflow-y-auto px-4 pb-[calc(4rem+env(safe-area-inset-bottom))] pt-4 md:pb-8">
+          <main className="mx-auto flex min-h-0 w-full max-w-3xl flex-1 flex-col overflow-y-auto px-4 pb-[calc(5rem+env(safe-area-inset-bottom))] pt-[calc(1rem+env(safe-area-inset-top))] md:pb-8 md:pt-4">
             {children}
           </main>
         </div>
