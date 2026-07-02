@@ -12,14 +12,6 @@ export async function processToWebp(input: Buffer): Promise<Buffer> {
     .toBuffer();
 }
 
-/** Resize a WebP buffer to the given width (never enlarge) and re-encode as WebP q85. */
-export async function resizeWebp(buffer: Buffer, width: number): Promise<Buffer> {
-  return sharp(buffer)
-    .resize({ width, fit: "inside", withoutEnlargement: true })
-    .webp({ quality: 85 })
-    .toBuffer();
-}
-
 /** Write a processed image and return its path relative to the media root. */
 export function writeRecipeImage(recipeId: string, webp: Buffer, now: Date): string {
   const rel = `recipes/${recipeId}_${now.getTime()}.webp`;

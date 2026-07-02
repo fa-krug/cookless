@@ -28,7 +28,7 @@ interface RecipeCardProps {
 
 export function RecipeCard({ recipe, locale, onDelete, highlight }: RecipeCardProps): JSX.Element {
   const { t } = useT();
-  const imageUrl = recipeImageUrl(recipe.image, 128);
+  const imageUrl = recipeImageUrl(recipe.image);
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
