@@ -15,6 +15,11 @@ const dbPath = getDbPath();
 if (dbPath !== ":memory:") mkdirSync(dirname(dbPath), { recursive: true });
 
 export const sqlite = new Database(dbPath);
+// Wait (instead of throwing SQLITE_BUSY) when another connection briefly holds a
+// lock. This matters during `next build`, where page-data collection spawns
+// multiple worker processes that each open this DB and race on the exclusive lock
+// the WAL journal-mode conversion needs; it also hardens runtime concurrency.
+sqlite.pragma("busy_timeout = 5000");
 sqlite.pragma("journal_mode = WAL");
 sqlite.pragma("foreign_keys = ON");
 sqlite.pragma("synchronous = NORMAL");
