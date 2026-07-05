@@ -1,12 +1,15 @@
+import { Suspense } from "react";
 import { requireHousehold } from "@/lib/auth/session";
-import { getI18n } from "@/lib/i18n/server";
-import { db } from "@/lib/db";
-import { getLatestShoppingList } from "@/lib/queries/shopping";
-import { ShoppingListView } from "@/components/shopping/shopping-list-view";
+import { resolveLocale } from "@/lib/i18n/server";
+import { ShoppingListSkeleton } from "@/components/shopping/shopping-list-skeleton";
+import { ShoppingContent } from "./shopping-content";
 
 export default async function ShoppingPage() {
   const { householdId } = await requireHousehold();
-  const { locale } = await getI18n();
-  const list = getLatestShoppingList(db, householdId, locale as "en" | "de");
-  return <ShoppingListView list={list} />;
+  const locale = await resolveLocale();
+  return (
+    <Suspense fallback={<ShoppingListSkeleton />}>
+      <ShoppingContent householdId={householdId} locale={locale} />
+    </Suspense>
+  );
 }
