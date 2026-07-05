@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
@@ -6,13 +7,16 @@ import { assertHouseholdAccess, isHouseholdMember } from "./scoping";
 import { createSession, deleteSession, loadSession, type User } from "./session-store";
 import { sign, unsign } from "./signing";
 
-export async function getSession(): Promise<User | null> {
+// Memoized per request: the layout, page, and i18n each resolve the session
+// independently, so without cache() this HMAC verify + 2 SQLite reads runs
+// several times per navigation.
+export const getSession = cache(async (): Promise<User | null> => {
   const raw = (await cookies()).get(SESSION_COOKIE)?.value;
   if (!raw) return null;
   const id = unsign(raw, getAuthSecret());
   if (!id) return null;
   return loadSession(db, id, new Date());
-}
+});
 
 export async function requireUser(): Promise<User> {
   const user = await getSession();
