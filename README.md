@@ -26,7 +26,7 @@ A meal planning PWA that minimizes cooking effort through batch cooking and ingr
 
 ## Prerequisites
 
-- Node.js 22.4+
+- Node.js 22.23.4+ (the CVE-2026-111497 Brotli fix)
 - Docker and Docker Compose (for containerized setup)
 
 ## Setup

@@ -12,6 +12,15 @@ RUN npm run build
 
 FROM node:22-bookworm-slim AS runtime
 WORKDIR /app
+# Refuse to ship a runtime older than the CVE-2026-111497 fix (Brotli decoder
+# out-of-bounds write; fixed in Node 22.23.4). The tag floats, but a Docker host
+# that already holds an older copy of `node:22-bookworm-slim` builds from that
+# copy without pulling. Checked by Node version because the fix was backported:
+# `process.versions.brotli` still reads 1.1.0 on 22.23.4.
+RUN node -e 'const v = process.versions.node.split(".").map(Number); \
+  const min = [22, 23, 4]; \
+  const cmp = v.map((n, i) => n - min[i]).find((d) => d !== 0) ?? 0; \
+  if (cmp < 0) { console.error(`Node ${process.version} predates the CVE-2026-111497 fix (>= 22.23.4); pull a fresh node:22-bookworm-slim`); process.exit(1); }'
 ENV NODE_ENV=production
 # Next standalone server + assets.
 COPY --from=build /app/.next/standalone ./
