@@ -43,7 +43,7 @@ docker-compose -f docker-compose.production.yml up  # production (sascha384/cook
 
 ### Deployment
 
-The published `sascha384/cookless` image runs `web/docker-entrypoint.sh`, which applies Drizzle schema migrations on every boot, then serves the Next.js standalone server (`server.js`) on port 8000.
+The published `sascha384/cookless` image runs `web/docker-entrypoint.sh`, which applies Drizzle schema migrations on every boot, then serves the Next.js standalone server (`server.js`) on port 8000. Pushes to `main` are deployed by CI, which redeploys the Arcane project `cookless` via `arcane-cli` using GitHub OIDC federated auth (no secrets); the live compose lives on the Pi at `/home/pi/docker/cookless`.
 
 ### Environment Variables
 

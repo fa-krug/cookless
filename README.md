@@ -93,6 +93,11 @@ The published `sascha384/cookless` image runs `web/docker-entrypoint.sh`, which
 applies Drizzle schema migrations on every boot and then serves the Next.js
 standalone server on port 8000.
 
+Pushes to `main` deploy automatically: after the multi-arch image is published,
+CI redeploys the Arcane project `cookless` with `arcane-cli`, authenticating via
+GitHub OIDC federated credentials (no deploy secrets). The live compose file is
+on the Pi at `/home/pi/docker/cookless`.
+
 ## Architecture
 
 ```
